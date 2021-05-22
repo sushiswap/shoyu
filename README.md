@@ -2,7 +2,7 @@
 
 ## Backlog
 - [x] SocialToken.sol
-- [ ] SocialTokenFactory.sol
+- [x] SocialTokenFactory.sol
 - [ ] NFTExchange.sol
 - [ ] NFTFactory.sol
 - [ ] UniswapV3Migrator.sol

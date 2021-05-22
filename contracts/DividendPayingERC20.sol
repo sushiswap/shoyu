@@ -2,18 +2,17 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./libraries/SafeMathUint.sol";
-import "./libraries/SafeMathInt.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
 ///  Reference: https://github.com/Roger-Wu/erc1726-dividend-paying-token/blob/master/contracts/DividendPayingToken.sol
-abstract contract DividendPayingERC20 is ERC20 {
-    using SafeMathUint for uint256;
-    using SafeMathInt for int256;
-    using SafeERC20 for IERC20;
+abstract contract DividendPayingERC20 is ERC20Upgradeable {
+    using SafeCastUpgradeable for uint256;
+    using SafeCastUpgradeable for int256;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /// @dev This event MUST emit when ether is distributed to token holders.
     /// @param from The address which sends ether to this contract.
@@ -30,15 +29,16 @@ abstract contract DividendPayingERC20 is ERC20 {
     //  see https://github.com/ethereum/EIPs/issues/1726#issuecomment-472352728
     uint256 public constant MAGNITUDE = 2**128;
 
-    address public immutable dividendToken;
+    address public dividendToken;
 
     uint256 internal magnifiedDividendPerShare;
 
-    constructor(
+    function __DividendPayingERC20_init(
         string memory _name,
         string memory _symbol,
         address _dividendToken
-    ) ERC20(_name, _symbol) {
+    ) internal initializer {
+        __ERC20_init(_name, _symbol);
         dividendToken = _dividendToken;
     }
 
@@ -77,7 +77,7 @@ abstract contract DividendPayingERC20 is ERC20 {
         if (dividendToken == ETH) {
             require(msg.value == amount, "SHOYU: INVALID_MSG_VALUE");
         } else {
-            IERC20(dividendToken).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20Upgradeable(dividendToken).safeTransferFrom(msg.sender, address(this), amount);
         }
         magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
         emit DividendsDistributed(msg.sender, amount);
@@ -93,7 +93,7 @@ abstract contract DividendPayingERC20 is ERC20 {
             if (dividendToken == ETH) {
                 payable(msg.sender).transfer(_withdrawableDividend);
             } else {
-                IERC20(dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
+                IERC20Upgradeable(dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
             }
         }
     }
@@ -127,8 +127,7 @@ abstract contract DividendPayingERC20 is ERC20 {
     function accumulativeDividendOf(address account) public view returns (uint256) {
         return
             (magnifiedDividendPerShare *
-                (balanceOf(account).toInt256Safe() + magnifiedDividendCorrections[account]).toUint256Safe()) /
-            MAGNITUDE;
+                (balanceOf(account).toInt256() + magnifiedDividendCorrections[account]).toUint256()) / MAGNITUDE;
     }
 
     /// @dev Internal function that transfer tokens from one address to another.
@@ -143,7 +142,7 @@ abstract contract DividendPayingERC20 is ERC20 {
     ) internal override {
         super._transfer(from, to, value);
 
-        int256 _magCorrection = (magnifiedDividendPerShare * value).toInt256Safe();
+        int256 _magCorrection = (magnifiedDividendPerShare * value).toInt256();
         magnifiedDividendCorrections[from] = magnifiedDividendCorrections[from] + _magCorrection;
         magnifiedDividendCorrections[to] = magnifiedDividendCorrections[to] - _magCorrection;
     }
@@ -157,7 +156,7 @@ abstract contract DividendPayingERC20 is ERC20 {
 
         magnifiedDividendCorrections[account] =
             magnifiedDividendCorrections[account] -
-            (magnifiedDividendPerShare * value).toInt256Safe();
+            (magnifiedDividendPerShare * value).toInt256();
     }
 
     /// @dev Internal function that burns an amount of the token of a given account.
@@ -169,6 +168,6 @@ abstract contract DividendPayingERC20 is ERC20 {
 
         magnifiedDividendCorrections[account] =
             magnifiedDividendCorrections[account] +
-            (magnifiedDividendPerShare * value).toInt256Safe();
+            (magnifiedDividendPerShare * value).toInt256();
     }
 }
