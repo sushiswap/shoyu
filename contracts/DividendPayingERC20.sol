@@ -74,10 +74,11 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
         require(amount > 0, "SHOYU: INVALID_AMOUNT");
 
-        if (dividendToken == ETH) {
+        address _dividendToken = dividendToken;
+        if (_dividendToken == ETH) {
             require(msg.value == amount, "SHOYU: INVALID_MSG_VALUE");
         } else {
-            IERC20Upgradeable(dividendToken).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20Upgradeable(_dividendToken).safeTransferFrom(msg.sender, address(this), amount);
         }
         magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
         emit DividendsDistributed(msg.sender, amount);
@@ -90,10 +91,11 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
         if (_withdrawableDividend > 0) {
             withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender] + _withdrawableDividend;
             emit DividendWithdrawn(msg.sender, _withdrawableDividend);
-            if (dividendToken == ETH) {
+            address _dividendToken = dividendToken;
+            if (_dividendToken == ETH) {
                 payable(msg.sender).transfer(_withdrawableDividend);
             } else {
-                IERC20Upgradeable(dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
+                IERC20Upgradeable(_dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
             }
         }
     }
