@@ -70,8 +70,8 @@
     "eslint": "^7.20.0",
     "ethereum-waffle": "^3.2.0",
     "ethers": "^5.0.0",
-    "hardhat": "^2.0.10",
-    "hardhat-deploy": "^0.7.0-beta.44",
+    "hardhat": "^2.3.0",
+    "hardhat-deploy": "^0.7.9",
     "hardhat-gas-reporter": "^1.0.0",
     "hardhat-log-remover": "^2.0.0",
     "hardhat-preprocessor": "^0.1.0",
@@ -89,6 +89,6 @@
     "typescript": "^4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.0.0"
+    "@openzeppelin/contracts": "^4.1.0"
   }
 }
