@@ -3,7 +3,10 @@
 ## Backlog
 - [x] SocialToken.sol
 - [x] SocialTokenFactory.sol
-- [ ] NFTExchange.sol
+- [x] NFT721.sol
+- [x] FixedPriceSale.sol
+- [x] EnglishAuction.sol
+- [ ] DutchAuction.sol
+- [ ] FirstBidAuction.sol
 - [ ] NFTFactory.sol
-- [ ] UniswapV3Migrator.sol
 - [ ] Test Coverage
