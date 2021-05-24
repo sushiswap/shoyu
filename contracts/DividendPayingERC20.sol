@@ -2,17 +2,17 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
 ///  Reference: https://github.com/Roger-Wu/erc1726-dividend-paying-token/blob/master/contracts/DividendPayingToken.sol
 abstract contract DividendPayingERC20 is ERC20Upgradeable {
-    using SafeCastUpgradeable for uint256;
-    using SafeCastUpgradeable for int256;
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeCast for uint256;
+    using SafeCast for int256;
+    using SafeERC20 for IERC20;
 
     /// @dev This event MUST emit when ether is distributed to token holders.
     /// @param from The address which sends ether to this contract.
@@ -78,7 +78,7 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
         if (_dividendToken == ETH) {
             require(msg.value == amount, "SHOYU: INVALID_MSG_VALUE");
         } else {
-            IERC20Upgradeable(_dividendToken).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20(_dividendToken).safeTransferFrom(msg.sender, address(this), amount);
         }
         magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
         emit DividendsDistributed(msg.sender, amount);
@@ -95,7 +95,7 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
             if (_dividendToken == ETH) {
                 payable(msg.sender).transfer(_withdrawableDividend);
             } else {
-                IERC20Upgradeable(_dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
+                IERC20(_dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
             }
         }
     }
