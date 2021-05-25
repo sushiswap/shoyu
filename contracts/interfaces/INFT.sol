@@ -11,6 +11,14 @@ interface INFT {
 
     function ownerOf(uint256 tokenId) external view returns (address);
 
+    function createSale(
+        uint256 tokenId,
+        address strategy,
+        bytes calldata initData
+    ) external returns (address sale);
+
+    function closeSale(uint256 tokenId) external;
+
     function safeTransferFrom(
         address from,
         address to,

@@ -7,13 +7,13 @@ import "./ProxyFactory.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 
-contract Shoyu721 is ERC721Upgradeable, ProxyFactory {
+contract NFT721 is ERC721Upgradeable, ProxyFactory {
     string public uid;
     address public factory;
     mapping(uint256 => address) public openSaleOf;
 
     event CreateSale(address sale, uint256 indexed tokenId, address indexed strategy, bytes initData);
-    event CancelSale(address sale, uint256 indexed tokenId);
+    event CloseSale(address sale, uint256 indexed tokenId);
 
     function initialize(
         string memory _name,
@@ -35,7 +35,7 @@ contract Shoyu721 is ERC721Upgradeable, ProxyFactory {
         uint256 tokenId
     ) internal override {
         if (openSaleOf[tokenId] != address(0)) {
-            cancelSale(tokenId);
+            closeSale(tokenId);
         }
     }
 
@@ -54,14 +54,11 @@ contract Shoyu721 is ERC721Upgradeable, ProxyFactory {
         emit CreateSale(sale, tokenId, strategy, initData);
     }
 
-    function cancelSale(uint256 tokenId) public {
-        require(ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
+    function closeSale(uint256 tokenId) public {
         address sale = openSaleOf[tokenId];
-        require(sale != address(0), "SHOYU: NO_OPEN_SALE");
+        require(sale == msg.sender, "SHOYU: FORBIDDEN");
         openSaleOf[tokenId] = address(0);
 
-        IStrategy(sale).cancel();
-
-        emit CancelSale(sale, tokenId);
+        emit CloseSale(sale, tokenId);
     }
 }

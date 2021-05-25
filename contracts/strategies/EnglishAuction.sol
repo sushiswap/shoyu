@@ -2,63 +2,49 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interfaces/INFT.sol";
-import "../interfaces/INFTFactory.sol";
+import "./BaseStrategy.sol";
 
-contract EnglishAuction is Initializable, ReentrancyGuard {
+contract EnglishAuction is BaseStrategy, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Cancel(address indexed lastBidder, uint256 lastBidPrice);
     event Bid(address indexed bidder, uint256 bidPrice);
     event Claim(address indexed taker, uint256 indexed price);
 
-    address public constant ETH = 0x0000000000000000000000000000000000000000;
-
-    address public token;
-    uint256 public tokenId;
-    address public recipient;
-    address public currency;
-    uint256 public startPrice;
     uint256 public endBlock;
+    uint256 public startPrice;
     uint8 public priceGrowth; // out of 100
     address public lastBidder;
     uint256 public lastBidPrice;
-
-    modifier whenSaleOpen() {
-        require(INFT(token).openSaleOf(tokenId) == address(this), "SHOYU: SALE_NOT_OPEN");
-        _;
-    }
 
     function initialize(
         uint256 _tokenId,
         address _recipient,
         address _currency,
-        uint256 _startPrice,
         uint256 _endBlock,
+        uint256 _startPrice,
         uint8 _priceGrowth
     ) external initializer {
-        require(_recipient != address(0), "SHOYU: INVALID_RECIPIENT");
+        __BaseStrategy_init(_tokenId, _recipient, _currency);
+
         require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
 
-        token = msg.sender;
-        tokenId = _tokenId;
-        recipient = _recipient;
-        currency = _currency;
-        startPrice = _startPrice;
         endBlock = _endBlock;
+        startPrice = _startPrice;
         priceGrowth = _priceGrowth;
     }
 
-    function owner() public view returns (address) {
-        return INFT(token).ownerOf(tokenId);
+    function currentPrice() external view override returns (uint256) {
+        uint256 _lastBidPrice = lastBidPrice;
+        return _lastBidPrice == 0 ? startPrice : _lastBidPrice;
     }
 
-    function cancel() external whenSaleOpen {
-        require(msg.sender == token, "SHOYU: FORBIDDEN");
+    function cancel() external override onlyOwner whenSaleOpen {
+        status = Status.CANCELLED;
+        INFT(token).closeSale(tokenId);
 
         address _lastBidder = lastBidder;
         uint256 _lastBidPrice = lastBidPrice;
@@ -77,9 +63,10 @@ contract EnglishAuction is Initializable, ReentrancyGuard {
         uint256 _endBlock = endBlock;
         require(block.number <= _endBlock, "SHOYU: EXPIRED");
 
+        (uint256 _priceGrowth, address _lastBidder) = (priceGrowth, lastBidder); // gas optimization
         uint256 _lastBidPrice = lastBidPrice;
         if (_lastBidPrice != 0) {
-            require(msg.value >= _lastBidPrice + ((_lastBidPrice * priceGrowth) / 100), "SHOYU: PRICE_NOT_INCREASED");
+            require(msg.value >= _lastBidPrice + ((_lastBidPrice * _priceGrowth) / 100), "SHOYU: PRICE_NOT_INCREASED");
         } else {
             require(msg.value >= startPrice && msg.value > 0, "low price bid");
         }
@@ -90,13 +77,36 @@ contract EnglishAuction is Initializable, ReentrancyGuard {
 
         _safeTransferFrom(price);
         if (_lastBidPrice > 0) {
-            _safeTransfer(lastBidder, _lastBidPrice);
+            _safeTransfer(_lastBidder, _lastBidPrice);
         }
 
         lastBidder = msg.sender;
         lastBidPrice = price;
 
         emit Bid(msg.sender, price);
+    }
+
+    function claim() external nonReentrant whenSaleOpen {
+        require(block.number > endBlock, "SHOYU: ONGOING_SALE");
+        address _token = token;
+        uint256 _tokenId = tokenId;
+        address factory = INFT(_token).factory();
+
+        uint256 _lastBidPrice = lastBidPrice;
+        address feeTo = INFTFactory(factory).feeTo();
+        uint256 feeAmount = (_lastBidPrice * INFTFactory(factory).fee()) / 1000;
+
+        status = Status.CANCELLED;
+        INFT(token).closeSale(_tokenId);
+
+        _safeTransfer(feeTo, feeAmount);
+        _safeTransfer(recipient, _lastBidPrice - feeAmount);
+
+        address _owner = INFT(_token).ownerOf(_tokenId);
+        address _lastBidder = lastBidder;
+        INFT(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
+
+        emit Claim(_lastBidder, _lastBidPrice);
     }
 
     function _safeTransfer(address to, uint256 amount) internal {
@@ -115,26 +125,5 @@ contract EnglishAuction is Initializable, ReentrancyGuard {
         } else {
             IERC20(_currency).safeTransferFrom(msg.sender, address(this), amount);
         }
-    }
-
-    function claim() external nonReentrant whenSaleOpen {
-        require(block.number > endBlock, "SHOYU: ON_SALE");
-        address _token = token;
-        uint256 _tokenId = tokenId;
-        address factory = INFT(_token).factory();
-
-        uint256 _lastBidPrice = lastBidPrice;
-        address feeTo = INFTFactory(factory).feeTo();
-        uint256 feeAmount = (_lastBidPrice * INFTFactory(factory).fee()) / 1000;
-
-        //  TODO: mark sold
-        _safeTransfer(feeTo, feeAmount);
-        _safeTransfer(recipient, _lastBidPrice - feeAmount);
-
-        address _owner = INFT(_token).ownerOf(_tokenId);
-        address _lastBidder = lastBidder;
-        INFT(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
-
-        emit Claim(_lastBidder, _lastBidPrice);
     }
 }

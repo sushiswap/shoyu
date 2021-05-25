@@ -2,32 +2,19 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interfaces/INFT.sol";
-import "../interfaces/INFTFactory.sol";
+import "./BaseStrategy.sol";
 
-contract FixedPriceSale is Initializable, ReentrancyGuard {
+contract FixedPriceSale is BaseStrategy, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Cancel();
     event Buy(address indexed buyer);
 
-    address public constant ETH = 0x0000000000000000000000000000000000000000;
-
-    address public token;
-    uint256 public tokenId;
-    address public recipient;
-    address public currency;
     uint256 public price;
     uint256 public endBlock;
-
-    modifier whenSaleOpen() {
-        require(INFT(token).openSaleOf(tokenId) == address(this), "SHOYU: SALE_NOT_OPEN");
-        _;
-    }
 
     function initialize(
         uint256 _tokenId,
@@ -36,23 +23,21 @@ contract FixedPriceSale is Initializable, ReentrancyGuard {
         uint256 _price,
         uint256 _endBlock
     ) external initializer {
-        require(_recipient != address(0), "SHOYU: INVALID_RECIPIENT");
+        __BaseStrategy_init(_tokenId, _recipient, _currency);
+
         require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
 
-        token = msg.sender;
-        tokenId = _tokenId;
-        recipient = _recipient;
-        currency = _currency;
         price = _price;
         endBlock = _endBlock;
     }
 
-    function owner() public view returns (address) {
-        return INFT(token).ownerOf(tokenId);
+    function currentPrice() external view override returns (uint256) {
+        return price;
     }
 
-    function cancel() external whenSaleOpen {
-        require(msg.sender == token, "SHOYU: FORBIDDEN");
+    function cancel() external override onlyOwner whenSaleOpen {
+        status = Status.CANCELLED;
+        INFT(token).closeSale(tokenId);
 
         emit Cancel();
     }
@@ -60,14 +45,21 @@ contract FixedPriceSale is Initializable, ReentrancyGuard {
     function buy() external payable nonReentrant whenSaleOpen {
         require(block.number <= endBlock, "SHOYU: EXPIRED");
 
+        address _token = token;
+        uint256 _tokenId = tokenId;
         uint256 _price = price;
         address factory = INFT(token).factory();
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_price * INFTFactory(factory).fee()) / 1000;
 
-        //  TODO: mark sold
+        status = Status.FINISHED;
+        INFT(_token).closeSale(_tokenId);
+
         _safeTransferFromSender(feeTo, feeAmount);
         _safeTransferFromSender(recipient, _price - feeAmount);
+
+        address _owner = INFT(_token).ownerOf(_tokenId);
+        INFT(_token).safeTransferFrom(_owner, msg.sender, _tokenId);
 
         emit Buy(msg.sender);
     }
