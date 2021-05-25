@@ -17,6 +17,8 @@ interface IStrategy {
 
     function currency() external view returns (address);
 
+    function endBlock() external view returns (uint256);
+
     function owner() external view returns (address);
 
     function currentPrice() external view returns (uint256);

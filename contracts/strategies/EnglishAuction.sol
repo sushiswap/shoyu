@@ -3,8 +3,6 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./BaseStrategy.sol";
 
 contract EnglishAuction is BaseStrategy, ReentrancyGuard {
@@ -14,11 +12,10 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
     event Bid(address indexed bidder, uint256 bidPrice);
     event Claim(address indexed taker, uint256 indexed price);
 
-    uint256 public endBlock;
-    uint256 public startPrice;
-    uint8 public priceGrowth; // out of 100
     address public lastBidder;
     uint256 public lastBidPrice;
+    uint256 public startPrice;
+    uint8 public priceGrowth; // out of 100
 
     function initialize(
         uint256 _tokenId,
@@ -28,23 +25,19 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
         uint256 _startPrice,
         uint8 _priceGrowth
     ) external initializer {
-        __BaseStrategy_init(_tokenId, _recipient, _currency);
+        __BaseStrategy_init(_tokenId, _recipient, _currency, _endBlock);
 
-        require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
-
-        endBlock = _endBlock;
         startPrice = _startPrice;
         priceGrowth = _priceGrowth;
     }
 
-    function currentPrice() external view override returns (uint256) {
+    function currentPrice() public view override returns (uint256) {
         uint256 _lastBidPrice = lastBidPrice;
         return _lastBidPrice == 0 ? startPrice : _lastBidPrice;
     }
 
     function cancel() external override onlyOwner whenSaleOpen {
-        status = Status.CANCELLED;
-        INFT(token).closeSale(tokenId);
+        _cancel();
 
         address _lastBidder = lastBidder;
         uint256 _lastBidPrice = lastBidPrice;

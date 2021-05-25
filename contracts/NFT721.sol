@@ -49,6 +49,7 @@ contract NFT721 is ERC721Upgradeable, ProxyFactory {
         require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
         sale = _createProxy(strategy, initData);
+        _approve(sale, tokenId);
         openSaleOf[tokenId] = sale;
 
         emit CreateSale(sale, tokenId, strategy, initData);
