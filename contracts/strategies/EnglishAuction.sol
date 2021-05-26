@@ -4,6 +4,7 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./BaseStrategy.sol";
+import "../libraries/TransferHelper.sol";
 
 contract EnglishAuction is BaseStrategy, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -46,7 +47,7 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
         lastBidPrice = 0;
 
         if (_lastBidPrice > 0) {
-            _safeTransfer(_lastBidder, _lastBidPrice);
+            TransferHelper.safeTransfer(currency, _lastBidder, _lastBidPrice);
         }
 
         emit Cancel(_lastBidder, _lastBidPrice);
@@ -68,9 +69,10 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
             endBlock = endBlock + 20; // 5 mins
         }
 
-        _safeTransferFrom(price);
+        address _currency = currency;
+        TransferHelper.safeTransferFromSender(_currency, price);
         if (_lastBidPrice > 0) {
-            _safeTransfer(_lastBidder, _lastBidPrice);
+            TransferHelper.safeTransfer(_currency, _lastBidder, _lastBidPrice);
         }
 
         lastBidder = msg.sender;
@@ -92,31 +94,14 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
         status = Status.CANCELLED;
         INFT(token).closeSale(_tokenId);
 
-        _safeTransfer(feeTo, feeAmount);
-        _safeTransfer(recipient, _lastBidPrice - feeAmount);
+        address _currency = currency;
+        TransferHelper.safeTransfer(_currency, feeTo, feeAmount);
+        TransferHelper.safeTransfer(_currency, recipient, _lastBidPrice - feeAmount);
 
         address _owner = INFT(_token).ownerOf(_tokenId);
         address _lastBidder = lastBidder;
         INFT(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
 
         emit Claim(_lastBidder, _lastBidPrice);
-    }
-
-    function _safeTransfer(address to, uint256 amount) internal {
-        address _currency = currency;
-        if (_currency == ETH) {
-            payable(to).transfer(amount);
-        } else {
-            IERC20(_currency).safeTransfer(to, amount);
-        }
-    }
-
-    function _safeTransferFrom(uint256 amount) internal {
-        address _currency = currency;
-        if (_currency == ETH) {
-            require(msg.value == amount, "SHOYU: INVALID_MSG_VALUE");
-        } else {
-            IERC20(_currency).safeTransferFrom(msg.sender, address(this), amount);
-        }
     }
 }

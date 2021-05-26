@@ -2,17 +2,16 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/INFT.sol";
 import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
+import "../libraries/TransferHelper.sol";
 
 abstract contract BaseStrategy is Initializable, IStrategy {
     using SafeERC20 for IERC20;
-
-    address public constant override ETH = 0x0000000000000000000000000000000000000000;
 
     Status public override status;
     address public override token;
@@ -59,10 +58,6 @@ abstract contract BaseStrategy is Initializable, IStrategy {
     }
 
     function _buy(uint256 price) internal {
-        address _currency = currency;
-        if (_currency == ETH) {
-            require(msg.value == price, "SHOYU: INVALID_MSG_VALUE");
-        }
         uint256 _currentPrice = currentPrice();
         require(price >= _currentPrice, "SHOYU: INVALID_PRICE");
         require(block.number <= endBlock, "SHOYU: EXPIRED");
@@ -75,22 +70,11 @@ abstract contract BaseStrategy is Initializable, IStrategy {
         address _owner = INFT(_token).ownerOf(_tokenId);
         INFT(_token).safeTransferFrom(_owner, msg.sender, _tokenId);
 
+        address _currency = currency;
         address factory = INFT(token).factory();
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_currentPrice * INFTFactory(factory).fee()) / 1000;
-        _safeTransferFromSender(_currency, feeTo, feeAmount);
-        _safeTransferFromSender(_currency, recipient, _currentPrice - feeAmount);
-    }
-
-    function _safeTransferFromSender(
-        address _currency,
-        address to,
-        uint256 amount
-    ) internal {
-        if (_currency == ETH) {
-            payable(to).transfer(amount);
-        } else {
-            IERC20(_currency).safeTransferFrom(msg.sender, to, amount);
-        }
+        TransferHelper.safeTransferFromSender(_currency, feeTo, feeAmount);
+        TransferHelper.safeTransferFromSender(_currency, recipient, _currentPrice - feeAmount);
     }
 }

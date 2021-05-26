@@ -5,8 +5,6 @@ pragma solidity >=0.5.0;
 interface IStrategy {
     enum Status {OPEN, CANCELLED, FINISHED}
 
-    function ETH() external view returns (address);
-
     function status() external view returns (Status);
 
     function token() external view returns (address);

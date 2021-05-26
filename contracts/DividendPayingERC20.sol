@@ -3,8 +3,8 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "./libraries/TransferHelper.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
@@ -12,7 +12,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 abstract contract DividendPayingERC20 is ERC20Upgradeable {
     using SafeCast for uint256;
     using SafeCast for int256;
-    using SafeERC20 for IERC20;
 
     /// @dev This event MUST emit when ether is distributed to token holders.
     /// @param from The address which sends ether to this contract.
@@ -24,7 +23,6 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
     /// @param amount The amount of withdrawn ether in wei.
     event DividendWithdrawn(address indexed to, uint256 amount);
 
-    address public constant ETH = 0x0000000000000000000000000000000000000000;
     // For more discussion about choosing the value of `magnitude`,
     //  see https://github.com/ethereum/EIPs/issues/1726#issuecomment-472352728
     uint256 public constant MAGNITUDE = 2**128;
@@ -56,6 +54,11 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
     mapping(address => int256) internal magnifiedDividendCorrections;
     mapping(address => uint256) internal withdrawnDividends;
 
+    /// @dev Distributes dividends whenever ether is paid to this contract.
+    receive() external payable {
+        distributeDividends(msg.value);
+    }
+
     /// @notice Distributes ether to token holders as dividends.
     /// @dev It reverts if the total supply of tokens is 0.
     /// It emits the `DividendsDistributed` event if the amount of received ether is greater than 0.
@@ -74,12 +77,7 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
         require(amount > 0, "SHOYU: INVALID_AMOUNT");
 
-        address _dividendToken = dividendToken;
-        if (_dividendToken == ETH) {
-            require(msg.value == amount, "SHOYU: INVALID_MSG_VALUE");
-        } else {
-            IERC20(_dividendToken).safeTransferFrom(msg.sender, address(this), amount);
-        }
+        TransferHelper.safeTransferFromSender(dividendToken, amount);
         magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
         emit DividendsDistributed(msg.sender, amount);
     }
@@ -91,12 +89,7 @@ abstract contract DividendPayingERC20 is ERC20Upgradeable {
         if (_withdrawableDividend > 0) {
             withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender] + _withdrawableDividend;
             emit DividendWithdrawn(msg.sender, _withdrawableDividend);
-            address _dividendToken = dividendToken;
-            if (_dividendToken == ETH) {
-                payable(msg.sender).transfer(_withdrawableDividend);
-            } else {
-                IERC20(_dividendToken).safeTransfer(msg.sender, _withdrawableDividend);
-            }
+            TransferHelper.safeTransfer(dividendToken, msg.sender, _withdrawableDividend);
         }
     }
 
