@@ -8,7 +8,7 @@ import "../Recipients.sol";
 contract RecipientsFactory is ProxyFactory {
     event CreateRecipients(address[] members, uint8[] weights);
 
-    address public immutable target;
+    address internal immutable target;
 
     constructor() {
         Recipients recipients = new Recipients();
@@ -16,14 +16,14 @@ contract RecipientsFactory is ProxyFactory {
         target = address(recipients);
     }
 
-    function createRecipients(address[] memory members, uint8[] memory weights) public returns (address proxy) {
+    function createRecipients(address[] memory members, uint8[] memory weights) external returns (address proxy) {
         bytes memory initData = abi.encodeWithSignature("initialize(address[],address[])", members, weights);
         proxy = _createProxy(target, initData);
 
         emit CreateRecipients(members, weights);
     }
 
-    function isRecipients(address query) public view returns (bool result) {
+    function isRecipients(address query) external view returns (bool result) {
         return _isProxy(target, query);
     }
 }

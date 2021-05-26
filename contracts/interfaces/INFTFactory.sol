@@ -8,4 +8,14 @@ interface INFTFactory {
     function fee() external view returns (uint8);
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
+
+    function setFeeTo(address _feeTo) external;
+
+    function setFee(uint8 _fee) external;
+
+    function setStrategyWhitelisted(address sale, bool whitelisted) external;
+
+    function createNFT721(string memory name, string memory symbol) external returns (address proxy);
+
+    function isNFT721(address query) external view returns (bool result);
 }

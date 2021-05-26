@@ -8,7 +8,7 @@ import "../SocialToken.sol";
 contract SocialTokenFactory is ProxyFactory {
     event CreateSocialToken(string name, string symbol, address indexed owner, address indexed dividendToken);
 
-    address public immutable target;
+    address internal immutable target;
 
     constructor() {
         SocialToken token = new SocialToken();
@@ -20,7 +20,7 @@ contract SocialTokenFactory is ProxyFactory {
         string memory name,
         string memory symbol,
         address dividendToken
-    ) public returns (address proxy) {
+    ) external returns (address proxy) {
         bytes memory initData =
             abi.encodeWithSignature(
                 "initialize(string,string,address,address)",
@@ -34,7 +34,7 @@ contract SocialTokenFactory is ProxyFactory {
         emit CreateSocialToken(name, symbol, msg.sender, dividendToken);
     }
 
-    function isSocialToken(address query) public view returns (bool result) {
+    function isSocialToken(address query) external view returns (bool result) {
         return _isProxy(target, query);
     }
 }
