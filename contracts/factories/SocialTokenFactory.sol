@@ -3,7 +3,7 @@
 pragma solidity =0.8.3;
 
 import "./ProxyFactory.sol";
-import "./SocialToken.sol";
+import "../SocialToken.sol";
 
 contract SocialTokenFactory is ProxyFactory {
     event CreateSocialToken(string name, string symbol, address indexed owner, address indexed dividendToken);

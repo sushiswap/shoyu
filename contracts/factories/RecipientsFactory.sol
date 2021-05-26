@@ -3,7 +3,7 @@
 pragma solidity =0.8.3;
 
 import "./ProxyFactory.sol";
-import "./Recipients.sol";
+import "../Recipients.sol";
 
 contract RecipientsFactory is ProxyFactory {
     event CreateRecipients(address[] members, uint8[] weights);

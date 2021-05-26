@@ -5,9 +5,9 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./ProxyFactory.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
+import "./factories/ProxyFactory.sol";
 
 contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
     using Strings for uint256;

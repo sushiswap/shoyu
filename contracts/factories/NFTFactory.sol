@@ -4,7 +4,7 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ProxyFactory.sol";
-import "./NFT721.sol";
+import "../NFT721.sol";
 
 contract NFTFactory is ProxyFactory, Ownable {
     event CreateNFT721(string name, string symbol, address indexed owner);
