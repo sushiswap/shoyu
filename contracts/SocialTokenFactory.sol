@@ -3,25 +3,38 @@
 pragma solidity =0.8.3;
 
 import "./ProxyFactory.sol";
+import "./SocialToken.sol";
 
 contract SocialTokenFactory is ProxyFactory {
-    address immutable target;
+    event CreateSocialToken(string name, string symbol, address indexed owner, address indexed dividendToken);
 
-    constructor(address _target) {
-        target = _target;
+    address public immutable target;
+
+    constructor() {
+        SocialToken token = new SocialToken();
+        token.initialize("", "", address(0), address(0));
+        target = address(token);
     }
 
-    function createProxy(
-        string memory _name,
-        string memory _symbol,
-        address _dividendToken
+    function createSocialToken(
+        string memory name,
+        string memory symbol,
+        address dividendToken
     ) public returns (address proxy) {
         bytes memory initData =
-            abi.encodeWithSignature("initialize(string,string,address)", _name, _symbol, _dividendToken);
-        return _createProxy(target, initData);
+            abi.encodeWithSignature(
+                "initialize(string,string,address,address)",
+                name,
+                symbol,
+                msg.sender,
+                dividendToken
+            );
+        proxy = _createProxy(target, initData);
+
+        emit CreateSocialToken(name, symbol, msg.sender, dividendToken);
     }
 
-    function isProxy(address query) public view returns (bool result) {
+    function isSocialToken(address query) public view returns (bool result) {
         return _isProxy(target, query);
     }
 }

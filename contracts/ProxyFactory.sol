@@ -4,8 +4,6 @@ pragma solidity =0.8.3;
 
 // Reference: https://github.com/optionality/clone-factory/blob/master/contracts/CloneFactory.sol
 contract ProxyFactory {
-    event ProxyCreated(address proxy);
-
     function _createProxy(address target, bytes memory initData) internal returns (address proxy) {
         bytes20 targetBytes = bytes20(target);
         assembly {
@@ -15,8 +13,6 @@ contract ProxyFactory {
             mstore(add(clone, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
             proxy := create(0, clone, 0x37)
         }
-
-        emit ProxyCreated(proxy);
 
         (bool success, ) = proxy.call(initData);
         require(success);
