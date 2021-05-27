@@ -3,9 +3,9 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy.sol";
+import "./BaseStrategy721.sol";
 
-contract DutchAuction is BaseStrategy, ReentrancyGuard {
+contract DutchAuction is BaseStrategy721, ReentrancyGuard {
     event Cancel();
     event Buy(address indexed buyer, uint256 price);
 

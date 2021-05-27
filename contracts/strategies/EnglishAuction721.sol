@@ -3,10 +3,10 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy.sol";
+import "./BaseStrategy721.sol";
 import "../libraries/TransferHelper.sol";
 
-contract EnglishAuction is BaseStrategy, ReentrancyGuard {
+contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Cancel(address indexed lastBidder, uint256 lastBidPrice);
@@ -85,22 +85,22 @@ contract EnglishAuction is BaseStrategy, ReentrancyGuard {
         require(block.number > endBlock, "SHOYU: ONGOING_SALE");
         address _token = token;
         uint256 _tokenId = tokenId;
-        address factory = INFT(_token).factory();
+        address factory = INFT721(_token).factory();
 
         uint256 _lastBidPrice = lastBidPrice;
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_lastBidPrice * INFTFactory(factory).fee()) / 1000;
 
         status = Status.CANCELLED;
-        INFT(token).closeSale(_tokenId);
+        INFT721(token).closeSale(_tokenId);
 
         address _currency = currency;
         TransferHelper.safeTransfer(_currency, feeTo, feeAmount);
         TransferHelper.safeTransfer(_currency, recipient, _lastBidPrice - feeAmount);
 
-        address _owner = INFT(_token).ownerOf(_tokenId);
+        address _owner = INFT721(_token).ownerOf(_tokenId);
         address _lastBidder = lastBidder;
-        INFT(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
+        INFT721(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
 
         emit Claim(_lastBidder, _lastBidPrice);
     }

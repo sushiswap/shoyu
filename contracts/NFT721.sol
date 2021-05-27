@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
+import "./interfaces/INFT721.sol";
 
-contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
+contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory, INFT721 {
     using Strings for uint256;
 
-    address public factory;
-    mapping(uint256 => address) public openSaleOf;
+    address public override factory;
+    mapping(uint256 => address) public override openSaleOf;
 
     mapping(uint256 => string[]) private _tags;
 
@@ -52,7 +53,7 @@ contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
         }
     }
 
-    function tagsOf(uint256 tokenId) public view returns (string[] memory) {
+    function tagsOf(uint256 tokenId) external view override returns (string[] memory) {
         return _tags[tokenId];
     }
 
@@ -60,18 +61,18 @@ contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
         address to,
         uint256 tokenId,
         string[] memory tags
-    ) external onlyOwner {
+    ) external override onlyOwner {
         _mint(to, tokenId);
         setTags(tokenId, tags);
 
         emit Mint(to, tokenId);
     }
 
-    function burn(uint256 tokenId) external onlyOwnerOf(tokenId) {
+    function burn(uint256 tokenId) external override onlyOwnerOf(tokenId) {
         _burn(tokenId);
     }
 
-    function setTags(uint256 tokenId, string[] memory tags) public onlyOwnerOf(tokenId) {
+    function setTags(uint256 tokenId, string[] memory tags) public override onlyOwnerOf(tokenId) {
         _tags[tokenId] = tags;
 
         emit SetTags(tags, tokenId);
@@ -81,7 +82,7 @@ contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
         uint256 tokenId,
         address strategy,
         bytes calldata initData
-    ) external onlyOwnerOf(tokenId) returns (address sale) {
+    ) external override onlyOwnerOf(tokenId) returns (address sale) {
         require(openSaleOf[tokenId] == address(0), "SHOYU: SALE_EXISTS");
         require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
@@ -92,7 +93,7 @@ contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory {
         emit CreateSale(sale, tokenId, strategy, initData);
     }
 
-    function closeSale(uint256 tokenId) public onlyOwnerOf(tokenId) {
+    function closeSale(uint256 tokenId) public override onlyOwnerOf(tokenId) {
         address sale = openSaleOf[tokenId];
         require(sale == msg.sender, "SHOYU: FORBIDDEN");
         openSaleOf[tokenId] = address(0);
