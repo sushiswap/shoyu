@@ -3,13 +3,13 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "./base/ERC20Initializable.sol";
 import "./libraries/TransferHelper.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
 ///  Reference: https://github.com/Roger-Wu/erc1726-dividend-paying-token/blob/master/contracts/DividendPayingToken.sol
-abstract contract DividendPayingERC20 is ERC20Upgradeable {
+abstract contract DividendPayingERC20 is ERC20Initializable {
     using SafeCast for uint256;
     using SafeCast for int256;
 

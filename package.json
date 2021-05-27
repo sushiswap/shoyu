@@ -89,7 +89,6 @@
     "typescript": "^4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
-    "@openzeppelin/contracts-upgradeable": "^4.1.0"
+    "@openzeppelin/contracts": "^4.1.0"
   }
 }

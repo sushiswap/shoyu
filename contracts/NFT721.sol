@@ -2,15 +2,15 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./base/OwnableInitializable.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
 import "./interfaces/INFT721.sol";
+import "./base/ERC721Initializable.sol";
 
-contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory, INFT721 {
+contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT721 {
     using Strings for uint256;
 
     address public override factory;
@@ -34,8 +34,7 @@ contract NFT721 is ERC721Upgradeable, OwnableUpgradeable, ProxyFactory, INFT721 
         address _owner
     ) external initializer {
         __ERC721_init(_name, _symbol);
-        __Ownable_init();
-        transferOwnership(_owner);
+        __Ownable_init(_owner);
         factory = msg.sender;
     }
 

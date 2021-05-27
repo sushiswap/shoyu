@@ -2,9 +2,9 @@
 
 pragma solidity >=0.5.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface INFT721 is IERC721Upgradeable {
+interface INFT721 is IERC721 {
     function factory() external view returns (address);
 
     function openSaleOf(uint256 tokenId) external view returns (address);
