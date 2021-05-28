@@ -8,10 +8,11 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/INFT721.sol";
 import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
-import "../libraries/TransferHelper.sol";
+import "../libraries/TokenHelper.sol";
 
 abstract contract BaseStrategy721 is Initializable, IStrategy {
     using SafeERC20 for IERC20;
+    using TokenHelper for address;
 
     Status public override status;
     address public override token;
@@ -74,7 +75,7 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
         address factory = INFT721(token).factory();
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_currentPrice * INFTFactory(factory).fee()) / 1000;
-        TransferHelper.safeTransferFromSender(_currency, feeTo, feeAmount);
-        TransferHelper.safeTransferFromSender(_currency, recipient, _currentPrice - feeAmount);
+        _currency.safeTransferFromSender(feeTo, feeAmount);
+        _currency.safeTransferFromSender(recipient, _currentPrice - feeAmount);
     }
 }

@@ -4,10 +4,11 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./BaseStrategy721.sol";
-import "../libraries/TransferHelper.sol";
+import "../libraries/TokenHelper.sol";
 
 contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
     using SafeERC20 for IERC20;
+    using TokenHelper for address;
 
     event Cancel(address indexed lastBidder, uint256 lastBidPrice);
     event Bid(address indexed bidder, uint256 bidPrice);
@@ -47,7 +48,7 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
         lastBidPrice = 0;
 
         if (_lastBidPrice > 0) {
-            TransferHelper.safeTransfer(currency, _lastBidder, _lastBidPrice);
+            currency.safeTransfer(_lastBidder, _lastBidPrice);
         }
 
         emit Cancel(_lastBidder, _lastBidPrice);
@@ -70,9 +71,9 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
         }
 
         address _currency = currency;
-        TransferHelper.safeTransferFromSender(_currency, price);
+        _currency.safeTransferFromSender(price);
         if (_lastBidPrice > 0) {
-            TransferHelper.safeTransfer(_currency, _lastBidder, _lastBidPrice);
+            _currency.safeTransfer(_lastBidder, _lastBidPrice);
         }
 
         lastBidder = msg.sender;
@@ -95,8 +96,8 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
         INFT721(token).closeSale(_tokenId);
 
         address _currency = currency;
-        TransferHelper.safeTransfer(_currency, feeTo, feeAmount);
-        TransferHelper.safeTransfer(_currency, recipient, _lastBidPrice - feeAmount);
+        _currency.safeTransfer(feeTo, feeAmount);
+        _currency.safeTransfer(recipient, _lastBidPrice - feeAmount);
 
         address _owner = INFT721(_token).ownerOf(_tokenId);
         address _lastBidder = lastBidder;

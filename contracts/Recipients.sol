@@ -5,9 +5,11 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./libraries/TransferHelper.sol";
+import "./libraries/TokenHelper.sol";
 
 contract Recipients is Initializable {
+    using TokenHelper for address;
+
     event Initialize(address[] members, uint8[] weights);
     event Check(address indexed token, uint256 id);
     event Claim(address indexed token, uint256 amount);
@@ -43,7 +45,7 @@ contract Recipients is Initializable {
     function checkAndClaim(address token) external {
         require(isMember[msg.sender], "SHOYU: FORBIDDEN");
 
-        uint256 balance = IERC20(token).balanceOf(address(this));
+        uint256 balance = token.balanceOf(address(this));
         uint256 reserve = reserveOf[token];
         uint256 payment = balance - reserve;
         if (payment > 0) {
@@ -78,7 +80,7 @@ contract Recipients is Initializable {
         reserveOf[token] -= amount;
         paymentClaimed[token][msg.sender][id] = true;
 
-        TransferHelper.safeTransfer(token, msg.sender, amount);
+        token.safeTransfer(msg.sender, amount);
 
         emit Claim(token, id);
     }

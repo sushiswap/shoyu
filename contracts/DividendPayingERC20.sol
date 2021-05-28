@@ -4,7 +4,7 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "./base/ERC20Initializable.sol";
-import "./libraries/TransferHelper.sol";
+import "./libraries/TokenHelper.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
@@ -12,6 +12,7 @@ import "./libraries/TransferHelper.sol";
 abstract contract DividendPayingERC20 is ERC20Initializable {
     using SafeCast for uint256;
     using SafeCast for int256;
+    using TokenHelper for address;
 
     /// @dev This event MUST emit when ether is distributed to token holders.
     /// @param from The address which sends ether to this contract.
@@ -77,7 +78,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
         require(amount > 0, "SHOYU: INVALID_AMOUNT");
 
-        TransferHelper.safeTransferFromSender(dividendToken, amount);
+        dividendToken.safeTransferFromSender(amount);
         magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
         emit DividendsDistributed(msg.sender, amount);
     }
@@ -89,7 +90,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
         if (_withdrawableDividend > 0) {
             withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender] + _withdrawableDividend;
             emit DividendWithdrawn(msg.sender, _withdrawableDividend);
-            TransferHelper.safeTransfer(dividendToken, msg.sender, _withdrawableDividend);
+            dividendToken.safeTransfer(msg.sender, _withdrawableDividend);
         }
     }
 
