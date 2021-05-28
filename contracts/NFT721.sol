@@ -3,12 +3,12 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./base/ERC721Initializable.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
 import "./interfaces/INFT721.sol";
-import "./base/ERC721Initializable.sol";
 
 contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT721 {
     using Strings for uint256;

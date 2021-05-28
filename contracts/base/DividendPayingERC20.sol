@@ -3,8 +3,8 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "./base/ERC20Initializable.sol";
-import "./libraries/TokenHelper.sol";
+import "./ERC20Initializable.sol";
+import "../libraries/TokenHelper.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.

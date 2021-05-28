@@ -6,7 +6,7 @@ import "./ProxyFactory.sol";
 import "../PaymentSplitter.sol";
 
 contract PaymentSplitterFactory is ProxyFactory {
-    event CreatePaymentSplitter(address indexed proxy, address[] payees, uint8[] shares);
+    event CreatePaymentSplitter(address indexed proxy, address[] payees, uint256[] shares);
 
     address internal immutable target;
 
