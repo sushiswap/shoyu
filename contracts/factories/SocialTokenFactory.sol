@@ -6,7 +6,13 @@ import "./ProxyFactory.sol";
 import "../SocialToken.sol";
 
 contract SocialTokenFactory is ProxyFactory {
-    event CreateSocialToken(string name, string symbol, address indexed owner, address indexed dividendToken);
+    event CreateSocialToken(
+        address indexed proxy,
+        string name,
+        string symbol,
+        address indexed owner,
+        address indexed dividendToken
+    );
 
     address internal immutable target;
 
@@ -31,7 +37,7 @@ contract SocialTokenFactory is ProxyFactory {
             );
         proxy = _createProxy(target, initData);
 
-        emit CreateSocialToken(name, symbol, msg.sender, dividendToken);
+        emit CreateSocialToken(proxy, name, symbol, msg.sender, dividendToken);
     }
 
     function isSocialToken(address query) external view returns (bool result) {

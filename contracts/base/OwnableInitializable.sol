@@ -24,13 +24,13 @@ abstract contract OwnableInitializable is Initializable {
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    function __Ownable_init(address owner) internal initializer {
-        __Ownable_init_unchained(owner);
+    function __Ownable_init(address __owner) internal initializer {
+        __Ownable_init_unchained(__owner);
     }
 
-    function __Ownable_init_unchained(address owner) internal initializer {
-        _owner = owner;
-        emit OwnershipTransferred(address(0), owner);
+    function __Ownable_init_unchained(address __owner) internal initializer {
+        _owner = __owner;
+        emit OwnershipTransferred(address(0), __owner);
     }
 
     /**

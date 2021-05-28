@@ -8,7 +8,7 @@ import "../interfaces/INFTFactory.sol";
 import "../NFT721.sol";
 
 contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
-    event CreateNFT721(string name, string symbol, address indexed owner);
+    event CreateNFT721(address indexed proxy, string name, string symbol, address indexed owner);
 
     address internal immutable target721;
 
@@ -44,7 +44,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         bytes memory initData = abi.encodeWithSignature("initialize(string,string,address)", name, symbol, msg.sender);
         proxy = _createProxy(target721, initData);
 
-        emit CreateNFT721(name, symbol, msg.sender);
+        emit CreateNFT721(proxy, name, symbol, msg.sender);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
