@@ -54,8 +54,8 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
     function currentPrice() public view virtual override returns (uint256);
 
     function _cancel() internal {
+        require(msg.sender == token, "SHOYU: FORBIDDEN");
         status = Status.CANCELLED;
-        INFT721(token).closeSale(tokenId);
     }
 
     function _buy(uint256 price) internal {
