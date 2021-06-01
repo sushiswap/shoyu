@@ -8,18 +8,16 @@ import "./base/OwnableInitializable.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
+import "./base/Taggable.sol";
 import "./interfaces/INFT721.sol";
 
-contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT721 {
+contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT721 {
     using Strings for uint256;
 
     address public override factory;
     mapping(uint256 => address) public override openSaleOf;
 
-    mapping(uint256 => string[]) private _tags;
-
     event Mint(address to, uint256 indexed tokenId);
-    event SetTags(string[] tags, uint256 indexed tokenId);
     event CreateSale(address sale, uint256 indexed tokenId, address indexed strategy, bytes initData);
     event CloseSale(address sale, uint256 indexed tokenId);
 
@@ -52,16 +50,13 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         }
     }
 
-    function tagsOf(uint256 tokenId) external view override returns (string[] memory) {
-        return _tags[tokenId];
-    }
-
     function mint(
         address to,
         uint256 tokenId,
-        string[] memory tags
+        bytes calldata data,
+        string[] calldata tags
     ) external override onlyOwner {
-        _mint(to, tokenId);
+        _safeMint(to, tokenId, data);
         setTags(tokenId, tags);
 
         emit Mint(to, tokenId);
@@ -71,19 +66,13 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         _burn(tokenId);
     }
 
-    function setTags(uint256 tokenId, string[] memory tags) public override onlyOwnerOf(tokenId) {
-        _tags[tokenId] = tags;
-
-        emit SetTags(tags, tokenId);
-    }
-
     function createSale(
         uint256 tokenId,
         address strategy,
         bytes calldata initData
     ) external override onlyOwnerOf(tokenId) returns (address sale) {
         require(openSaleOf[tokenId] == address(0), "SHOYU: SALE_EXISTS");
-        require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
+        require(INFTFactory(factory).isStrategyWhitelisted721(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
         sale = _createProxy(strategy, initData);
         _approve(sale, tokenId);

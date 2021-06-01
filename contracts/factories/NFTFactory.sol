@@ -14,7 +14,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     address public override feeTo;
     uint8 public override fee; // out of 1000
-    mapping(address => bool) public override isStrategyWhitelisted;
+    mapping(address => bool) public override isStrategyWhitelisted721;
 
     constructor(address _feeTo, uint8 _fee) {
         NFT721 nft721 = new NFT721();
@@ -35,9 +35,9 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         fee = _fee;
     }
 
-    function setStrategyWhitelisted(address sale, bool whitelisted) external override onlyOwner {
+    function setStrategyWhitelisted721(address sale, bool whitelisted) external override onlyOwner {
         require(sale != address(0), "SHOYU: INVALID_SALE");
-        isStrategyWhitelisted[sale] = whitelisted;
+        isStrategyWhitelisted721[sale] = whitelisted;
     }
 
     function createNFT721(string memory name, string memory symbol) external override returns (address proxy) {
