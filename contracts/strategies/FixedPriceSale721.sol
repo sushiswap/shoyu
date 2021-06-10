@@ -27,7 +27,7 @@ contract FixedPriceSale is BaseStrategy721, ReentrancyGuard {
         return price;
     }
 
-    function cancel() external override onlyOwner whenSaleOpen {
+    function cancel() external override whenSaleOpen {
         _cancel();
 
         emit Cancel();

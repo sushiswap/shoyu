@@ -21,11 +21,6 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
     address public override currency;
     uint256 public override endBlock;
 
-    modifier onlyOwner {
-        require(msg.sender == owner(), "SHOYU: FORBIDDEN");
-        _;
-    }
-
     modifier whenSaleOpen {
         require(INFT721(token).openSaleOf(tokenId) == address(this) && status == Status.OPEN, "SHOYU: SALE_NOT_OPEN");
         _;

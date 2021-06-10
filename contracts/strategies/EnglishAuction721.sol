@@ -38,7 +38,7 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
         return _lastBidPrice == 0 ? startPrice : _lastBidPrice;
     }
 
-    function cancel() external override onlyOwner whenSaleOpen {
+    function cancel() external override whenSaleOpen {
         _cancel();
 
         address _lastBidder = lastBidder;

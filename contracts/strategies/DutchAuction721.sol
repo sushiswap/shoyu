@@ -46,7 +46,7 @@ contract DutchAuction is BaseStrategy721, ReentrancyGuard {
         emit Buy(msg.sender, price);
     }
 
-    function cancel() external override onlyOwner whenSaleOpen {
+    function cancel() external override whenSaleOpen {
         _cancel();
 
         emit Cancel();
