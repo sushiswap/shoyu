@@ -13,6 +13,8 @@ interface IStrategy {
 
     function tokenId() external view returns (uint256);
 
+    function amount() external view returns (uint256);
+
     function recipient() external view returns (address);
 
     function currency() external view returns (address);
@@ -20,6 +22,8 @@ interface IStrategy {
     function endBlock() external view returns (uint256);
 
     function currentPrice() external view returns (uint256);
+
+    function setOwner(address _owner) external;
 
     function cancel() external;
 }

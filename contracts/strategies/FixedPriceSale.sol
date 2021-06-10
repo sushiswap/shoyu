@@ -3,9 +3,9 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy721.sol";
+import "./BaseStrategy.sol";
 
-contract FixedPriceSale is BaseStrategy721, ReentrancyGuard {
+contract FixedPriceSale is BaseStrategy, ReentrancyGuard {
     event Cancel();
     event Buy(address indexed buyer);
 
@@ -13,12 +13,13 @@ contract FixedPriceSale is BaseStrategy721, ReentrancyGuard {
 
     function initialize(
         uint256 _tokenId,
+        uint256 _amount,
         address _recipient,
         address _currency,
         uint256 _endBlock,
         uint256 _price
     ) external initializer {
-        __BaseStrategy_init(_tokenId, _recipient, _currency, _endBlock);
+        __BaseStrategy_init(_tokenId, _amount, _recipient, _currency, _endBlock);
 
         price = _price;
     }

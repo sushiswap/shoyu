@@ -9,13 +9,13 @@ import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
 import "./base/Taggable.sol";
-import "./interfaces/INFT1155.sol";
+import "./interfaces/INFT.sol";
 
-contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT1155 {
+contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT {
     using Strings for uint256;
 
     address public override factory;
-    mapping(address => mapping(uint256 => mapping(address => bool))) public isOpenSale;
+    mapping(address => bool) public isOpenSale;
     mapping(address => mapping(uint256 => uint256)) public amountForSale;
 
     event Mint(address to, uint256 indexed tokenId, uint256 amount);
@@ -58,7 +58,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256 amount,
         bytes memory data,
         string[] memory tags
-    ) external override onlyOwner {
+    ) external onlyOwner {
         _mint(to, tokenId, amount, data);
         setTags(tokenId, tags);
 
@@ -71,7 +71,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256[] calldata amounts,
         bytes memory data,
         string[][] memory tags
-    ) external override onlyOwner {
+    ) external onlyOwner {
         _mintBatch(to, tokenIds, amounts, data);
         for (uint256 i; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -85,7 +85,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         address account,
         uint256 tokenId,
         uint256 amount
-    ) external override {
+    ) external {
         _burn(account, tokenId, amount);
     }
 
@@ -93,8 +93,17 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         address account,
         uint256[] calldata tokenIds,
         uint256[] calldata amounts
-    ) external override {
+    ) external {
         _burnBatch(account, tokenIds, amounts);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 amount
+    ) external override {
+        safeTransferFrom(from, to, tokenId, amount, new bytes(0));
     }
 
     function createSale(
@@ -102,28 +111,29 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256 amount,
         address strategy,
         bytes calldata initData
-    ) external override returns (address sale) {
+    ) external returns (address sale) {
         require(
             balanceOf(msg.sender, tokenId) >= amountForSale[msg.sender][tokenId] + amount,
             "SHOYU: INSUFFICIENT_BALANCE"
         );
-        require(INFTFactory(factory).isStrategyWhitelisted1155(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
+        require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
         sale = _createProxy(strategy, initData);
+        IStrategy(sale).setOwner(msg.sender);
         setApprovalForAll(sale, true);
-        isOpenSale[msg.sender][tokenId][sale] = true;
+        isOpenSale[sale] = true;
         amountForSale[msg.sender][tokenId] += amount;
 
         emit CreateSale(sale, msg.sender, tokenId, amount, strategy, initData);
     }
 
-    function closeSale(address account, uint256 tokenId) public override {
-        mapping(address => bool) storage sales = isOpenSale[account][tokenId];
-        address sale = msg.sender;
-        require(sales[sale], "SHOYU: FORBIDDEN");
-        sales[sale] = false;
-        // TODO: amountForSale[account][tokenId] -= amount;
+    function closeSale(uint256 tokenId, uint256 amount) public override {
+        require(isOpenSale[msg.sender], "SHOYU: FORBIDDEN");
+        isOpenSale[msg.sender] = false;
 
-        emit CloseSale(sale, account, tokenId);
+        address account = IStrategy(msg.sender).owner();
+        amountForSale[account][tokenId] -= amount;
+
+        emit CloseSale(msg.sender, account, tokenId);
     }
 }

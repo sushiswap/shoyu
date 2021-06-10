@@ -3,9 +3,9 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy721.sol";
+import "./BaseStrategy.sol";
 
-contract DutchAuction is BaseStrategy721, ReentrancyGuard {
+contract DutchAuction is BaseStrategy, ReentrancyGuard {
     event Cancel();
     event Buy(address indexed buyer, uint256 price);
 
@@ -15,6 +15,7 @@ contract DutchAuction is BaseStrategy721, ReentrancyGuard {
 
     function initialize(
         uint256 _tokenId,
+        uint256 _amount,
         address _recipient,
         address _currency,
         uint256 _startBlock,
@@ -22,7 +23,7 @@ contract DutchAuction is BaseStrategy721, ReentrancyGuard {
         uint256 _startPrice,
         uint256 _endPrice
     ) external initializer {
-        __BaseStrategy_init(_tokenId, _recipient, _currency, _endBlock);
+        __BaseStrategy_init(_tokenId, _amount, _recipient, _currency, _endBlock);
 
         require(_startBlock >= block.number, "SHOYU: INVALID_START_BLOCK");
         require(_startBlock < _endBlock, "SHOYU: INVALID_END_BLOCK");

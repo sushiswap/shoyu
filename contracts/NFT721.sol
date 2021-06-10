@@ -9,9 +9,9 @@ import "./interfaces/INFTFactory.sol";
 import "./interfaces/IStrategy.sol";
 import "./factories/ProxyFactory.sol";
 import "./base/Taggable.sol";
-import "./interfaces/INFT721.sol";
+import "./interfaces/INFT.sol";
 
-contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT721 {
+contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT {
     using Strings for uint256;
 
     address public override factory;
@@ -53,33 +53,43 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         uint256 tokenId,
         bytes calldata data,
         string[] calldata tags
-    ) external override onlyOwner {
+    ) external onlyOwner {
         _safeMint(to, tokenId, data);
         setTags(tokenId, tags);
 
         emit Mint(to, tokenId);
     }
 
-    function burn(uint256 tokenId) external override onlyOwnerOf(tokenId) {
+    function burn(uint256 tokenId) external onlyOwnerOf(tokenId) {
         _burn(tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256
+    ) external override {
+        safeTransferFrom(from, to, tokenId);
     }
 
     function createSale(
         uint256 tokenId,
         address strategy,
         bytes calldata initData
-    ) external override onlyOwnerOf(tokenId) returns (address sale) {
+    ) external onlyOwnerOf(tokenId) returns (address sale) {
         require(openSaleOf[tokenId] == address(0), "SHOYU: SALE_EXISTS");
-        require(INFTFactory(factory).isStrategyWhitelisted721(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
+        require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
         sale = _createProxy(strategy, initData);
+        IStrategy(sale).setOwner(msg.sender);
         _approve(sale, tokenId);
         openSaleOf[tokenId] = sale;
 
         emit CreateSale(sale, tokenId, strategy, initData);
     }
 
-    function closeSale(uint256 tokenId) public override {
+    function closeSale(uint256 tokenId, uint256) public override {
         address sale = openSaleOf[tokenId];
         require(sale == msg.sender, "SHOYU: FORBIDDEN");
         openSaleOf[tokenId] = address(0);

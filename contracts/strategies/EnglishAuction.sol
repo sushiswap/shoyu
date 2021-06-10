@@ -3,10 +3,10 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy721.sol";
+import "./BaseStrategy.sol";
 import "../libraries/TokenHelper.sol";
 
-contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
+contract EnglishAuction is BaseStrategy, ReentrancyGuard {
     using TokenHelper for address;
 
     event Cancel(address indexed lastBidder, uint256 lastBidPrice);
@@ -20,13 +20,14 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
 
     function initialize(
         uint256 _tokenId,
+        uint256 _amount,
         address _recipient,
         address _currency,
         uint256 _endBlock,
         uint256 _startPrice,
         uint8 _priceGrowth
     ) external initializer {
-        __BaseStrategy_init(_tokenId, _recipient, _currency, _endBlock);
+        __BaseStrategy_init(_tokenId, _amount, _recipient, _currency, _endBlock);
 
         startPrice = _startPrice;
         priceGrowth = _priceGrowth;
@@ -83,23 +84,22 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
 
     function claim() external nonReentrant whenSaleOpen {
         require(block.number > endBlock, "SHOYU: ONGOING_SALE");
-        address _token = token;
-        uint256 _tokenId = tokenId;
-        address factory = INFT721(_token).factory();
+        (address _token, uint256 _tokenId, uint256 _amount) = (token, tokenId, amount);
+        address factory = INFT(_token).factory();
 
         uint256 _lastBidPrice = lastBidPrice;
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_lastBidPrice * INFTFactory(factory).fee()) / 1000;
 
         status = Status.FINISHED;
-        INFT721(token).closeSale(_tokenId);
+        INFT(token).closeSale(_tokenId, _amount);
 
         address _currency = currency;
         _currency.safeTransfer(feeTo, feeAmount);
         _currency.safeTransfer(recipient, _lastBidPrice - feeAmount);
 
         address _lastBidder = lastBidder;
-        INFT721(_token).safeTransferFrom(owner, _lastBidder, _tokenId);
+        INFT(_token).safeTransferFrom(owner, _lastBidder, _tokenId, _amount);
 
         emit Claim(_lastBidder, _lastBidPrice);
     }
