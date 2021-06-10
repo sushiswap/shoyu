@@ -45,9 +45,8 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         address,
         uint256 tokenId
     ) internal override {
-        if (openSaleOf[tokenId] != address(0)) {
-            closeSale(tokenId);
-        }
+        address sale = openSaleOf[tokenId];
+        require(sale == address(0) || sale == msg.sender, "SHOYU: OPEN_SALE");
     }
 
     function mint(
