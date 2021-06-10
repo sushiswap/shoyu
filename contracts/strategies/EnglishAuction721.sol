@@ -7,7 +7,6 @@ import "./BaseStrategy721.sol";
 import "../libraries/TokenHelper.sol";
 
 contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
-    using SafeERC20 for IERC20;
     using TokenHelper for address;
 
     event Cancel(address indexed lastBidder, uint256 lastBidPrice);

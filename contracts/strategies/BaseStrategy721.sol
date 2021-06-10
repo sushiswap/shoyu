@@ -4,14 +4,12 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/INFT721.sol";
 import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../libraries/TokenHelper.sol";
 
 abstract contract BaseStrategy721 is Initializable, IStrategy {
-    using SafeERC20 for IERC20;
     using TokenHelper for address;
 
     Status public override status;
