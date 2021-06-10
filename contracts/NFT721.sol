@@ -83,7 +83,6 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
 
     function closeSale(uint256 tokenId) public override onlyOwnerOf(tokenId) {
         address sale = openSaleOf[tokenId];
-        require(sale == msg.sender, "SHOYU: FORBIDDEN");
         IStrategy(sale).cancel();
         openSaleOf[tokenId] = address(0);
 
