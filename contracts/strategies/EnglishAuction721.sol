@@ -92,16 +92,15 @@ contract EnglishAuction is BaseStrategy721, ReentrancyGuard {
         address feeTo = INFTFactory(factory).feeTo();
         uint256 feeAmount = (_lastBidPrice * INFTFactory(factory).fee()) / 1000;
 
-        status = Status.CANCELLED;
+        status = Status.FINISHED;
         INFT721(token).closeSale(_tokenId);
 
         address _currency = currency;
         _currency.safeTransfer(feeTo, feeAmount);
         _currency.safeTransfer(recipient, _lastBidPrice - feeAmount);
 
-        address _owner = INFT721(_token).ownerOf(_tokenId);
         address _lastBidder = lastBidder;
-        INFT721(_token).safeTransferFrom(_owner, _lastBidder, _tokenId);
+        INFT721(_token).safeTransferFrom(owner, _lastBidder, _tokenId);
 
         emit Claim(_lastBidder, _lastBidPrice);
     }

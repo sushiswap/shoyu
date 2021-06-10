@@ -16,13 +16,14 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
 
     Status public override status;
     address public override token;
+    address public override owner;
     uint256 public override tokenId;
     address public override recipient;
     address public override currency;
     uint256 public override endBlock;
 
     modifier whenSaleOpen {
-        require(INFT721(token).openSaleOf(tokenId) == address(this) && status == Status.OPEN, "SHOYU: SALE_NOT_OPEN");
+        require(status == Status.OPEN, "SHOYU: SALE_NOT_OPEN");
         _;
     }
 
@@ -36,20 +37,17 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
         require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
 
         token = msg.sender;
+        owner = INFT721(msg.sender).ownerOf(_tokenId);
         tokenId = _tokenId;
         recipient = _recipient;
         currency = _currency;
         endBlock = _endBlock;
     }
 
-    function owner() public view override returns (address) {
-        return INFT721(token).ownerOf(tokenId);
-    }
-
     function currentPrice() public view virtual override returns (uint256);
 
     function _cancel() internal {
-        require(msg.sender == token, "SHOYU: FORBIDDEN");
+        require(msg.sender == owner, "SHOYU: FORBIDDEN");
         status = Status.CANCELLED;
     }
 
@@ -63,8 +61,7 @@ abstract contract BaseStrategy721 is Initializable, IStrategy {
         status = Status.FINISHED;
         INFT721(_token).closeSale(_tokenId);
 
-        address _owner = INFT721(_token).ownerOf(_tokenId);
-        INFT721(_token).safeTransferFrom(_owner, msg.sender, _tokenId);
+        INFT721(_token).safeTransferFrom(owner, msg.sender, _tokenId);
 
         address _currency = currency;
         address factory = INFT721(token).factory();

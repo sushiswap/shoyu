@@ -15,7 +15,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
     using Strings for uint256;
 
     address public override factory;
-    mapping(uint256 => address) public override openSaleOf;
+    mapping(uint256 => address) public openSaleOf;
 
     event Mint(address to, uint256 indexed tokenId);
     event CreateSale(address sale, uint256 indexed tokenId, address indexed strategy, bytes initData);
@@ -45,8 +45,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         address,
         uint256 tokenId
     ) internal override {
-        address sale = openSaleOf[tokenId];
-        require(sale == address(0) || sale == msg.sender, "SHOYU: OPEN_SALE");
+        require(openSaleOf[tokenId] == address(0), "SHOYU: OPEN_SALE");
     }
 
     function mint(
@@ -80,9 +79,9 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         emit CreateSale(sale, tokenId, strategy, initData);
     }
 
-    function closeSale(uint256 tokenId) public override onlyOwnerOf(tokenId) {
+    function closeSale(uint256 tokenId) public override {
         address sale = openSaleOf[tokenId];
-        IStrategy(sale).cancel();
+        require(sale == msg.sender, "SHOYU: FORBIDDEN");
         openSaleOf[tokenId] = address(0);
 
         emit CloseSale(sale, tokenId);

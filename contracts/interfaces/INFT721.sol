@@ -8,8 +8,6 @@ import "./ITaggable.sol";
 interface INFT721 is IERC721, ITaggable {
     function factory() external view returns (address);
 
-    function openSaleOf(uint256 tokenId) external view returns (address);
-
     function mint(
         address to,
         uint256 tokenId,
