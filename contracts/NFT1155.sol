@@ -25,7 +25,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256 indexed tokenId,
         uint256 amount,
         address indexed strategy,
-        bytes initData
+        bytes config
     );
     event CloseSale(address sale, address indexed account, uint256 indexed tokenId);
 
@@ -110,7 +110,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256 tokenId,
         uint256 amount,
         address strategy,
-        bytes calldata initData
+        bytes calldata config
     ) external returns (address sale) {
         require(
             balanceOf(msg.sender, tokenId) >= amountForSale[msg.sender][tokenId] + amount,
@@ -118,13 +118,13 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         );
         require(INFTFactory(factory).isStrategyWhitelisted(strategy), "SHOYU: STRATEGY_NOT_ALLOWED");
 
-        sale = _createProxy(strategy, initData);
-        IStrategy(sale).setOwner(msg.sender);
+        sale = _createProxy(strategy, new bytes(0));
+        IStrategy(sale).initialize(msg.sender, tokenId, amount, config);
         setApprovalForAll(sale, true);
         isOpenSale[sale] = true;
         amountForSale[msg.sender][tokenId] += amount;
 
-        emit CreateSale(sale, msg.sender, tokenId, amount, strategy, initData);
+        emit CreateSale(sale, msg.sender, tokenId, amount, strategy, config);
     }
 
     function closeSale(uint256 tokenId, uint256 amount) public override {

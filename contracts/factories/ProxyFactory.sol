@@ -14,8 +14,10 @@ contract ProxyFactory {
             proxy := create(0, clone, 0x37)
         }
 
-        (bool success, ) = proxy.call(initData);
-        require(success);
+        if (initData.length > 0) {
+            (bool success, ) = proxy.call(initData);
+            require(success);
+        }
     }
 
     function _isProxy(address target, address query) internal view returns (bool result) {

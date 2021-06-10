@@ -27,29 +27,17 @@ abstract contract BaseStrategy is Initializable, IStrategy {
     }
 
     function __BaseStrategy_init(
+        address _owner,
         uint256 _tokenId,
-        uint256 _amount,
-        address _recipient,
-        address _currency,
-        uint256 _endBlock
+        uint256 _amount
     ) internal initializer {
-        require(_recipient != address(0), "SHOYU: INVALID_RECIPIENT");
-        require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
-
         token = msg.sender;
+        owner = _owner;
         tokenId = _tokenId;
         amount = _amount;
-        recipient = _recipient;
-        currency = _currency;
-        endBlock = _endBlock;
     }
 
     function currentPrice() public view virtual override returns (uint256);
-
-    function setOwner(address _owner) external override {
-        require(owner == address(0), "SHOYU: OWNER_EXISTS");
-        owner = _owner;
-    }
 
     function _cancel() internal {
         require(msg.sender == owner, "SHOYU: FORBIDDEN");

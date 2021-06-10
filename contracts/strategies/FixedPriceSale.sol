@@ -12,15 +12,20 @@ contract FixedPriceSale is BaseStrategy, ReentrancyGuard {
     uint256 public price;
 
     function initialize(
+        address _owner,
         uint256 _tokenId,
         uint256 _amount,
-        address _recipient,
-        address _currency,
-        uint256 _endBlock,
-        uint256 _price
-    ) external initializer {
-        __BaseStrategy_init(_tokenId, _amount, _recipient, _currency, _endBlock);
+        bytes calldata _config
+    ) external override initializer {
+        __BaseStrategy_init(_owner, _tokenId, _amount);
+        (address _recipient, address _currency, uint256 _endBlock, uint256 _price) =
+            abi.decode(_config, (address, address, uint256, uint256));
+        require(_recipient != address(0), "SHOYU: INVALID_RECIPIENT");
+        require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
 
+        recipient = _recipient;
+        currency = _currency;
+        endBlock = _endBlock;
         price = _price;
     }
 

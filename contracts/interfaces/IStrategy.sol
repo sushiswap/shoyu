@@ -23,7 +23,12 @@ interface IStrategy {
 
     function currentPrice() external view returns (uint256);
 
-    function setOwner(address _owner) external;
+    function initialize(
+        address _owner,
+        uint256 _tokenId,
+        uint256 _amount,
+        bytes calldata _config
+    ) external;
 
     function cancel() external;
 }
