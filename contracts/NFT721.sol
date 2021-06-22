@@ -14,6 +14,7 @@ import "./interfaces/INFT.sol";
 contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Taggable, INFT {
     using Strings for uint256;
 
+    string public baseURI;
     address public override factory;
     mapping(uint256 => address) public openSaleOf;
 
@@ -27,17 +28,19 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
     }
 
     function initialize(
+        string memory __baseURI,
         string memory _name,
         string memory _symbol,
         address _owner
     ) external initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
+        baseURI = __baseURI;
         factory = msg.sender;
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return string(abi.encodePacked("https://erc721meta.sushi.com/", uint256(uint160(address(this))).toHexString()));
+        return baseURI;
     }
 
     function _beforeTokenTransfer(

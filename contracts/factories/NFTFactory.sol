@@ -21,11 +21,11 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     constructor(address _feeTo, uint8 _fee) {
         NFT721 nft721 = new NFT721();
-        nft721.initialize("", "", address(0));
+        nft721.initialize("", "", "", address(0));
         target721 = address(nft721);
 
         NFT1155 nft1155 = new NFT1155();
-        nft1155.initialize(address(0));
+        nft1155.initialize("", address(0));
         target1155 = address(nft1155);
 
         setFeeTo(_feeTo);

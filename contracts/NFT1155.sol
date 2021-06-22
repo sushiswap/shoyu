@@ -29,8 +29,8 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
     );
     event CloseSale(address sale, address indexed account, uint256 indexed tokenId);
 
-    function initialize(address _owner) external initializer {
-        __ERC1155_init("https://erc1155meta.sushi.com/{id}.json");
+    function initialize(string memory _uri, address _owner) external initializer {
+        __ERC1155_init(_uri);
         __Ownable_init(_owner);
         factory = msg.sender;
     }
