@@ -7,6 +7,9 @@ import "./base/DividendPayingERC20.sol";
 import "./base/OwnableInitializable.sol";
 
 contract SocialToken is DividendPayingERC20, OwnableInitializable {
+    event Mint(address indexed account, uint256 indexed value);
+    event Burn(address indexed account, uint256 indexed value, bytes32 data);
+
     function initialize(
         string memory _name,
         string memory _symbol,
@@ -19,5 +22,11 @@ contract SocialToken is DividendPayingERC20, OwnableInitializable {
 
     function mint(address account, uint256 value) external onlyOwner {
         _mint(account, value);
+        emit Mint(account, value);
+    }
+
+    function burn(uint256 value, bytes32 data) external {
+        _burn(msg.sender, value);
+        emit Burn(msg.sender, value, data);
     }
 }
