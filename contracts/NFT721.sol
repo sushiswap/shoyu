@@ -51,6 +51,10 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         require(openSaleOf[tokenId] == address(0), "SHOYU: OPEN_SALE");
     }
 
+    function setTags(uint256 tokenId, string[] memory tags) external onlyOwnerOf(tokenId) {
+        _setTags(tokenId, tags);
+    }
+
     function mint(
         address to,
         uint256 tokenId,
@@ -58,7 +62,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, Tagg
         string[] calldata tags
     ) external onlyOwner {
         _safeMint(to, tokenId, data);
-        setTags(tokenId, tags);
+        _setTags(tokenId, tags);
 
         emit Mint(to, tokenId);
     }

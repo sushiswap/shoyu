@@ -60,7 +60,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         string[] memory tags
     ) external onlyOwner {
         _mint(to, tokenId, amount, data);
-        setTags(tokenId, tags);
+        _setTags(tokenId, tags);
 
         emit Mint(to, tokenId, amount);
     }
@@ -75,7 +75,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         _mintBatch(to, tokenIds, amounts, data);
         for (uint256 i; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            setTags(tokenId, tags[i]);
+            _setTags(tokenId, tags[i]);
 
             emit Mint(to, tokenId, amounts[i]);
         }
@@ -86,7 +86,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256 tokenId,
         uint256 amount
     ) external {
-        _burn(account, tokenId, amount);
+        _burn(msg.sender, tokenId, amount);
     }
 
     function burnBatch(
@@ -94,7 +94,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         uint256[] calldata tokenIds,
         uint256[] calldata amounts
     ) external {
-        _burnBatch(account, tokenIds, amounts);
+        _burnBatch(msg.sender, tokenIds, amounts);
     }
 
     function safeTransferFrom(

@@ -2,20 +2,16 @@
 
 pragma solidity =0.8.3;
 
-import "../interfaces/ITaggable.sol";
+abstract contract Taggable {
+    event Tag(string indexed tag, uint256 indexed tokenId, uint256 indexed tagNonce);
 
-contract Taggable is ITaggable {
-    event SetTags(string[] tags, uint256 indexed tokenId);
+    mapping(uint256 => uint256) public tagNonces;
 
-    mapping(uint256 => string[]) private _tags;
+    function _setTags(uint256 tokenId, string[] memory tags) internal {
+        uint256 nonce = tagNonces[tokenId]++;
 
-    function tagsOf(uint256 tokenId) public view override returns (string[] memory) {
-        return _tags[tokenId];
-    }
-
-    function setTags(uint256 tokenId, string[] memory tags) public override {
-        _tags[tokenId] = tags;
-
-        emit SetTags(tags, tokenId);
+        for (uint256 i; i < tags.length; i++) {
+            emit Tag(tags[i], tokenId, nonce);
+        }
     }
 }
