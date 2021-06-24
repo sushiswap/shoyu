@@ -104,10 +104,7 @@ contract ERC1155Initializable is Initializable, ERC165, IERC1155, IERC1155Metada
      * @dev See {IERC1155-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        require(msg.sender != operator, "SHOYU: NOT_ALLOWED");
-
-        _operatorApprovals[msg.sender][operator] = approved;
-        emit ApprovalForAll(msg.sender, operator, approved);
+        _setApprovalForAll(msg.sender, operator, approved);
     }
 
     /**
@@ -198,6 +195,17 @@ contract ERC1155Initializable is Initializable, ERC165, IERC1155, IERC1155Metada
      */
     function _setURI(string memory newuri) internal virtual {
         _uri = newuri;
+    }
+
+    function _setApprovalForAll(
+        address account,
+        address operator,
+        bool approved
+    ) internal {
+        require(account != operator, "SHOYU: NOT_ALLOWED");
+
+        _operatorApprovals[account][operator] = approved;
+        emit ApprovalForAll(account, operator, approved);
     }
 
     /**

@@ -136,10 +136,7 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        require(operator != msg.sender, "ERC721: approve to caller");
-
-        _operatorApprovals[msg.sender][operator] = approved;
-        emit ApprovalForAll(msg.sender, operator, approved);
+        _setApprovalForAll(msg.sender, operator, approved);
     }
 
     /**
@@ -238,6 +235,17 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
         require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ERC721Initializable.ownerOf(tokenId);
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
+    }
+
+    function _setApprovalForAll(
+        address owner,
+        address operator,
+        bool approved
+    ) internal {
+        require(operator != owner, "ERC721: approve to caller");
+
+        _operatorApprovals[owner][operator] = approved;
+        emit ApprovalForAll(owner, operator, approved);
     }
 
     /**
