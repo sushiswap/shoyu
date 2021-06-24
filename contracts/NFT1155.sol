@@ -101,19 +101,11 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, Ta
         }
     }
 
-    function burn(
-        address account,
-        uint256 tokenId,
-        uint256 amount
-    ) external {
+    function burn(uint256 tokenId, uint256 amount) external {
         _burn(msg.sender, tokenId, amount);
     }
 
-    function burnBatch(
-        address account,
-        uint256[] calldata tokenIds,
-        uint256[] calldata amounts
-    ) external {
+    function burnBatch(uint256[] calldata tokenIds, uint256[] calldata amounts) external {
         _burnBatch(msg.sender, tokenIds, amounts);
     }
 
