@@ -14,6 +14,8 @@ import "../NFT1155.sol";
 abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     using SafeERC20 for IERC20;
 
+    // keccak256("Order(address maker,address taker,address nft,address strategy,uint256 tokenId,uint256 amount,address currency,address recipient,bytes params)")
+    bytes32 constant ORDER_TYPEHASH = 0x920c8fe8f90bae4eb906a3bcfaf17c9ed94da7a76ed40a8262f1db2713ec8ea0;
     uint8 public constant MAX_PROTOCOL_FEE = 100;
     uint8 public constant MAX_ROYALTY_FEE = 250;
 
@@ -113,8 +115,8 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     function _hashOrder(Order memory order) internal pure returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
+                abi.encode(
+                    ORDER_TYPEHASH,
                     order.maker,
                     order.taker,
                     order.nft,
@@ -123,7 +125,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
                     order.amount,
                     order.currency,
                     order.recipient,
-                    order.params
+                    keccak256(order.params)
                 )
             );
     }
