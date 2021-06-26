@@ -2,62 +2,22 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./BaseStrategy.sol";
+import "../interfaces/IStrategy.sol";
 
-contract DutchAuction is BaseStrategy, ReentrancyGuard {
-    event Cancel();
-    event Buy(address indexed buyer, uint256 price);
-
-    uint256 public startBlock;
-    uint256 public startPrice;
-    uint256 public endPrice;
-
-    function initialize(
-        address _owner,
-        uint256 _tokenId,
-        uint256 _amount,
-        bytes calldata _config
-    ) external override initializer {
-        __BaseStrategy_init(_owner, _tokenId, _amount);
-        (
-            address _recipient,
-            address _currency,
-            uint256 _startBlock,
-            uint256 _endBlock,
-            uint256 _startPrice,
-            uint256 _endPrice
-        ) = abi.decode(_config, (address, address, uint256, uint256, uint256, uint256));
-        require(_recipient != address(0), "SHOYU: INVALID_RECIPIENT");
-        require(_endBlock > block.number, "SHOYU: INVALID_END_BLOCK");
-        require(_startBlock >= block.number, "SHOYU: INVALID_START_BLOCK");
-        require(_startBlock < _endBlock, "SHOYU: INVALID_END_BLOCK");
-        require(_startPrice > _endPrice, "SHOYU: INVALID_END_PRICE");
-
-        recipient = _recipient;
-        currency = _currency;
-        endBlock = _endBlock;
-        startBlock = _startBlock;
-        startPrice = _startPrice;
-        endPrice = _endPrice;
+contract DutchAuction is IStrategy {
+    function validateParams(bytes calldata params) external pure override {
+        (uint256 startPrice, uint256 endPrice, uint256 startBlock, uint256 endBlock) =
+            abi.decode(params, (uint256, uint256, uint256, uint256));
+        require(startPrice > endPrice, "SHOYU: PRICE_MUST_DECREASE");
+        require(startBlock < endBlock, "SHOYU: BLOCK_MUST_INCREASE");
     }
 
-    function currentPrice() public view override returns (uint256) {
-        uint256 _startBlock = startBlock;
-        uint256 _startPrice = startPrice;
-        uint256 tickPerBlock = (_startPrice - endPrice) / (endBlock - _startBlock);
-        return _startPrice - ((block.number - _startBlock) * tickPerBlock);
-    }
-
-    function buy(uint256 price) external payable nonReentrant whenSaleOpen {
-        _buy(price);
-
-        emit Buy(msg.sender, price);
-    }
-
-    function cancel() external override whenSaleOpen {
-        _cancel();
-
-        emit Cancel();
+    function validatePurchase(bytes memory params, uint256 bidPrice) external view override {
+        (uint256 startPrice, uint256 endPrice, uint256 startBlock, uint256 endBlock) =
+            abi.decode(params, (uint256, uint256, uint256, uint256));
+        uint256 tickPerBlock = (startPrice - endPrice) / (endBlock - startBlock);
+        uint256 currentPrice = startPrice - ((block.number - startBlock) * tickPerBlock);
+        require(endBlock >= block.number, "SHOYU: EXPIRED");
+        require(bidPrice >= currentPrice, "SHOYU: BID_PRICE_TOO_LOW");
     }
 }
