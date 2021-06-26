@@ -75,7 +75,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     }
 
     function bid721(Order memory ask, Order memory bid) external override nonReentrant {
-        _checkPreconditions(ask, bid);
+        bytes32 hash = _checkPreconditions(ask, bid);
 
         uint256 bidPrice = abi.decode(bid.params, (uint256));
         IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
@@ -83,11 +83,11 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         IERC721(ask.nft).safeTransferFrom(ask.maker, bid.maker, ask.tokenId);
         address recipient = _transferFeesAndFunds(ask, bid.maker, bidPrice);
 
-        emit Bid(ask.maker, bid.maker, ask.nft, ask.tokenId, 1, ask.currency, recipient, bidPrice);
+        emit Bid(hash, ask.maker, bid.maker, ask.nft, ask.tokenId, 1, ask.currency, recipient, bidPrice);
     }
 
     function bid1155(Order memory ask, Order memory bid) external override nonReentrant {
-        _checkPreconditions(ask, bid);
+        bytes32 hash = _checkPreconditions(ask, bid);
 
         uint256 bidPrice = abi.decode(bid.params, (uint256));
         IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
@@ -96,11 +96,11 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         uint256 bidPriceSum = bidPrice * bid.amount;
         address recipient = _transferFeesAndFunds(ask, bid.maker, bidPriceSum);
 
-        emit Bid(ask.maker, bid.maker, ask.nft, ask.tokenId, bid.amount, ask.currency, recipient, bidPriceSum);
+        emit Bid(hash, ask.maker, bid.maker, ask.nft, ask.tokenId, bid.amount, ask.currency, recipient, bidPriceSum);
     }
 
-    function _checkPreconditions(Order memory ask, Order memory bid) internal {
-        bytes32 hash = _hashOrder(ask);
+    function _checkPreconditions(Order memory ask, Order memory bid) internal returns (bytes32 hash) {
+        hash = _hashOrder(ask);
         require(!isCancelledOrFinished[hash], "SHOYU: CANCELLED_OR_FINISHED");
         isCancelledOrFinished[hash] = true;
 
@@ -116,12 +116,13 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
                 abi.encodePacked(
                     "\x19Ethereum Signed Message:\n32",
                     order.maker,
+                    order.taker,
                     order.nft,
                     order.strategy,
                     order.tokenId,
                     order.amount,
-                    order.recipient,
                     order.currency,
+                    order.recipient,
                     order.params
                 )
             );
@@ -129,7 +130,6 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
 
     function _validateOrder(Order memory order) internal view {
         require(order.nft != address(0), "SHOYU: INVALID_NFT");
-        require(order.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(order.amount > 0, "SHOYU: INVALID_AMOUNT");
         require(order.currency != address(0), "SHOYU: INVALID_CURRENCY");
         IStrategy(order.strategy).validateParams(order.params);

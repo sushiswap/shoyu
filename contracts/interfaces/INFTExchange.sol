@@ -20,6 +20,7 @@ interface INFTExchange {
 
     event Cancel(bytes32 indexed hash);
     event Bid(
+        bytes32 indexed hash,
         address maker,
         address taker,
         address indexed nft,

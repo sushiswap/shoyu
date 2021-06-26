@@ -37,7 +37,7 @@ A Dutch auction is a market structure in which the price of something offered is
 - [ ] FirstBidAuction.sol
 - [x] PaymentSplitter.sol
 - [x] PaymentSplitterFactory.sol
-- [x] NFTFactory.sol
+- [x] NFTManager.sol
 - [ ] NFTSalesHelper.sol (token swap for buying)
 - [ ] NFTWrapper.sol
 - [ ] Fractionalized.sol
