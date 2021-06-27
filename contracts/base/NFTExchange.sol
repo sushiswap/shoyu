@@ -82,7 +82,10 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         uint256 bidPrice = abi.decode(bid.params, (uint256));
         IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
 
-        IERC721(ask.nft).safeTransferFrom(ask.maker, bid.maker, ask.tokenId);
+        address to = bid.recipient;
+        if (to == address(0)) to = bid.maker;
+        IERC721(ask.nft).safeTransferFrom(ask.maker, to, ask.tokenId);
+
         address recipient = _transferFeesAndFunds(ask, bid.maker, bidPrice);
 
         emit Bid(hash, ask.maker, bid.maker, ask.nft, ask.tokenId, 1, ask.currency, recipient, bidPrice);
@@ -94,7 +97,10 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         uint256 bidPrice = abi.decode(bid.params, (uint256));
         IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
 
-        IERC1155(ask.nft).safeTransferFrom(ask.maker, bid.maker, ask.tokenId, bid.amount, "");
+        address to = bid.recipient;
+        if (to == address(0)) to = bid.maker;
+        IERC1155(ask.nft).safeTransferFrom(ask.maker, to, ask.tokenId, bid.amount, "");
+
         uint256 bidPriceSum = bidPrice * bid.amount;
         address recipient = _transferFeesAndFunds(ask, bid.maker, bidPriceSum);
 
