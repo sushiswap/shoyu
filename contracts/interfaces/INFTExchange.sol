@@ -2,22 +2,9 @@
 
 pragma solidity >=0.5.0;
 
-interface INFTExchange {
-    struct Order {
-        address maker;
-        address taker;
-        address nft;
-        address strategy;
-        uint256 tokenId;
-        uint256 amount;
-        address currency;
-        address recipient;
-        bytes params;
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-    }
+import "../libraries/Orders.sol";
 
+interface INFTExchange {
     event Cancel(bytes32 indexed hash);
     event Bid(
         bytes32 indexed hash,
@@ -33,8 +20,6 @@ interface INFTExchange {
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function ORDER_TYPEHASH() external view returns (bytes32);
-
     function MAX_PROTOCOL_FEE() external view returns (uint8);
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
@@ -49,7 +34,7 @@ interface INFTExchange {
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
-    function isCancelledOrFinished(bytes32 hash) external view returns (bool);
+    function isCancelledOrFinished(address maker, bytes32 hash) external view returns (bool);
 
     function setProtocolFeeRecipient(address _protocolFeeRecipient) external;
 
@@ -61,9 +46,22 @@ interface INFTExchange {
 
     function setRoyaltyFee(address nft, uint8 royaltyFee) external;
 
-    function cancel(Order memory ask) external;
+    function cancel(bytes32 hash) external;
 
-    function bid721(Order memory ask, Order memory bid) external;
+    function bid721(Orders.Order memory ask, Orders.Order memory bid) external;
 
-    function bid1155(Order memory ask, Order memory bid) external;
+    function bid721(
+        Orders.Order memory ask,
+        address recipient,
+        uint256 bidPrice
+    ) external;
+
+    function bid1155(Orders.Order memory ask, Orders.Order memory bid) external;
+
+    function bid1155(
+        Orders.Order memory ask,
+        uint256 amount,
+        address recipient,
+        uint256 bidPrice
+    ) external;
 }

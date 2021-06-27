@@ -14,11 +14,9 @@ import "../NFT1155.sol";
 
 abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     using SafeERC20 for IERC20;
+    using Orders for Orders.Order;
 
     bytes32 public immutable override DOMAIN_SEPARATOR;
-    // keccak256("Order(address maker,address taker,address nft,address strategy,uint256 tokenId,uint256 amount,address currency,address recipient,bytes params)")
-    bytes32 public constant override ORDER_TYPEHASH =
-        0x920c8fe8f90bae4eb906a3bcfaf17c9ed94da7a76ed40a8262f1db2713ec8ea0;
     uint8 public constant override MAX_PROTOCOL_FEE = 100;
     uint8 public constant override MAX_ROYALTY_FEE = 250;
 
@@ -27,7 +25,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     mapping(address => address) public override royaltyFeeRecipientOf;
     mapping(address => uint8) public override royaltyFeeOf; // out of 1000
     mapping(address => bool) public override isStrategyWhitelisted;
-    mapping(bytes32 => bool) public override isCancelledOrFinished;
+    mapping(address => mapping(bytes32 => bool)) public override isCancelledOrFinished;
 
     constructor(address _protocolFeeRecipient, uint8 _protocolFee) {
         setProtocolFeeRecipient(_protocolFeeRecipient);
@@ -85,76 +83,109 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         royaltyFeeOf[nft] = royaltyFee;
     }
 
-    function cancel(Order memory ask) external override {
-        require(ask.maker == msg.sender, "SHOYU: FORBIDDEN");
-
-        bytes32 hash = _hashOrder(ask);
-        isCancelledOrFinished[hash] = true;
+    function cancel(bytes32 hash) external override {
+        isCancelledOrFinished[msg.sender][hash] = true;
 
         emit Cancel(hash);
     }
 
-    function bid721(Order memory ask, Order memory bid) external override nonReentrant {
-        bytes32 hash = _checkPreconditions(ask, bid);
+    //    function ask(Orders.Order memory order) external {
+    //        require(order.maker == msg.sender, "SHOYU: FORBIDDEN");
+    //        require(order.nft != address(0), "SHOYU: INVALID_NFT");
+    //        require(order.amount > 0, "SHOYU: INVALID_AMOUNT");
+    //        require(order.currency != address(0), "SHOYU: INVALID_CURRENCY");
+    //        IStrategy(order.strategy).validateParams(order.params);
+    //
+    //        bytes32 hash = order.hash();
+    //        ordersAsked[hash] = order;
+    //
+    //        emit Ask(hash);
+    //    }
 
-        uint256 bidPrice = abi.decode(bid.params, (uint256));
-        IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
-
-        address to = bid.recipient;
-        if (to == address(0)) to = bid.maker;
-        IERC721(ask.nft).safeTransferFrom(ask.maker, to, ask.tokenId);
-
-        address recipient = _transferFeesAndFunds(ask, bid.maker, bidPrice);
-
-        emit Bid(hash, ask.maker, bid.maker, ask.nft, ask.tokenId, 1, ask.currency, recipient, bidPrice);
-    }
-
-    function bid1155(Order memory ask, Order memory bid) external override nonReentrant {
-        bytes32 hash = _checkPreconditions(ask, bid);
-
-        uint256 bidPrice = abi.decode(bid.params, (uint256));
-        IStrategy(ask.strategy).validatePurchase(ask.params, bidPrice);
-
-        address to = bid.recipient;
-        if (to == address(0)) to = bid.maker;
-        IERC1155(ask.nft).safeTransferFrom(ask.maker, to, ask.tokenId, bid.amount, "");
-
-        uint256 bidPriceSum = bidPrice * bid.amount;
-        address recipient = _transferFeesAndFunds(ask, bid.maker, bidPriceSum);
-
-        emit Bid(hash, ask.maker, bid.maker, ask.nft, ask.tokenId, bid.amount, ask.currency, recipient, bidPriceSum);
-    }
-
-    function _checkPreconditions(Order memory ask, Order memory bid) internal returns (bytes32 hash) {
-        hash = _hashOrder(ask);
-        require(!isCancelledOrFinished[hash], "SHOYU: CANCELLED_OR_FINISHED");
-        isCancelledOrFinished[hash] = true;
-
-        _validateOrder(ask);
+    function bid721(Orders.Order memory ask, Orders.Order memory bid) external override nonReentrant {
+        bytes32 askHash = _checkPreconditions(ask);
         _matchOrders(ask, bid);
-        _verifyOrder(ask, hash);
-        _verifyOrder(bid, _hashOrder(bid));
+        _verifyOrder(bid, bid.hash());
+
+        uint256 bidPrice = abi.decode(bid.params, (uint256));
+        _bid721(ask, askHash, bid.maker, bid.recipient, bidPrice);
     }
 
-    function _hashOrder(Order memory order) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    ORDER_TYPEHASH,
-                    order.maker,
-                    order.taker,
-                    order.nft,
-                    order.strategy,
-                    order.tokenId,
-                    order.amount,
-                    order.currency,
-                    order.recipient,
-                    keccak256(order.params)
-                )
-            );
+    function bid721(
+        Orders.Order memory order,
+        address recipient,
+        uint256 bidPrice
+    ) external override nonReentrant {
+        bytes32 hash = _checkPreconditions(order);
+
+        _bid721(order, hash, msg.sender, recipient, bidPrice);
     }
 
-    function _validateOrder(Order memory order) internal view {
+    function _bid721(
+        Orders.Order memory order,
+        bytes32 hash,
+        address bidder,
+        address recipient,
+        uint256 bidPrice
+    ) internal {
+        IStrategy(order.strategy).validatePurchase(order.params, bidPrice);
+
+        if (recipient == address(0)) recipient = bidder;
+        IERC721(order.nft).safeTransferFrom(order.maker, recipient, order.tokenId);
+
+        _transferFeesAndFunds(order, bidder, bidPrice);
+
+        emit Bid(hash, order.maker, bidder, order.nft, order.tokenId, 1, order.currency, recipient, bidPrice);
+    }
+
+    function bid1155(Orders.Order memory ask, Orders.Order memory bid) external override nonReentrant {
+        bytes32 askHash = _checkPreconditions(ask);
+        _matchOrders(ask, bid);
+        _verifyOrder(bid, bid.hash());
+
+        uint256 bidPrice = abi.decode(bid.params, (uint256));
+        _bid1155(ask, askHash, bid.maker, bid.amount, bid.recipient, bidPrice);
+    }
+
+    function bid1155(
+        Orders.Order memory order,
+        uint256 amount,
+        address recipient,
+        uint256 bidPrice
+    ) external override nonReentrant {
+        bytes32 hash = _checkPreconditions(order);
+
+        _bid1155(order, hash, msg.sender, amount, recipient, bidPrice);
+    }
+
+    function _bid1155(
+        Orders.Order memory order,
+        bytes32 hash,
+        address bidder,
+        uint256 amount,
+        address recipient,
+        uint256 bidPrice
+    ) internal {
+        IStrategy(order.strategy).validatePurchase(order.params, bidPrice);
+
+        if (recipient == address(0)) recipient = bidder;
+        IERC1155(order.nft).safeTransferFrom(order.maker, recipient, order.tokenId, amount, "");
+
+        _transferFeesAndFunds(order, bidder, amount * bidPrice);
+
+        emit Bid(hash, order.maker, bidder, order.nft, order.tokenId, amount, order.currency, recipient, bidPrice);
+    }
+
+    function _checkPreconditions(Orders.Order memory order) internal returns (bytes32 hash) {
+        hash = order.hash();
+        require(!isCancelledOrFinished[order.maker][hash], "SHOYU: CANCELLED_OR_FINISHED");
+        isCancelledOrFinished[order.maker][hash] = true;
+
+        _validateOrder(order);
+        _verifyOrder(order, hash);
+    }
+
+    function _validateOrder(Orders.Order memory order) internal view {
         require(order.maker != address(0), "SHOYU: INVALID_MAKER");
         require(order.nft != address(0), "SHOYU: INVALID_NFT");
         require(order.amount > 0, "SHOYU: INVALID_AMOUNT");
@@ -162,16 +193,16 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         IStrategy(order.strategy).validateParams(order.params);
     }
 
-    function _matchOrders(Order memory ask, Order memory bid) internal pure {
+    function _matchOrders(Orders.Order memory ask, Orders.Order memory bid) internal pure {
         require(ask.maker == bid.taker, "SHOYU: UNMATCHED_MAKER_TAKER");
         require(ask.nft == bid.nft, "SHOYU: UNMATCHED_NFT");
-        require(ask.strategy == bid.strategy, "SHOYU: UNMATCHED_STRATEGY");
         require(ask.tokenId == bid.tokenId, "SHOYU: UNMATCHED_TOKEN_ID");
         require(ask.amount >= bid.amount, "SHOYU: UNMATCHED_AMOUNT");
+        require(ask.strategy == bid.strategy, "SHOYU: UNMATCHED_STRATEGY");
         require(ask.currency == bid.currency, "SHOYU: UNMATCHED_CURRENCY");
     }
 
-    function _verifyOrder(Order memory order, bytes32 hash) internal view {
+    function _verifyOrder(Orders.Order memory order, bytes32 hash) internal view {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hash));
         if (Address.isContract(order.maker)) {
             require(
@@ -185,10 +216,10 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     }
 
     function _transferFeesAndFunds(
-        Order memory ask,
+        Orders.Order memory ask,
         address bidder,
         uint256 bidPriceSum
-    ) internal returns (address recipient) {
+    ) internal {
         uint256 protocolFeeAmount = (bidPriceSum * protocolFee) / 1000;
         IERC20(ask.currency).safeTransferFrom(bidder, protocolFeeRecipient, protocolFeeAmount);
 
@@ -199,7 +230,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
             IERC20(ask.currency).safeTransferFrom(bidder, royaltyFeeRecipientOf[ask.nft], royaltyFeeAmount);
         }
 
-        recipient = ask.recipient;
+        address recipient = ask.recipient;
         if (recipient == address(0)) recipient = ask.maker;
         IERC20(ask.currency).safeTransferFrom(bidder, recipient, remainder);
     }
