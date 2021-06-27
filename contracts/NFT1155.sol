@@ -3,12 +3,11 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
+
+import "./interfaces/INFT1155.sol";
+import "./interfaces/IERC1271.sol";
 import "./base/ERC1155Initializable.sol";
 import "./base/OwnableInitializable.sol";
-import "./interfaces/INFT1155.sol";
-import "./interfaces/INFTManager.sol";
-import "./interfaces/IStrategy.sol";
-import "./interfaces/IERC1271.sol";
 import "./factories/ProxyFactory.sol";
 
 contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, INFT1155 {
