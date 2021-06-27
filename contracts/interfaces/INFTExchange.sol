@@ -31,6 +31,14 @@ interface INFTExchange {
         uint256 price
     );
 
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
+
+    function ORDER_TYPEHASH() external view returns (bytes32);
+
+    function MAX_PROTOCOL_FEE() external view returns (uint8);
+
+    function MAX_ROYALTY_FEE() external view returns (uint8);
+
     function protocolFeeRecipient() external view returns (address);
 
     function protocolFee() external view returns (uint8);
