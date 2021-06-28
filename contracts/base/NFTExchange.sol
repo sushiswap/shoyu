@@ -97,34 +97,44 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         emit Cancel(hash);
     }
 
-    function bid721(Orders.Ask memory ask, Orders.Bid memory bid) external override nonReentrant {
+    function bid721(Orders.Ask memory ask, Orders.Bid memory bid)
+        external
+        override
+        nonReentrant
+        returns (bool executed)
+    {
         bytes32 askHash = ask.hash();
         require(askHash == bid.askHash, "SHOYU: UNMATCHED_HASH");
 
         _verify(bid.hash(), bid.maker, bid.v, bid.r, bid.s);
 
-        _bid721(ask, askHash, bid.maker, bid.price);
+        return _bid721(ask, askHash, bid.maker, bid.price);
     }
 
-    function bid721(Orders.Ask memory ask, uint256 bidPrice) external override nonReentrant {
-        _bid721(ask, ask.hash(), msg.sender, bidPrice);
+    function bid721(Orders.Ask memory ask, uint256 bidPrice) external override nonReentrant returns (bool executed) {
+        return _bid721(ask, ask.hash(), msg.sender, bidPrice);
     }
 
-    function bid1155(Orders.Ask memory ask, Orders.Bid memory bid) external override nonReentrant {
+    function bid1155(Orders.Ask memory ask, Orders.Bid memory bid)
+        external
+        override
+        nonReentrant
+        returns (bool executed)
+    {
         bytes32 askHash = ask.hash();
         require(askHash == bid.askHash, "SHOYU: UNMATCHED_HASH");
 
         _verify(bid.hash(), bid.maker, bid.v, bid.r, bid.s);
 
-        _bid1155(ask, askHash, bid.maker, bid.amount, bid.price);
+        return _bid1155(ask, askHash, bid.maker, bid.amount, bid.price);
     }
 
     function bid1155(
         Orders.Ask memory ask,
         uint256 bidAmount,
         uint256 bidPrice
-    ) external override nonReentrant {
-        _bid1155(ask, ask.hash(), msg.sender, bidAmount, bidPrice);
+    ) external override nonReentrant returns (bool executed) {
+        return _bid1155(ask, ask.hash(), msg.sender, bidAmount, bidPrice);
     }
 
     function _bid721(
@@ -132,7 +142,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         bytes32 askHash,
         address bidder,
         uint256 bidPrice
-    ) internal {
+    ) internal returns (bool executed) {
         _validate(ask, askHash);
 
         bool expired = ask.deadline < block.number;
@@ -144,11 +154,15 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
             _transferFeesAndFunds(ask.maker, ask.nft, ask.currency, bidder, bidPrice);
 
             emit Execute(askHash, bidder, 1, bidPrice);
+            return true;
         } else if (!expired && IStrategy(ask.strategy).canBid(ask.params, bidPrice, bestBidPrice[askHash])) {
             bestBidder[askHash] = bidder;
             bestBidPrice[askHash] = bidPrice;
 
             emit Bid(askHash, bidder, 1, bidPrice);
+            return false;
+        } else {
+            revert("SHOYU: FAILURE");
         }
     }
 
@@ -156,9 +170,9 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         Orders.Ask memory ask,
         bytes32 askHash,
         address bidder,
-        uint256 amount,
+        uint256 bidAmount,
         uint256 bidPrice
-    ) internal {
+    ) internal returns (bool executed) {
         _validate(ask, askHash);
 
         bool expired = ask.deadline < block.number;
@@ -166,15 +180,19 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         if ((expired && canClaim) || (!expired && IStrategy(ask.strategy).canExecute(ask.params, bidPrice))) {
             isCancelledOrExecuted[askHash] = true;
 
-            IERC1155(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId, amount, "");
+            IERC1155(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId, bidAmount, "");
             _transferFeesAndFunds(ask.maker, ask.nft, ask.currency, bidder, bidPrice);
 
-            emit Execute(askHash, bidder, 1, bidPrice);
+            emit Execute(askHash, bidder, bidAmount, bidPrice);
+            return true;
         } else if (!expired && IStrategy(ask.strategy).canBid(ask.params, bidPrice, bestBidPrice[askHash])) {
             bestBidder[askHash] = bidder;
             bestBidPrice[askHash] = bidPrice;
 
-            emit Bid(askHash, bidder, 1, bidPrice);
+            emit Bid(askHash, bidder, bidAmount, bidPrice);
+            return false;
+        } else {
+            revert("SHOYU: FAILURE");
         }
     }
 

@@ -43,15 +43,15 @@ interface INFTExchange {
 
     function cancel(Orders.Ask memory ask) external;
 
-    function bid721(Orders.Ask memory ask, Orders.Bid memory bid) external;
+    function bid721(Orders.Ask memory ask, Orders.Bid memory bid) external returns (bool executed);
 
-    function bid721(Orders.Ask memory ask, uint256 bidPrice) external;
+    function bid721(Orders.Ask memory ask, uint256 bidPrice) external returns (bool executed);
 
-    function bid1155(Orders.Ask memory ask, Orders.Bid memory bid) external;
+    function bid1155(Orders.Ask memory ask, Orders.Bid memory bid) external returns (bool executed);
 
     function bid1155(
         Orders.Ask memory ask,
         uint256 bidAmount,
         uint256 bidPrice
-    ) external;
+    ) external returns (bool executed);
 }
