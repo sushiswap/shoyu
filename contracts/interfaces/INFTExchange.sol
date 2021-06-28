@@ -6,7 +6,7 @@ import "../libraries/Orders.sol";
 
 interface INFTExchange {
     event Cancel(bytes32 indexed hash);
-    event Purchase(bytes32 indexed hash, address buyer, uint256 amount, uint256 price);
+    event Execute(bytes32 indexed hash, address buyer, uint256 amount, uint256 price);
     event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
@@ -25,7 +25,7 @@ interface INFTExchange {
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
-    function isCancelledOrFinished(address maker, bytes32 hash) external view returns (bool);
+    function isCancelledOrExecuted(bytes32 hash) external view returns (bool);
 
     function bestBidder(bytes32 askHash) external view returns (address);
 
@@ -41,7 +41,7 @@ interface INFTExchange {
 
     function setRoyaltyFee(address nft, uint8 royaltyFee) external;
 
-    function cancel(bytes32 hash) external;
+    function cancel(Orders.Ask memory ask) external;
 
     function bid721(Orders.Ask memory ask, Orders.Bid memory bid) external;
 

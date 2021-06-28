@@ -28,7 +28,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
 
     mapping(address => bool) public override isStrategyWhitelisted;
 
-    mapping(address => mapping(bytes32 => bool)) public override isCancelledOrFinished;
+    mapping(bytes32 => bool) public override isCancelledOrExecuted;
     mapping(bytes32 => address) public override bestBidder;
     mapping(bytes32 => uint256) public override bestBidPrice;
 
@@ -88,8 +88,11 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         royaltyFeeOf[nft] = royaltyFee;
     }
 
-    function cancel(bytes32 hash) external override {
-        isCancelledOrFinished[msg.sender][hash] = true;
+    function cancel(Orders.Ask memory ask) external override {
+        require(ask.maker == msg.sender, "SHOYU: FORBIDDEN");
+
+        bytes32 hash = ask.hash();
+        isCancelledOrExecuted[hash] = true;
 
         emit Cancel(hash);
     }
@@ -134,13 +137,13 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
 
         bool expired = ask.deadline < block.number;
         bool canClaim = bidder == bestBidder[askHash];
-        bool canPurchase = IStrategy(ask.strategy).canPurchase(ask.params, bidPrice);
-        if ((expired && canClaim) || (!expired && canPurchase)) {
-            IERC721(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId);
+        if ((expired && canClaim) || (!expired && IStrategy(ask.strategy).canExecute(ask.params, bidPrice))) {
+            isCancelledOrExecuted[askHash] = true;
 
+            IERC721(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId);
             _transferFeesAndFunds(ask.maker, ask.nft, ask.currency, bidder, bidPrice);
 
-            emit Purchase(askHash, bidder, 1, bidPrice);
+            emit Execute(askHash, bidder, 1, bidPrice);
         } else if (!expired && IStrategy(ask.strategy).canBid(ask.params, bidPrice, bestBidPrice[askHash])) {
             bestBidder[askHash] = bidder;
             bestBidPrice[askHash] = bidPrice;
@@ -160,13 +163,13 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
 
         bool expired = ask.deadline < block.number;
         bool canClaim = bidder == bestBidder[askHash];
-        bool canPurchase = IStrategy(ask.strategy).canPurchase(ask.params, bidPrice);
-        if ((expired && canClaim) || (!expired && canPurchase)) {
-            IERC1155(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId, amount, "");
+        if ((expired && canClaim) || (!expired && IStrategy(ask.strategy).canExecute(ask.params, bidPrice))) {
+            isCancelledOrExecuted[askHash] = true;
 
+            IERC1155(ask.nft).safeTransferFrom(ask.maker, bidder, ask.tokenId, amount, "");
             _transferFeesAndFunds(ask.maker, ask.nft, ask.currency, bidder, bidPrice);
 
-            emit Purchase(askHash, bidder, 1, bidPrice);
+            emit Execute(askHash, bidder, 1, bidPrice);
         } else if (!expired && IStrategy(ask.strategy).canBid(ask.params, bidPrice, bestBidPrice[askHash])) {
             bestBidder[askHash] = bidder;
             bestBidPrice[askHash] = bidPrice;
@@ -176,7 +179,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     }
 
     function _validate(Orders.Ask memory ask, bytes32 askHash) internal view {
-        require(!isCancelledOrFinished[ask.maker][askHash], "SHOYU: CANCELLED_OR_FINISHED");
+        require(!isCancelledOrExecuted[askHash], "SHOYU: CANCELLED_OR_EXECUTED");
 
         require(ask.maker != address(0), "SHOYU: INVALID_MAKER");
         require(ask.nft != address(0), "SHOYU: INVALID_NFT");

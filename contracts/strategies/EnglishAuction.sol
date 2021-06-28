@@ -7,7 +7,7 @@ import "../interfaces/IStrategy.sol";
 contract EnglishAuction is IStrategy {
     uint8 public constant MAX_PRICE_GROWTH = 250; // out of 1000
 
-    function canPurchase(bytes memory, uint256) external pure override returns (bool) {
+    function canExecute(bytes memory, uint256) external pure override returns (bool) {
         return false;
     }
 
