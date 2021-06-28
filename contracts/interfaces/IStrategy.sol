@@ -2,8 +2,14 @@
 
 pragma solidity >=0.5.0;
 
-interface IStrategy {
-    function validateParams(bytes calldata params) external view;
+import "../libraries/Orders.sol";
 
-    function validatePurchase(bytes memory params, uint256 bidPrice) external view;
+interface IStrategy {
+    function canPurchase(bytes memory params, uint256 bidPrice) external view returns (bool);
+
+    function canBid(
+        bytes memory params,
+        uint256 bidPrice,
+        uint256 bestPrice
+    ) external view returns (bool);
 }
