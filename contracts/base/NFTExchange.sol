@@ -12,7 +12,7 @@ import "../interfaces/IStrategy.sol";
 import "../NFT721.sol";
 import "../NFT1155.sol";
 
-abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
+contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
@@ -204,6 +204,7 @@ abstract contract NFTExchange is Ownable, ReentrancyGuard, INFTExchange {
         require(ask.amount > 0, "SHOYU: INVALID_AMOUNT");
         require(ask.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(ask.currency != address(0), "SHOYU: INVALID_CURRENCY");
+        require(isStrategyWhitelisted[ask.strategy], "SHOYU: STRATEGY_NOT_WHITELISTED");
 
         _verify(askHash, ask.maker, ask.v, ask.r, ask.s);
     }
