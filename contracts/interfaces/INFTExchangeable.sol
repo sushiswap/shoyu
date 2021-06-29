@@ -15,6 +15,8 @@ interface INFTExchangeable {
 
     function royaltyFee() external view returns (uint8);
 
+    function charityDenominator() external view returns (uint8);
+
     function bestBidder(bytes32 hash) external view returns (address);
 
     function bestBidPrice(bytes32 hash) external view returns (uint256);
@@ -26,6 +28,8 @@ interface INFTExchangeable {
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 
     function setRoyaltyFee(uint8 _royaltyFee) external;
+
+    function setCharityDenominator(uint8 _charityDenominator) external;
 
     function cancel(Orders.Ask memory order) external;
 

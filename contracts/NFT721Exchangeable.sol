@@ -13,12 +13,14 @@ contract NFT721Exchangeable is NFT721, NFTExchangeable {
         string memory _symbol,
         address _owner,
         address _royaltyFeeRecipient,
-        uint8 _royaltyFee
+        uint8 _royaltyFee,
+        uint8 _charityDenominator
     ) external initializer {
         initialize(_baseURI_, _name, _symbol, _owner);
 
         _setRoyaltyFeeRecipient(_royaltyFeeRecipient);
         _setRoyaltyFee(_royaltyFee);
+        _setCharityDenominator(_charityDenominator);
     }
 
     function DOMAIN_SEPARATOR() public view override(NFT721, NFTExchangeable) returns (bytes32) {
@@ -37,6 +39,10 @@ contract NFT721Exchangeable is NFT721, NFTExchangeable {
         return INFTFactory(factory).protocolFee();
     }
 
+    function charityRecipient() internal view override returns (address) {
+        return INFTFactory(factory).charityRecipient();
+    }
+
     function safeTransferFrom(
         address from,
         address to,
@@ -52,5 +58,9 @@ contract NFT721Exchangeable is NFT721, NFTExchangeable {
 
     function setRoyaltyFee(uint8 _royaltyFee) external override onlyOwner {
         _setRoyaltyFee(_royaltyFee);
+    }
+
+    function setCharityDenominator(uint8 _charityDenominator) external override onlyOwner {
+        _setCharityDenominator(_charityDenominator);
     }
 }

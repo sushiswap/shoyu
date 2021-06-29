@@ -11,12 +11,14 @@ contract NFT1155Exchangeable is NFT1155, NFTExchangeable {
         string memory _uri,
         address _owner,
         address _royaltyFeeRecipient,
-        uint8 _royaltyFee
+        uint8 _royaltyFee,
+        uint8 _charityDenominator
     ) external initializer {
         initialize(_uri, _owner);
 
         _setRoyaltyFeeRecipient(_royaltyFeeRecipient);
         _setRoyaltyFee(_royaltyFee);
+        _setCharityDenominator(_charityDenominator);
     }
 
     function DOMAIN_SEPARATOR() public view override(NFT1155, NFTExchangeable) returns (bytes32) {
@@ -35,6 +37,10 @@ contract NFT1155Exchangeable is NFT1155, NFTExchangeable {
         return INFTFactory(factory).protocolFee();
     }
 
+    function charityRecipient() internal view override returns (address) {
+        return INFTFactory(factory).charityRecipient();
+    }
+
     function safeTransferFrom(
         address from,
         address to,
@@ -50,5 +56,9 @@ contract NFT1155Exchangeable is NFT1155, NFTExchangeable {
 
     function setRoyaltyFee(uint8 _royaltyFee) external override onlyOwner {
         _setRoyaltyFee(_royaltyFee);
+    }
+
+    function setCharityDenominator(uint8 _charityDenominator) external override onlyOwner {
+        _setCharityDenominator(_charityDenominator);
     }
 }

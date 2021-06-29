@@ -17,14 +17,20 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     address public override protocolFeeRecipient;
     uint8 public override protocolFee; // out of 1000
+    address public override charityRecipient;
 
     mapping(address => bool) public override isStrategyWhitelisted;
 
     mapping(address => mapping(uint256 => uint256)) public tagNonces;
 
-    constructor(address _protocolFeeRecipient, uint8 _protocolFee) {
+    constructor(
+        address _protocolFeeRecipient,
+        uint8 _protocolFee,
+        address _charityRecipient
+    ) {
         setProtocolFeeRecipient(_protocolFeeRecipient);
         setProtocolFee(_protocolFee);
+        setCharityRecipient(_charityRecipient);
 
         NFT721 nft721 = new NFT721();
         nft721.initialize("", "", "", address(0));
@@ -36,7 +42,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
     }
 
     function setProtocolFeeRecipient(address _protocolFeeRecipient) public override onlyOwner {
-        require(_protocolFeeRecipient != address(0), "SHOYU: INVALID_FEE_TO");
+        require(_protocolFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         protocolFeeRecipient = _protocolFeeRecipient;
     }
@@ -45,6 +51,12 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         require(protocolFee <= MAX_PROTOCOL_FEE, "SHOYU: INVALID_FEE");
 
         protocolFee = _protocolFee;
+    }
+
+    function setCharityRecipient(address _charityRecipient) public override onlyOwner {
+        require(_charityRecipient != address(0), "SHOYU: INVALID_RECIPIENT");
+
+        charityRecipient = _charityRecipient;
     }
 
     function setStrategyWhitelisted(address ask, bool whitelisted) external override onlyOwner {
@@ -57,7 +69,8 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         string calldata baseURI,
         string calldata name,
         string calldata symbol,
-        uint8 royaltyFee
+        uint8 royaltyFee,
+        uint8 charityDenominator
     ) external override returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
@@ -65,30 +78,42 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         nft = _createProxy(
             target721,
             abi.encodeWithSignature(
-                "initialize(string,string,string,address,address,uint8)",
+                "initialize(string,string,string,address,address,uint8,uint8)",
                 baseURI,
                 name,
                 symbol,
                 msg.sender,
                 msg.sender,
-                royaltyFee
+                royaltyFee,
+                charityDenominator
             )
         );
 
-        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, royaltyFee);
+        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, royaltyFee, charityDenominator);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
         return _isProxy(target721, query);
     }
 
-    function createNFT1155(string calldata uri, uint8 royaltyFee) external override returns (address nft) {
+    function createNFT1155(
+        string calldata uri,
+        uint8 royaltyFee,
+        uint8 charityDenominator
+    ) external override returns (address nft) {
         nft = _createProxy(
             target1155,
-            abi.encodeWithSignature("initialize(string,address,address,uint8)", uri, msg.sender, msg.sender, royaltyFee)
+            abi.encodeWithSignature(
+                "initialize(string,address,address,uint8,uint8)",
+                uri,
+                msg.sender,
+                msg.sender,
+                royaltyFee,
+                charityDenominator
+            )
         );
 
-        emit CreateNFT1155(nft, uri, msg.sender, royaltyFee);
+        emit CreateNFT1155(nft, uri, msg.sender, royaltyFee, charityDenominator);
     }
 
     function isNFT1155(address query) external view override returns (bool result) {

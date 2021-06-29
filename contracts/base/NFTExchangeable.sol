@@ -17,10 +17,11 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
 
-    uint8 public constant override MAX_ROYALTY_FEE = 250;
+    uint8 public constant override MAX_ROYALTY_FEE = 250; // out of 1000
 
     address public override royaltyFeeRecipient;
     uint8 public override royaltyFee; // out of 1000
+    uint8 public override charityDenominator;
     mapping(bytes32 => address) public override bestBidder;
     mapping(bytes32 => uint256) public override bestBidPrice;
     mapping(bytes32 => bool) public override isCancelled;
@@ -33,6 +34,8 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
     function protocolFee() internal view virtual returns (uint256);
 
     function protocolFeeRecipient() internal view virtual returns (address);
+
+    function charityRecipient() internal view virtual returns (address);
 
     function safeTransferFrom(
         address from,
@@ -51,6 +54,10 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         require(_royaltyFee <= MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
 
         royaltyFee = _royaltyFee;
+    }
+
+    function _setCharityDenominator(uint8 _charityDenominator) internal {
+        charityDenominator = _charityDenominator;
     }
 
     function cancel(Orders.Ask memory order) external override {
@@ -158,7 +165,13 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         uint256 royaltyFeeAmount = (remainder * royaltyFee) / 1000;
         if (royaltyFeeAmount > 0) {
             remainder -= royaltyFeeAmount;
-            IERC20(currency).safeTransferFrom(bidder, royaltyFeeRecipient, royaltyFeeAmount);
+
+            uint256 charity;
+            if (charityDenominator > 0) {
+                charity = royaltyFeeAmount / charityDenominator;
+                IERC20(currency).safeTransferFrom(bidder, charityRecipient(), charity);
+            }
+            IERC20(currency).safeTransferFrom(bidder, royaltyFeeRecipient, royaltyFeeAmount - charity);
         }
 
         IERC20(currency).safeTransferFrom(bidder, maker, remainder);
