@@ -11,7 +11,7 @@ interface INFT1155 is IERC1155 {
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function manager() external view returns (address);
+    function factory() external view returns (address);
 
     function nonces(address account) external view returns (uint256);
 

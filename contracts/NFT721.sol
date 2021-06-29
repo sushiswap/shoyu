@@ -15,9 +15,9 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
     // keccak256("Permit(address owner,address spender,uint256 nonce,uint256 deadline)");
     bytes32 public constant override PERMIT_ALL_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
-    bytes32 public override DOMAIN_SEPARATOR;
+    bytes32 internal _DOMAIN_SEPARATOR;
 
-    address public override manager;
+    address public override factory;
 
     mapping(uint256 => uint256) public override nonces;
     mapping(address => uint256) public override noncesForAll;
@@ -34,17 +34,17 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         string memory _name,
         string memory _symbol,
         address _owner
-    ) external override initializer {
+    ) public override initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
         __baseURI = _baseURI_;
-        manager = msg.sender;
+        factory = msg.sender;
 
         uint256 chainId;
         assembly {
             chainId := chainid()
         }
-        DOMAIN_SEPARATOR = keccak256(
+        _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
@@ -56,16 +56,16 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         );
     }
 
+    function DOMAIN_SEPARATOR() external view virtual override returns (bytes32) {
+        return _DOMAIN_SEPARATOR;
+    }
+
     function _baseURI() internal view override returns (string memory) {
         return __baseURI;
     }
 
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view override returns (bool) {
-        return spender == manager || super._isApprovedOrOwner(spender, tokenId);
-    }
-
     function mint(address to, uint256 tokenId) external override {
-        require(manager == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(to, tokenId);
 
@@ -90,7 +90,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
-                    DOMAIN_SEPARATOR,
+                    _DOMAIN_SEPARATOR,
                     keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonces[tokenId], deadline))
                 )
             );
@@ -127,7 +127,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
-                    DOMAIN_SEPARATOR,
+                    _DOMAIN_SEPARATOR,
                     keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner], deadline))
                 )
             );

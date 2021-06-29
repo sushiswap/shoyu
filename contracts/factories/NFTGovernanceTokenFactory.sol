@@ -17,15 +17,11 @@ contract NFTGovernanceTokenFactory is ProxyFactory {
         uint8 minimumQuorum
     );
 
-    address public immutable exchange;
     address internal immutable target;
 
-    constructor(address _exchange) {
-        exchange = _exchange;
-
+    constructor() {
         NFTGovernanceToken token = new NFTGovernanceToken();
         token.initialize(
-            address(0),
             Orders.Ask(address(0), address(0), 0, 0, address(0), address(0), 0, "", uint8(0), "", ""),
             0,
             uint8(0)
@@ -38,7 +34,7 @@ contract NFTGovernanceTokenFactory is ProxyFactory {
         uint256 price,
         uint8 minimumQuorum
     ) external returns (address proxy) {
-        bytes memory initData = abi.encodeWithSelector(0x35c9d38c, exchange, order, price, minimumQuorum);
+        bytes memory initData = abi.encodeWithSelector(0xc52b221f, order, price, minimumQuorum);
         proxy = _createProxy(target, initData);
 
         emit CreateNFTGovernanceToken(proxy, order.nft, order.tokenId, order.hash(), price, minimumQuorum);

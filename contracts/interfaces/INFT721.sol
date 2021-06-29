@@ -13,7 +13,7 @@ interface INFT721 is IERC721 {
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function manager() external view returns (address);
+    function factory() external view returns (address);
 
     function nonces(uint256 tokenId) external view returns (uint256);
 

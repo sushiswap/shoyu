@@ -16,22 +16,22 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, IN
     // keccak256("Permit(address owner,address spender,uint256 nonce,uint256 deadline)");
     bytes32 public constant override PERMIT_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
-    bytes32 public override DOMAIN_SEPARATOR;
+    bytes32 internal _DOMAIN_SEPARATOR;
 
-    address public override manager;
+    address public override factory;
 
     mapping(address => uint256) public override nonces;
 
-    function initialize(string memory _uri, address _owner) external override initializer {
+    function initialize(string memory _uri, address _owner) public override initializer {
         __ERC1155_init(_uri);
         __Ownable_init(_owner);
-        manager = msg.sender;
+        factory = msg.sender;
 
         uint256 chainId;
         assembly {
             chainId := chainid()
         }
-        DOMAIN_SEPARATOR = keccak256(
+        _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes(uint256(uint160(address(this))).toHexString())),
@@ -42,12 +42,16 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, IN
         );
     }
 
+    function DOMAIN_SEPARATOR() external view virtual override returns (bytes32) {
+        return _DOMAIN_SEPARATOR;
+    }
+
     function mint(
         address to,
         uint256 tokenId,
         uint256 amount
     ) external override {
-        require(manager == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(to, tokenId, amount, "");
 
@@ -59,7 +63,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, IN
         uint256[] memory tokenIds,
         uint256[] memory amounts
     ) external override {
-        require(manager == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mintBatch(to, tokenIds, amounts, "");
         for (uint256 i; i < tokenIds.length; i++) {
@@ -91,7 +95,7 @@ contract NFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, IN
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
-                    DOMAIN_SEPARATOR,
+                    _DOMAIN_SEPARATOR,
                     keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner], deadline))
                 )
             );
