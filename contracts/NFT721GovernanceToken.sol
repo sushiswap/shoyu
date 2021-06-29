@@ -10,7 +10,7 @@ import "./interfaces/IERC1271.sol";
 import "./interfaces/INFTExchangeable.sol";
 import "./libraries/Orders.sol";
 
-contract NFTGovernanceToken is ERC20SnapshotInitializable, IERC1271 {
+contract NFT721GovernanceToken is ERC20SnapshotInitializable, IERC1271 {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
 

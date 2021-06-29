@@ -3,9 +3,9 @@
 pragma solidity =0.8.3;
 
 import "./ProxyFactory.sol";
-import "../NFTGovernanceToken.sol";
+import "../NFT721GovernanceToken.sol";
 
-contract NFTGovernanceTokenFactory is ProxyFactory {
+contract NFT721GovernanceTokenFactory is ProxyFactory {
     using Orders for Orders.Ask;
 
     event CreateNFTGovernanceToken(
@@ -20,7 +20,7 @@ contract NFTGovernanceTokenFactory is ProxyFactory {
     address internal immutable target;
 
     constructor() {
-        NFTGovernanceToken token = new NFTGovernanceToken();
+        NFT721GovernanceToken token = new NFT721GovernanceToken();
         token.initialize(
             Orders.Ask(address(0), address(0), 0, 0, address(0), address(0), 0, "", uint8(0), "", ""),
             0,
