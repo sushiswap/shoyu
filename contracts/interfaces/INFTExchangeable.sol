@@ -19,7 +19,9 @@ interface INFTExchangeable {
 
     function bestBidPrice(bytes32 hash) external view returns (uint256);
 
-    function isCancelledOrExecuted(bytes32 hash) external view returns (bool);
+    function isCancelled(bytes32 hash) external view returns (bool);
+
+    function amountFilled(bytes32 hash) external view returns (uint256);
 
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 

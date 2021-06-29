@@ -162,7 +162,7 @@ contract NFTGovernanceToken is ERC20SnapshotInitializable, IERC1271 {
 
     function claimRefund() external {
         require(status == Status.Buying, "SHOYU: INVALID_STATUS");
-        require(INFTExchangeable(order.nft).isCancelledOrExecuted(order.hash()), "SHOYU: NOT_CANCELLED");
+        require(INFTExchangeable(order.nft).isCancelled(order.hash()), "SHOYU: NOT_CANCELLED");
 
         uint256 amount = pendingAmount[msg.sender];
         require(amount > 0, "SHOYU: NO_DEPOSIT");
@@ -199,7 +199,7 @@ contract NFTGovernanceToken is ERC20SnapshotInitializable, IERC1271 {
             bytes32 hash = _hashSellOrder(strategy, currency, deadline, params);
 
             require(_hashApproved[hash], "SHOYU: INVALID_HASH");
-            require(INFTExchangeable(order.nft).isCancelledOrExecuted(hash), "SHOYU: NOT_SOLD");
+            require(INFTExchangeable(order.nft).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
 
             status = Status.Sold;
         }

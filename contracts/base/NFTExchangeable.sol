@@ -23,7 +23,8 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
     uint8 public override royaltyFee; // out of 1000
     mapping(bytes32 => address) public override bestBidder;
     mapping(bytes32 => uint256) public override bestBidPrice;
-    mapping(bytes32 => bool) public override isCancelledOrExecuted;
+    mapping(bytes32 => bool) public override isCancelled;
+    mapping(bytes32 => uint256) public override amountFilled;
 
     function DOMAIN_SEPARATOR() public view virtual returns (bytes32);
 
@@ -56,7 +57,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         require(order.maker == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
-        isCancelledOrExecuted[hash] = true;
+        isCancelled[hash] = true;
 
         emit Cancel(hash);
     }
@@ -96,7 +97,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         bool expired = askOrder.deadline < block.number;
         bool canClaim = bidder == bestBidder[askHash];
         if ((expired && canClaim) || (!expired && IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice))) {
-            isCancelledOrExecuted[askHash] = true;
+            amountFilled[askHash] += bidAmount;
 
             safeTransferFrom(askOrder.maker, bidder, askOrder.tokenId, bidAmount);
             _transferFeesAndFunds(askOrder.maker, askOrder.currency, bidder, bidPrice);
@@ -115,7 +116,8 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
     }
 
     function _validate(Orders.Ask memory ask, bytes32 askHash) internal view {
-        require(!isCancelledOrExecuted[askHash], "SHOYU: CANCELLED_OR_EXECUTED");
+        require(!isCancelled[askHash], "SHOYU: CANCELLED");
+        require(amountFilled[askHash] < ask.amount, "SHOYU: FILLED");
 
         require(ask.maker != address(0), "SHOYU: INVALID_MAKER");
         require(ask.nft == address(this), "SHOYU: INVALID_NFT");
