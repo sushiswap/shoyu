@@ -13,8 +13,8 @@ contract SocialToken is DividendPayingERC20, OwnableInitializable {
     function initialize(
         string memory _name,
         string memory _symbol,
-        address _owner,
-        address _dividendToken
+        address _dividendToken,
+        address _owner
     ) external initializer {
         __DividendPayingERC20_init(_name, _symbol, _dividendToken);
         __Ownable_init(_owner);

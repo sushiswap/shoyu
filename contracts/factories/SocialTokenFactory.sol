@@ -10,8 +10,8 @@ contract SocialTokenFactory is ProxyFactory {
         address indexed proxy,
         string name,
         string symbol,
-        address indexed owner,
-        address indexed dividendToken
+        address indexed dividendToken,
+        address indexed owner
     );
 
     address internal immutable target;
@@ -32,8 +32,8 @@ contract SocialTokenFactory is ProxyFactory {
                 "initialize(string,string,address,address)",
                 name,
                 symbol,
-                msg.sender,
-                dividendToken
+                dividendToken,
+                msg.sender
             );
         proxy = _createProxy(target, initData);
 
