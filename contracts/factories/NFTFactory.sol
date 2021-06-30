@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../interfaces/INFTFactory.sol";
 import "../factories/ProxyFactory.sol";
-import "../NFT721.sol";
-import "../NFT1155.sol";
+import "../NFT721Exchangeable.sol";
+import "../NFT1155Exchangeable.sol";
 
 contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
     uint8 public constant override MAX_PROTOCOL_FEE = 100;
@@ -32,11 +32,11 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         setProtocolFee(_protocolFee);
         setCharityRecipient(_charityRecipient);
 
-        NFT721 nft721 = new NFT721();
+        NFT721Exchangeable nft721 = new NFT721Exchangeable();
         nft721.initialize("", "", "", address(0));
         target721 = address(nft721);
 
-        NFT1155 nft1155 = new NFT1155();
+        NFT1155Exchangeable nft1155 = new NFT1155Exchangeable();
         nft1155.initialize("", address(0));
         target1155 = address(nft1155);
     }
