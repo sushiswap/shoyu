@@ -17,7 +17,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
     bytes32 internal _DOMAIN_SEPARATOR;
 
-    address public override factory;
+    address internal _factory;
 
     mapping(uint256 => uint256) public override nonces;
     mapping(address => uint256) public override noncesForAll;
@@ -38,7 +38,7 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
         __baseURI = _baseURI_;
-        factory = msg.sender;
+        _factory = msg.sender;
 
         uint256 chainId;
         assembly {
@@ -60,12 +60,16 @@ contract NFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, INFT
         return _DOMAIN_SEPARATOR;
     }
 
+    function factory() external view virtual override returns (address) {
+        return _factory;
+    }
+
     function _baseURI() internal view override returns (string memory) {
         return __baseURI;
     }
 
     function mint(address to, uint256 tokenId) external override {
-        require(factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(to, tokenId);
 

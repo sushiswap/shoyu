@@ -2,7 +2,6 @@
 
 pragma solidity =0.8.3;
 
-import "./interfaces/INFTFactory.sol";
 import "./base/NFTExchangeable.sol";
 import "./NFT1155.sol";
 
@@ -25,20 +24,8 @@ contract NFT1155Exchangeable is NFT1155, NFTExchangeable {
         return _DOMAIN_SEPARATOR;
     }
 
-    function isStrategyWhitelisted(address strategy) internal view override returns (bool) {
-        return INFTFactory(factory).isStrategyWhitelisted(strategy);
-    }
-
-    function protocolFeeRecipient() internal view override returns (address) {
-        return INFTFactory(factory).protocolFeeRecipient();
-    }
-
-    function protocolFee() internal view override returns (uint256) {
-        return INFTFactory(factory).protocolFee();
-    }
-
-    function charityRecipient() internal view override returns (address) {
-        return INFTFactory(factory).charityRecipient();
+    function factory() public view override(NFT1155, NFTExchangeable) returns (address) {
+        return _factory;
     }
 
     function safeTransferFrom(

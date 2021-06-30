@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 import "../interfaces/IERC1271.sol";
 import "../interfaces/INFTExchangeable.sol";
+import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../libraries/Orders.sol";
 
@@ -29,13 +30,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
 
     function DOMAIN_SEPARATOR() public view virtual returns (bytes32);
 
-    function isStrategyWhitelisted(address strategy) internal view virtual returns (bool);
-
-    function protocolFee() internal view virtual returns (uint256);
-
-    function protocolFeeRecipient() internal view virtual returns (address);
-
-    function charityRecipient() internal view virtual returns (address);
+    function factory() public view virtual returns (address);
 
     function safeTransferFrom(
         address from,
@@ -131,7 +126,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         require(ask.amount > 0, "SHOYU: INVALID_AMOUNT");
         require(ask.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(ask.currency != address(0), "SHOYU: INVALID_CURRENCY");
-        require(isStrategyWhitelisted(ask.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
+        require(INFTFactory(factory()).isStrategyWhitelisted(ask.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
     }
 
     function _verify(
@@ -158,8 +153,9 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         address bidder,
         uint256 bidPriceSum
     ) internal {
-        uint256 protocolFeeAmount = (bidPriceSum * protocolFee()) / 1000;
-        IERC20(currency).safeTransferFrom(bidder, protocolFeeRecipient(), protocolFeeAmount);
+        address _factory = factory();
+        uint256 protocolFeeAmount = (bidPriceSum * INFTFactory(_factory).protocolFee()) / 1000;
+        IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).protocolFeeRecipient(), protocolFeeAmount);
 
         uint256 remainder = bidPriceSum - protocolFeeAmount;
         uint256 royaltyFeeAmount = (remainder * royaltyFee) / 1000;
@@ -169,7 +165,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
             uint256 charity;
             if (charityDenominator > 0) {
                 charity = royaltyFeeAmount / charityDenominator;
-                IERC20(currency).safeTransferFrom(bidder, charityRecipient(), charity);
+                IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).charityRecipient(), charity);
             }
             IERC20(currency).safeTransferFrom(bidder, royaltyFeeRecipient, royaltyFeeAmount - charity);
         }
