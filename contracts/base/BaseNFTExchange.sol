@@ -23,6 +23,9 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
 
+    mapping(bytes32 => Orders.Ask) public override orders;
+    mapping(address => mapping(uint256 => bytes32[])) public override orderHashes;
+
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32);
 
     function factory() public view virtual override returns (address);
@@ -40,6 +43,40 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         uint256 tokenId,
         uint256 amount
     ) internal virtual;
+
+    function orderHashesLength(address nft, uint256 tokenId) external view override returns (uint256) {
+        return orderHashes[nft][tokenId].length;
+    }
+
+    function submitOrder(
+        address nft,
+        uint256 tokenId,
+        uint256 amount,
+        address strategy,
+        address currency,
+        uint256 deadline,
+        bytes memory params
+    ) external override {
+        Orders.Ask memory order =
+            Orders.Ask(
+                msg.sender,
+                nft,
+                tokenId,
+                amount,
+                strategy,
+                currency,
+                deadline,
+                params,
+                0,
+                bytes32(0),
+                bytes32(0)
+            );
+        bytes32 hash = order.hash();
+        orderHashes[nft][tokenId].push(hash);
+        orders[hash] = order;
+
+        emit SubmitOrder(hash);
+    }
 
     function cancel(Orders.Ask memory order) external override {
         require(order.maker == msg.sender, "SHOYU: FORBIDDEN");
@@ -64,12 +101,28 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         return _bid(askOrder, askHash, bidOrder.maker, bidOrder.amount, bidOrder.price);
     }
 
+    function bid(bytes32 askHash, Orders.Bid memory bidOrder) external override nonReentrant returns (bool executed) {
+        require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
+
+        _verify(bidOrder.hash(), bidOrder.maker, bidOrder.v, bidOrder.r, bidOrder.s);
+
+        return _bid(orders[askHash], askHash, bidOrder.maker, bidOrder.amount, bidOrder.price);
+    }
+
     function bid(
         Orders.Ask memory askOrder,
         uint256 bidAmount,
         uint256 bidPrice
     ) external override nonReentrant returns (bool executed) {
         return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice);
+    }
+
+    function bid(
+        bytes32 askHash,
+        uint256 bidAmount,
+        uint256 bidPrice
+    ) external override nonReentrant returns (bool executed) {
+        return _bid(orders[askHash], askHash, msg.sender, bidAmount, bidPrice);
     }
 
     function _bid(
