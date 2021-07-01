@@ -6,9 +6,8 @@ import "../interfaces/IBaseNFT721.sol";
 import "../interfaces/IERC1271.sol";
 import "../base/ERC721Initializable.sol";
 import "../base/OwnableInitializable.sol";
-import "../factories/ProxyFactory.sol";
 
-abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, ProxyFactory, IBaseNFT721 {
+abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBaseNFT721 {
     // keccak256("Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)");
     bytes32 public constant override PERMIT_TYPEHASH =
         0x49ecf333e5b8c95c40fdafc95c1ad136e8914a8fb55e9dc8bb01eaa83a2df9ad;

@@ -36,7 +36,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
 
     function _charityDenominatorOf(address nft) internal view virtual returns (uint8);
 
-    function safeTransferFrom(
+    function _transfer(
         address nft,
         address from,
         address to,
@@ -48,7 +48,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         return orderHashes[nft][tokenId].length;
     }
 
-    function submitOrder(
+    function _submitOrder(
         address nft,
         uint256 tokenId,
         uint256 amount,
@@ -56,7 +56,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         address currency,
         uint256 deadline,
         bytes memory params
-    ) external override {
+    ) internal returns (bytes32 hash) {
         Orders.Ask memory order =
             Orders.Ask(
                 msg.sender,
@@ -71,11 +71,9 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
                 bytes32(0),
                 bytes32(0)
             );
-        bytes32 hash = order.hash();
+        hash = order.hash();
         orderHashes[nft][tokenId].push(hash);
         orders[hash] = order;
-
-        emit SubmitOrder(hash);
     }
 
     function cancel(Orders.Ask memory order) external override {
@@ -140,7 +138,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         if ((expired && canClaim) || (!expired && IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice))) {
             amountFilled[askHash] += bidAmount;
 
-            safeTransferFrom(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
+            _transfer(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
             _transferFeesAndFunds(askOrder.nft, askOrder.maker, askOrder.currency, bidder, bidPrice);
 
             emit Execute(askHash, bidder, bidAmount, bidPrice);

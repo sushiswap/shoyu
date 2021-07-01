@@ -45,14 +45,28 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
         return charityDenominator;
     }
 
-    function safeTransferFrom(
+    function _transfer(
         address,
         address from,
         address to,
         uint256 tokenId,
         uint256 amount
     ) internal override {
-        safeTransferFrom(from, to, tokenId, amount, "");
+        _transfer(from, to, tokenId, amount);
+        emit TransferSingle(msg.sender, from, to, tokenId, amount);
+    }
+
+    function submitOrder(
+        uint256 tokenId,
+        uint256 amount,
+        address strategy,
+        address currency,
+        uint256 deadline,
+        bytes memory params
+    ) external override {
+        bytes32 hash = _submitOrder(address(this), tokenId, amount, strategy, currency, deadline, params);
+
+        emit SubmitOrder(hash);
     }
 
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) public override onlyOwner {

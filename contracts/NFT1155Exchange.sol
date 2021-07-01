@@ -41,7 +41,7 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
         return _factory;
     }
 
-    function safeTransferFrom(
+    function _transfer(
         address nft,
         address from,
         address to,
@@ -49,6 +49,20 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
         uint256 amount
     ) internal override {
         IERC1155(nft).safeTransferFrom(from, to, tokenId, amount, "");
+    }
+
+    function submitOrder(
+        address nft,
+        uint256 tokenId,
+        uint256 amount,
+        address strategy,
+        address currency,
+        uint256 deadline,
+        bytes memory params
+    ) external override {
+        bytes32 hash = _submitOrder(nft, tokenId, amount, strategy, currency, deadline, params);
+
+        emit SubmitOrder(hash);
     }
 
     function _royaltyFeeRecipientOf(address nft) internal view override returns (address) {

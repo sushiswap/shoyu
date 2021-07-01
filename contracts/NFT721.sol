@@ -5,11 +5,17 @@ pragma solidity =0.8.3;
 import "./interfaces/INFT721.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseNFTExchange.sol";
+import "./factories/ProxyFactory.sol";
+import "./NFT721GovernanceToken.sol";
 
-contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
+contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
+    event Liquidate(address indexed proxy, uint256 indexed tokenId, uint8 minimumQuorum);
+
     address public override royaltyFeeRecipient;
     uint8 public override royaltyFee; // out of 1000
     uint8 public override charityDenominator;
+
+    address internal target;
 
     function initialize(
         string memory _baseURI_,
@@ -25,6 +31,10 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
         setRoyaltyFeeRecipient(_royaltyFeeRecipient);
         setRoyaltyFee(_royaltyFee);
         setCharityDenominator(_charityDenominator);
+
+        NFT721GovernanceToken token = new NFT721GovernanceToken();
+        token.initialize(0, 0);
+        target = address(token);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT721, BaseNFTExchange, INFT721) returns (bytes32) {
@@ -47,14 +57,27 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
         return charityDenominator;
     }
 
-    function safeTransferFrom(
+    function _transfer(
         address,
         address from,
         address to,
         uint256 tokenId,
         uint256
     ) internal override {
-        safeTransferFrom(from, to, tokenId);
+        _transfer(from, to, tokenId);
+    }
+
+    function submitOrder(
+        uint256 tokenId,
+        uint256 amount,
+        address strategy,
+        address currency,
+        uint256 deadline,
+        bytes memory params
+    ) external override {
+        bytes32 hash = _submitOrder(address(this), tokenId, amount, strategy, currency, deadline, params);
+
+        emit SubmitOrder(hash);
     }
 
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) public override onlyOwner {
@@ -71,5 +94,14 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
 
     function setCharityDenominator(uint8 _charityDenominator) public override onlyOwner {
         charityDenominator = _charityDenominator;
+    }
+
+    function liquidate(uint256 tokenId, uint8 _minimumQuorum) external override returns (address proxy) {
+        bytes memory initData = abi.encodeWithSignature("initialize(uint256,uint8)", tokenId, _minimumQuorum);
+        proxy = _createProxy(target, initData);
+
+        _transfer(msg.sender, proxy, tokenId);
+
+        emit Liquidate(proxy, tokenId, _minimumQuorum);
     }
 }

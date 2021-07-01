@@ -131,14 +131,22 @@ contract ERC1155Initializable is Initializable, ERC165, IERC1155, IERC1155Metada
 
         _beforeTokenTransfer(operator, from, to, _asSingletonArray(id), _asSingletonArray(amount), data);
 
+        _transfer(from, to, id, amount);
+        emit TransferSingle(operator, from, to, id, amount);
+
+        _doSafeTransferAcceptanceCheck(operator, from, to, id, amount, data);
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount
+    ) internal {
         uint256 fromBalance = _balances[id][from];
         require(fromBalance >= amount, "SHOYU: INSUFFICIENT_BALANCE");
         _balances[id][from] = fromBalance - amount;
         _balances[id][to] += amount;
-
-        emit TransferSingle(operator, from, to, id, amount);
-
-        _doSafeTransferAcceptanceCheck(operator, from, to, id, amount, data);
     }
 
     /**

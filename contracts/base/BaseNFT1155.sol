@@ -8,9 +8,8 @@ import "../interfaces/IBaseNFT1155.sol";
 import "../interfaces/IERC1271.sol";
 import "../base/ERC1155Initializable.sol";
 import "../base/OwnableInitializable.sol";
-import "../factories/ProxyFactory.sol";
 
-abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, ProxyFactory, IBaseNFT1155 {
+abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBaseNFT1155 {
     using Strings for uint256;
 
     // keccak256("Permit(address owner,address spender,uint256 nonce,uint256 deadline)");

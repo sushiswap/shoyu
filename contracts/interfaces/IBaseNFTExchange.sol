@@ -5,7 +5,6 @@ pragma solidity >=0.5.0;
 import "../libraries/Orders.sol";
 
 interface IBaseNFTExchange {
-    event SubmitOrder(bytes32 indexed hash);
     event Cancel(bytes32 indexed hash);
     event Execute(bytes32 indexed hash, address buyer, uint256 amount, uint256 price);
     event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice);
@@ -46,16 +45,6 @@ interface IBaseNFTExchange {
     ) external view returns (bytes32);
 
     function orderHashesLength(address nft, uint256 tokenId) external view returns (uint256);
-
-    function submitOrder(
-        address nft,
-        uint256 tokenId,
-        uint256 amount,
-        address strategy,
-        address currency,
-        uint256 deadline,
-        bytes memory params
-    ) external;
 
     function cancel(Orders.Ask memory order) external;
 
