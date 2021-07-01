@@ -8,52 +8,38 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "../interfaces/IERC1271.sol";
-import "../interfaces/INFTExchangeable.sol";
+import "../interfaces/IBaseNFTExchange.sol";
 import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../libraries/Orders.sol";
 
-abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
+abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
 
-    uint8 public constant override MAX_ROYALTY_FEE = 250; // out of 1000
-
-    address public override royaltyFeeRecipient;
-    uint8 public override royaltyFee; // out of 1000
-    uint8 public override charityDenominator;
     mapping(bytes32 => address) public override bestBidder;
     mapping(bytes32 => uint256) public override bestBidPrice;
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
 
-    function DOMAIN_SEPARATOR() public view virtual returns (bytes32);
+    function DOMAIN_SEPARATOR() public view virtual override returns (bytes32);
 
-    function factory() public view virtual returns (address);
+    function factory() public view virtual override returns (address);
+
+    function _royaltyFeeRecipientOf(address nft) internal view virtual returns (address);
+
+    function _royaltyFeeOf(address nft) internal view virtual returns (uint8);
+
+    function _charityDenominatorOf(address nft) internal view virtual returns (uint8);
 
     function safeTransferFrom(
+        address nft,
         address from,
         address to,
         uint256 tokenId,
         uint256 amount
     ) internal virtual;
-
-    function _setRoyaltyFeeRecipient(address _royaltyFeeRecipient) internal {
-        require(_royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
-
-        royaltyFeeRecipient = _royaltyFeeRecipient;
-    }
-
-    function _setRoyaltyFee(uint8 _royaltyFee) internal {
-        require(_royaltyFee <= MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
-
-        royaltyFee = _royaltyFee;
-    }
-
-    function _setCharityDenominator(uint8 _charityDenominator) internal {
-        charityDenominator = _charityDenominator;
-    }
 
     function cancel(Orders.Ask memory order) external override {
         require(order.maker == msg.sender, "SHOYU: FORBIDDEN");
@@ -101,8 +87,8 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         if ((expired && canClaim) || (!expired && IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice))) {
             amountFilled[askHash] += bidAmount;
 
-            safeTransferFrom(askOrder.maker, bidder, askOrder.tokenId, bidAmount);
-            _transferFeesAndFunds(askOrder.maker, askOrder.currency, bidder, bidPrice);
+            safeTransferFrom(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
+            _transferFeesAndFunds(askOrder.nft, askOrder.maker, askOrder.currency, bidder, bidPrice);
 
             emit Execute(askHash, bidder, bidAmount, bidPrice);
             return true;
@@ -148,6 +134,7 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
     }
 
     function _transferFeesAndFunds(
+        address nft,
         address maker,
         address currency,
         address bidder,
@@ -158,16 +145,17 @@ abstract contract NFTExchangeable is INFTExchangeable, ReentrancyGuard {
         IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).protocolFeeRecipient(), protocolFeeAmount);
 
         uint256 remainder = bidPriceSum - protocolFeeAmount;
-        uint256 royaltyFeeAmount = (remainder * royaltyFee) / 1000;
+        uint256 royaltyFeeAmount = (remainder * _royaltyFeeOf(nft)) / 1000;
         if (royaltyFeeAmount > 0) {
             remainder -= royaltyFeeAmount;
 
             uint256 charity;
-            if (charityDenominator > 0) {
-                charity = royaltyFeeAmount / charityDenominator;
+            uint256 _charityDenominator = _charityDenominatorOf(nft);
+            if (_charityDenominator > 0) {
+                charity = royaltyFeeAmount / _charityDenominator;
                 IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).charityRecipient(), charity);
             }
-            IERC20(currency).safeTransferFrom(bidder, royaltyFeeRecipient, royaltyFeeAmount - charity);
+            IERC20(currency).safeTransferFrom(bidder, _royaltyFeeRecipientOf(nft), royaltyFeeAmount - charity);
         }
 
         IERC20(currency).safeTransferFrom(bidder, maker, remainder);

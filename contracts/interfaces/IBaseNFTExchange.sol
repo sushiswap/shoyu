@@ -4,18 +4,14 @@ pragma solidity >=0.5.0;
 
 import "../libraries/Orders.sol";
 
-interface INFTExchangeable {
+interface IBaseNFTExchange {
     event Cancel(bytes32 indexed hash);
     event Execute(bytes32 indexed hash, address buyer, uint256 amount, uint256 price);
     event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice);
 
-    function MAX_ROYALTY_FEE() external view returns (uint8);
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function royaltyFeeRecipient() external view returns (address);
-
-    function royaltyFee() external view returns (uint8);
-
-    function charityDenominator() external view returns (uint8);
+    function factory() external view returns (address);
 
     function bestBidder(bytes32 hash) external view returns (address);
 
@@ -24,12 +20,6 @@ interface INFTExchangeable {
     function isCancelled(bytes32 hash) external view returns (bool);
 
     function amountFilled(bytes32 hash) external view returns (uint256);
-
-    function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
-
-    function setRoyaltyFee(uint8 _royaltyFee) external;
-
-    function setCharityDenominator(uint8 _charityDenominator) external;
 
     function cancel(Orders.Ask memory order) external;
 

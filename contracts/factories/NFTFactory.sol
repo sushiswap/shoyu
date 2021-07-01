@@ -6,11 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../interfaces/INFTFactory.sol";
 import "../factories/ProxyFactory.sol";
-import "../NFT721Exchangeable.sol";
-import "../NFT1155Exchangeable.sol";
+import "../NFT721.sol";
+import "../NFT1155.sol";
 
 contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
-    uint8 public constant override MAX_PROTOCOL_FEE = 100;
+    uint8 public constant override MAX_PROTOCOL_FEE = 100; // out of 1000
+    uint8 public constant override MAX_ROYALTY_FEE = 250; // out of 1000
 
     address internal immutable target721;
     address internal immutable target1155;
@@ -32,11 +33,11 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         setProtocolFee(_protocolFee);
         setCharityRecipient(_charityRecipient);
 
-        NFT721Exchangeable nft721 = new NFT721Exchangeable();
+        NFT721 nft721 = new NFT721();
         nft721.initialize("", "", "", address(0));
         target721 = address(nft721);
 
-        NFT1155Exchangeable nft1155 = new NFT1155Exchangeable();
+        NFT1155 nft1155 = new NFT1155();
         nft1155.initialize("", address(0));
         target1155 = address(nft1155);
     }
@@ -126,7 +127,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         uint256 tokenId,
         string[] memory tags
     ) external override {
-        INFT721(nft).mint(to, tokenId);
+        IBaseNFT721(nft).mint(to, tokenId);
         _setTags(nft, tokenId, tags);
     }
 
@@ -137,7 +138,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         uint256 amount,
         string[] memory tags
     ) external override {
-        INFT1155(nft).mint(to, tokenId, amount);
+        IBaseNFT1155(nft).mint(to, tokenId, amount);
         _setTags(nft, tokenId, tags);
     }
 
@@ -146,7 +147,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         uint256 tokenId,
         string[] memory tags
     ) external override {
-        require(INFT721(nft).ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
+        require(IBaseNFT721(nft).ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
         _setTags(nft, tokenId, tags);
     }
 
@@ -155,7 +156,7 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         uint256 tokenId,
         string[] memory tags
     ) external override {
-        require(INFT1155(nft).balanceOf(msg.sender, tokenId) > 0, "SHOYU: FORBIDDEN");
+        require(IBaseNFT1155(nft).balanceOf(msg.sender, tokenId) > 0, "SHOYU: FORBIDDEN");
         _setTags(nft, tokenId, tags);
     }
 

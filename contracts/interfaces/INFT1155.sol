@@ -2,43 +2,23 @@
 
 pragma solidity >=0.5.0;
 
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "./IBaseNFT1155.sol";
+import "./IBaseNFTExchange.sol";
 
-interface INFT1155 is IERC1155 {
-    event Mint(address to, uint256 indexed tokenId, uint256 amount);
+interface INFT1155 is IBaseNFT1155, IBaseNFTExchange {
+    function DOMAIN_SEPARATOR() external view override(IBaseNFT1155, IBaseNFTExchange) returns (bytes32);
 
-    function PERMIT_TYPEHASH() external view returns (bytes32);
+    function factory() external view override(IBaseNFT1155, IBaseNFTExchange) returns (address);
 
-    function DOMAIN_SEPARATOR() external view returns (bytes32);
+    function royaltyFeeRecipient() external view returns (address);
 
-    function factory() external view returns (address);
+    function royaltyFee() external view returns (uint8);
 
-    function nonces(address account) external view returns (uint256);
+    function charityDenominator() external view returns (uint8);
 
-    function initialize(string memory _uri, address _owner) external;
+    function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 
-    function mint(
-        address to,
-        uint256 tokenId,
-        uint256 amount
-    ) external;
+    function setRoyaltyFee(uint8 _royaltyFee) external;
 
-    function mintBatch(
-        address to,
-        uint256[] calldata tokenIds,
-        uint256[] calldata amounts
-    ) external;
-
-    function burn(uint256 tokenId, uint256 amount) external;
-
-    function burnBatch(uint256[] calldata tokenIds, uint256[] calldata amounts) external;
-
-    function permit(
-        address owner,
-        address spender,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external;
+    function setCharityDenominator(uint8 _charityDenominator) external;
 }
