@@ -21,10 +21,12 @@ Any holder of the social token can burn his/her own balance with a memo(`bytes32
 As an artist or a seller, the owner of the social token can make revenue and set the recipient to the holders of the social token. The revenue will then be distributed to the holders in proportion to the shares.
 
 ## 2 NFT-as-Exchange
-Shoyu's `ERC-721` and `ERC-1155` contracts are equipped with NFT exchange functionality in themselves(`NFT721Exchangeable` and `NFT1155Exchangeable` respectively). This is the cheapest way to optimize gas and give the owner the full power to change configs needed for trades.
+Shoyu's `ERC-721` and `ERC-1155` contracts are equipped with NFT exchange functionality in themselves(`NFT721` and `NFT1155` respectively). This is the cheapest way to optimize gas and give the owner the full power to change configs needed for trades.
 
-### 2.1 Off-chain OrderBook & Signing
-To optimize gas cost when submitting sell order, orders are kept off-chain. When an account wants to buy the nft, he can pick the order with the maker's signature(`ERC-712`) and execute it with a proper bid params such as the price.
+### 2.1 On-chain & Off-chain OrderBook
+To optimize gas cost when submitting sell order, orders are kept off-chain basically. When an account wants to buy the nft, he can pick the order with the maker's signature(`ERC-712`) and execute it with a proper bid params such as the price.
+
+It also supports on-chain order book, so you could submit ask orders. This feature was designed for contracts not EOAs. *e.g.) If you're running a dao for NFTs, then contracts should be able to submit orders.*
 
 ### 2.2 Variant Bidding Strategies
 Strategies are separate from exchange contracts, so a variety of strategies can be plugged in to meet the seller's demand. Supported strategies are: a. `FixedPriceSale`, b. `EnglishAuction` and c. `DutchAuction`.
@@ -45,24 +47,26 @@ Among the royalties they get, they can decide how much will go to the charity fu
 NFTs can be categorised and tagged to allow better searching capabilities.
 
 ## 3 Fractional NFT Ownership & Governance
-`NFT721GovernanceToken` contract (`ERC-20` Token) allows users who have been previously priced out of certain NFTs or artists (such as Beeple) to be able to buy a piece of their work.
+Fractional ownership allows users who have been previously priced out of certain NFTs or artists (such as Beeple) to be able to buy a piece of their work.
 
-### 3.1 Fund Raising
-Anyone can start a fundraising for a specific NFT artwork with the target price. As soon as the fund is raised, the contract submits the bid order to be the owner of the token. After the purchase, participants get shared portion of the token(`ERC-20`) and the share represents the fractional ownership of the NFT.
+### 3.1 Liquidation
+If you're holding a `NFT721` token, you can call `liquidate()` function to turn your nft to a `NFT721GovernanceToken` (`ERC-20`) that's representing the value of your nft.
 
 ### 3.2 Governance
-Token holders can vote for a proposal to run the NFT governance. Proposal type will be one of: `UpdateSigner`, `UpdateQuorum` and `Sell`.
+Token holders can vote for a sell proposal to run the NFT governance. If more than `minimumQuorum` balance power is for the proposal that were submitted, then it starts selling process; It could be an auction for a fixed price sale.
 
-* **UpdateSigner**: changes the signer to create the signature(`ERC-712`) for the sell order.
-* **UpdateQuorum**: changes the minimum quorum to meet for a proposal to be passed.
-* **Sell**: initiates the sell process of the NFT with params such as strategy, price and deadline.
+### 3.3 Profit Sharing
+After the sale gets completed, the profit is shared by the owners in proportional to their balances.
 
 ## 4 Others
 
 ### 4.1 Protocol Fee
 2.5% fee is charged for every trade and it goes to `xSUSHI` holders.
 
-### 4.2 Factories
+### 4.2 Exchange for non-Shoyu NFTs
+Even though Shoyu's NFTs is equipped with exchange features, there could be a need to sell NFTs that were minted outside of Shoyu. In that case, you could use `NFT721Exchange` and `NFT1155Exchange` contracts.
+
+### 4.3 Factories
 To optimize the gas required for contract deployments, Shoyu utilizes factory patter at its maximum extent. Provided factories are: `NFT721GovernanceTokenFactory`, `NFTFactory`, `PaymentSplitterFactory`, and `SocialTokenFactory`.
 
 ## License
