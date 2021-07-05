@@ -2,7 +2,7 @@
 
 pragma solidity >=0.5.0;
 
-interface INFT721Liquidator {
+interface IERC721Liquidator {
     event Liquidate(address indexed proxy, address indexed nft, uint256 indexed tokenId, uint8 minimumQuorum);
 
     function liquidate(

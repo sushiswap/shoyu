@@ -23,11 +23,19 @@ interface INFTFactory {
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
 
+    function erc721Exchange() external view returns (address);
+
+    function erc1155Exchange() external view returns (address);
+
+    function orderBook() external view returns (address);
+
     function protocolFeeInfo() external view returns (address recipient, uint8 permil);
 
     function operationalFeeInfo() external view returns (address recipient, uint8 permil);
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
+
+    function setOrderBook(address _orderBook) external;
 
     function setProtocolFeeRecipient(address protocolFeeRecipient) external;
 

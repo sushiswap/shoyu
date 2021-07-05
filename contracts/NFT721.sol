@@ -6,7 +6,7 @@ import "./interfaces/INFT721.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseNFTExchange.sol";
 import "./factories/ProxyFactory.sol";
-import "./NFT721GovernanceToken.sol";
+import "./ERC721GovernanceToken.sol";
 
 contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
     address internal _royaltyFeeRecipient;

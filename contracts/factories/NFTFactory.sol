@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../interfaces/INFTFactory.sol";
 import "../factories/ProxyFactory.sol";
+import "../ERC721Exchange.sol";
+import "../ERC1155Exchange.sol";
 import "../NFT721.sol";
 import "../NFT1155.sol";
 
@@ -20,20 +22,28 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
     address internal _operationalFeeRecipient;
     uint8 internal _operationalFee; // out of 1000
 
+    address public immutable override erc721Exchange;
+    address public immutable override erc1155Exchange;
+    address public override orderBook;
     mapping(address => bool) public override isStrategyWhitelisted;
 
     mapping(address => mapping(uint256 => uint256)) public tagNonces;
 
     constructor(
+        address _orderBook,
         address protocolFeeRecipient,
         uint8 protocolFee,
         address operationalFeeRecipient,
         uint8 operationalFee
     ) {
+        orderBook = _orderBook;
         _protocolFeeRecipient = protocolFeeRecipient;
         _protocolFee = protocolFee;
         _operationalFeeRecipient = operationalFeeRecipient;
         _operationalFee = operationalFee;
+
+        erc721Exchange = address(new ERC721Exchange());
+        erc1155Exchange = address(new ERC1155Exchange());
 
         NFT721 nft721 = new NFT721();
         nft721.initialize("", "", "", address(0));
@@ -50,6 +60,12 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     function operationalFeeInfo() external view override returns (address recipient, uint8 permil) {
         return (_operationalFeeRecipient, _operationalFee);
+    }
+
+    function setOrderBook(address _orderBook) external override onlyOwner {
+        require(_orderBook != address(0), "SHOYU: INVALID_ORDER_BOOK");
+
+        orderBook = _orderBook;
     }
 
     function setProtocolFeeRecipient(address protocolFeeRecipient) external override onlyOwner {

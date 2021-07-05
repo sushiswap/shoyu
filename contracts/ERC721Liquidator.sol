@@ -4,18 +4,18 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-import "./interfaces/INFT721Liquidator.sol";
+import "./interfaces/IERC721Liquidator.sol";
 import "./factories/ProxyFactory.sol";
-import "./NFT721GovernanceToken.sol";
+import "./ERC721GovernanceToken.sol";
 
-contract NFT721Liquidator is ProxyFactory, INFT721Liquidator {
-    address public immutable orderBook;
+contract ERC721Liquidator is ProxyFactory, IERC721Liquidator {
+    address public immutable factory;
     address internal immutable _target;
 
-    constructor(address _orderBook) {
-        orderBook = _orderBook;
+    constructor(address _factory) {
+        factory = _factory;
 
-        NFT721GovernanceToken token = new NFT721GovernanceToken();
+        ERC721GovernanceToken token = new ERC721GovernanceToken();
         token.initialize(address(0), address(0), 0, 0);
         _target = address(token);
     }
@@ -26,13 +26,7 @@ contract NFT721Liquidator is ProxyFactory, INFT721Liquidator {
         uint8 minimumQuorum
     ) external override returns (address proxy) {
         bytes memory initData =
-            abi.encodeWithSignature(
-                "initialize(address,address,uint256,uint8)",
-                orderBook,
-                nft,
-                tokenId,
-                minimumQuorum
-            );
+            abi.encodeWithSignature("initialize(address,address,uint256,uint8)", factory, nft, tokenId, minimumQuorum);
         proxy = _createProxy(_target, initData);
 
         IERC721(nft).safeTransferFrom(msg.sender, proxy, tokenId);

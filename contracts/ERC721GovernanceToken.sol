@@ -6,11 +6,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFT721.sol";
+import "./interfaces/INFTFactory.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 import "./libraries/Orders.sol";
 
-contract NFT721GovernanceToken is ERC20SnapshotInitializable {
+contract ERC721GovernanceToken is ERC20SnapshotInitializable {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
 
@@ -34,7 +35,7 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
 
     uint256 internal constant TOTAL_SUPPLY = 100e18;
 
-    address public orderBook;
+    address public factory;
     address public nft;
     uint256 public tokenId;
     uint8 public minimumQuorum; // out of 100
@@ -46,15 +47,15 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
     mapping(uint256 => bool) internal _sold;
 
     function initialize(
-        address _orderBook,
+        address _factory,
         address _nft,
         uint256 _tokenId,
         uint8 _minimumQuorum
     ) external initializer {
-        __ERC20_init("Shoyu NFT-721 Governance", "gNFT721");
+        __ERC20_init("Shoyu NFT-721 Governance", "G-ERC721");
         require(_minimumQuorum <= 100, "SHOYU: INVALID_MINIMUM_QUORUM");
 
-        orderBook = _orderBook;
+        factory = _factory;
         nft = _nft;
         tokenId = _tokenId;
         minimumQuorum = _minimumQuorum;
@@ -76,8 +77,9 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
         SellProposal storage proposal = proposals[id];
 
         if (!_sold[id]) {
+            address exchange = INFTFactory(factory).isNFT721(nft) ? nft : INFTFactory(factory).erc721Exchange();
             bytes32 hash = _hashOrder(proposal);
-            require(INFT721(nft).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
+            require(INFT721(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
 
             _sold[id] = true;
         }
@@ -187,6 +189,7 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
     function _executeSellProposal(SellProposal storage proposal) internal {
         proposal.executed = true;
 
+        address orderBook = INFTFactory(factory).orderBook();
         IOrderBook(orderBook).submitOrder(
             nft,
             tokenId,
