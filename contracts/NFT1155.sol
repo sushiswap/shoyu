@@ -7,22 +7,19 @@ import "./base/BaseNFT1155.sol";
 import "./base/BaseNFTExchange.sol";
 
 contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
-    address public override royaltyFeeRecipient;
-    uint8 public override royaltyFee; // out of 1000
-    uint8 public override charityDenominator;
+    address internal _royaltyFeeRecipient;
+    uint8 internal _royaltyFee; // out of 1000
 
     function initialize(
         string memory _uri,
         address _owner,
-        address _royaltyFeeRecipient,
-        uint8 _royaltyFee,
-        uint8 _charityDenominator
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     ) external initializer {
         initialize(_uri, _owner);
 
-        setRoyaltyFeeRecipient(_royaltyFeeRecipient);
-        setRoyaltyFee(_royaltyFee);
-        setCharityDenominator(_charityDenominator);
+        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        setRoyaltyFee(royaltyFee);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseNFTExchange, INFT1155) returns (bytes32) {
@@ -33,16 +30,13 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
         return _factory;
     }
 
-    function _royaltyFeeRecipientOf(address) internal view override returns (address) {
-        return royaltyFeeRecipient;
-    }
-
-    function _royaltyFeeOf(address) internal view override returns (uint8) {
-        return royaltyFee;
-    }
-
-    function _charityDenominatorOf(address) internal view override returns (uint8) {
-        return charityDenominator;
+    function royaltyFeeInfo()
+        public
+        view
+        override(BaseNFTExchange, INFT1155)
+        returns (address recipient, uint8 permil)
+    {
+        return (_royaltyFeeRecipient, _royaltyFee);
     }
 
     function _transfer(
@@ -69,19 +63,15 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
         emit SubmitOrder(hash);
     }
 
-    function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) public override onlyOwner {
-        require(_royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
+    function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {
+        require(royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
-        royaltyFeeRecipient = _royaltyFeeRecipient;
+        _royaltyFeeRecipient = royaltyFeeRecipient;
     }
 
-    function setRoyaltyFee(uint8 _royaltyFee) public override onlyOwner {
-        require(_royaltyFee <= INFTFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+        require(royaltyFee <= INFTFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
 
-        royaltyFee = _royaltyFee;
-    }
-
-    function setCharityDenominator(uint8 _charityDenominator) public override onlyOwner {
-        charityDenominator = _charityDenominator;
+        _royaltyFee = royaltyFee;
     }
 }

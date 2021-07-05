@@ -55,11 +55,11 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         );
     }
 
-    function DOMAIN_SEPARATOR() external view virtual override returns (bytes32) {
+    function DOMAIN_SEPARATOR() public view virtual override returns (bytes32) {
         return _DOMAIN_SEPARATOR;
     }
 
-    function factory() external view virtual override returns (address) {
+    function factory() public view virtual override returns (address) {
         return _factory;
     }
 

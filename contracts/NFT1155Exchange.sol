@@ -11,10 +11,6 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 
-    mapping(address => address) public override royaltyFeeRecipientOf;
-    mapping(address => uint8) public override royaltyFeeOf; // out of 1000
-    mapping(address => uint8) public override charityDenominatorOf;
-
     constructor(address __factory) {
         _factory = __factory;
 
@@ -63,33 +59,5 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
         bytes32 hash = _submitOrder(nft, tokenId, amount, strategy, currency, deadline, params);
 
         emit SubmitOrder(hash);
-    }
-
-    function _royaltyFeeRecipientOf(address nft) internal view override returns (address) {
-        return royaltyFeeRecipientOf[nft];
-    }
-
-    function _royaltyFeeOf(address nft) internal view override returns (uint8) {
-        return royaltyFeeOf[nft];
-    }
-
-    function _charityDenominatorOf(address nft) internal view override returns (uint8) {
-        return charityDenominatorOf[nft];
-    }
-
-    function setRoyaltyFeeRecipientOf(address nft, address _royaltyFeeRecipient) public override {
-        require(_royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
-
-        royaltyFeeRecipientOf[nft] = _royaltyFeeRecipient;
-    }
-
-    function setRoyaltyFeeOf(address nft, uint8 _royaltyFee) public override {
-        require(_royaltyFee <= INFTFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
-
-        royaltyFeeOf[nft] = _royaltyFee;
-    }
-
-    function setCharityDenominatorOf(address nft, uint8 _charityDenominator) public override {
-        charityDenominatorOf[nft] = _charityDenominator;
     }
 }

@@ -30,11 +30,9 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
 
     function factory() public view virtual override returns (address);
 
-    function _royaltyFeeRecipientOf(address nft) internal view virtual returns (address);
-
-    function _royaltyFeeOf(address nft) internal view virtual returns (uint8);
-
-    function _charityDenominatorOf(address nft) internal view virtual returns (uint8);
+    function royaltyFeeInfo() public view virtual override returns (address, uint8) {
+        return (address(0), uint8(0));
+    }
 
     function _transfer(
         address nft,
@@ -139,7 +137,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
             amountFilled[askHash] += bidAmount;
 
             _transfer(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
-            _transferFeesAndFunds(askOrder.nft, askOrder.maker, askOrder.currency, bidder, bidPrice);
+            _transferFeesAndFunds(askOrder.maker, askOrder.currency, bidder, bidPrice);
 
             emit Execute(askHash, bidder, bidAmount, bidPrice);
             return true;
@@ -185,28 +183,32 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     }
 
     function _transferFeesAndFunds(
-        address nft,
         address maker,
         address currency,
         address bidder,
         uint256 bidPriceSum
     ) internal {
         address _factory = factory();
-        uint256 protocolFeeAmount = (bidPriceSum * INFTFactory(_factory).protocolFee()) / 1000;
-        IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).protocolFeeRecipient(), protocolFeeAmount);
+        uint256 remainder = bidPriceSum;
+        {
+            (address protocolFeeRecipient, uint8 protocolFeePermil) = INFTFactory(_factory).protocolFeeInfo();
+            uint256 protocolFeeAmount = (bidPriceSum * protocolFeePermil) / 1000;
+            IERC20(currency).safeTransferFrom(bidder, protocolFeeRecipient, protocolFeeAmount);
+            remainder -= protocolFeeAmount;
+        }
 
-        uint256 remainder = bidPriceSum - protocolFeeAmount;
-        uint256 royaltyFeeAmount = (remainder * _royaltyFeeOf(nft)) / 1000;
+        {
+            (address operationalFeeRecipient, uint8 operationalFeePermil) = INFTFactory(_factory).operationalFeeInfo();
+            uint256 operationalFeeAmount = (bidPriceSum * operationalFeePermil) / 1000;
+            IERC20(currency).safeTransferFrom(bidder, operationalFeeRecipient, operationalFeeAmount);
+            remainder -= operationalFeeAmount;
+        }
+
+        (address royaltyFeeRecipient, uint8 royaltyFeePermil) = royaltyFeeInfo();
+        uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
         if (royaltyFeeAmount > 0) {
             remainder -= royaltyFeeAmount;
-
-            uint256 charity;
-            uint256 _charityDenominator = _charityDenominatorOf(nft);
-            if (_charityDenominator > 0) {
-                charity = royaltyFeeAmount / _charityDenominator;
-                IERC20(currency).safeTransferFrom(bidder, INFTFactory(_factory).charityRecipient(), charity);
-            }
-            IERC20(currency).safeTransferFrom(bidder, _royaltyFeeRecipientOf(nft), royaltyFeeAmount - charity);
+            IERC20(currency).safeTransferFrom(bidder, royaltyFeeRecipient, royaltyFeeAmount);
         }
 
         IERC20(currency).safeTransferFrom(bidder, maker, remainder);

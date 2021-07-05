@@ -21,23 +21,17 @@ interface INFTFactory {
     );
     event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
-    function MAX_PROTOCOL_FEE() external view returns (uint8);
-
     function MAX_ROYALTY_FEE() external view returns (uint8);
 
-    function protocolFeeRecipient() external view returns (address);
+    function protocolFeeInfo() external view returns (address recipient, uint8 permil);
 
-    function protocolFee() external view returns (uint8);
-
-    function charityRecipient() external view returns (address);
+    function operationalFeeInfo() external view returns (address recipient, uint8 permil);
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
-    function setProtocolFeeRecipient(address _protocolFeeRecipient) external;
+    function setProtocolFeeRecipient(address protocolFeeRecipient) external;
 
-    function setProtocolFee(uint8 _protocolFee) external;
-
-    function setCharityRecipient(address _charityRecipient) external;
+    function setOperationalFeeRecipient(address operationalFeeRecipient) external;
 
     function setStrategyWhitelisted(address sale, bool whitelisted) external;
 

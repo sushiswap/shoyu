@@ -41,11 +41,11 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         );
     }
 
-    function DOMAIN_SEPARATOR() external view virtual override returns (bytes32) {
+    function DOMAIN_SEPARATOR() public view virtual override returns (bytes32) {
         return _DOMAIN_SEPARATOR;
     }
 
-    function factory() external view virtual override returns (address) {
+    function factory() public view virtual override returns (address) {
         return _factory;
     }
 

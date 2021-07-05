@@ -13,6 +13,8 @@ interface IBaseNFTExchange {
 
     function factory() external view returns (address);
 
+    function royaltyFeeInfo() external view returns (address recipient, uint8 permil);
+
     function bestBidder(bytes32 hash) external view returns (address);
 
     function bestBidPrice(bytes32 hash) external view returns (uint256);

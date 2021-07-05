@@ -16,16 +16,4 @@ interface INFTExchange is IBaseNFTExchange {
         uint256 deadline,
         bytes memory params
     ) external;
-
-    function royaltyFeeRecipientOf(address nft) external view returns (address);
-
-    function royaltyFeeOf(address nft) external view returns (uint8);
-
-    function charityDenominatorOf(address nft) external view returns (uint8);
-
-    function setRoyaltyFeeRecipientOf(address nft, address _royaltyFeeRecipient) external;
-
-    function setRoyaltyFeeOf(address nft, uint8 _royaltyFee) external;
-
-    function setCharityDenominatorOf(address nft, uint8 _charityDenominator) external;
 }
