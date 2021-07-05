@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/INFT721.sol";
+import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 import "./libraries/Orders.sol";
 
@@ -33,9 +34,10 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
 
     uint256 internal constant TOTAL_SUPPLY = 100e18;
 
-    address nft;
-    uint256 tokenId;
-    uint8 minimumQuorum; // out of 100
+    address public orderBook;
+    address public nft;
+    uint256 public tokenId;
+    uint8 public minimumQuorum; // out of 100
 
     SellProposal[] public proposals;
     mapping(uint256 => uint256) public totalPowerOf;
@@ -43,11 +45,17 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
 
     mapping(uint256 => bool) internal _sold;
 
-    function initialize(uint256 _tokenId, uint8 _minimumQuorum) external initializer {
+    function initialize(
+        address _orderBook,
+        address _nft,
+        uint256 _tokenId,
+        uint8 _minimumQuorum
+    ) external initializer {
         __ERC20_init("Shoyu NFT-721 Governance", "gNFT721");
         require(_minimumQuorum <= 100, "SHOYU: INVALID_MINIMUM_QUORUM");
 
-        nft = msg.sender;
+        orderBook = _orderBook;
+        nft = _nft;
         tokenId = _tokenId;
         minimumQuorum = _minimumQuorum;
     }
@@ -179,6 +187,14 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
     function _executeSellProposal(SellProposal storage proposal) internal {
         proposal.executed = true;
 
-        //        INFT721(nft).submitOrder(tokenId, 1, proposal.strategy, proposal.currency, proposal.deadline, proposal.params);
+        IOrderBook(orderBook).submitOrder(
+            nft,
+            tokenId,
+            1,
+            proposal.strategy,
+            proposal.currency,
+            proposal.deadline,
+            proposal.params
+        );
     }
 }

@@ -26,10 +26,6 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
         setRoyaltyFee(royaltyFee);
-
-        NFT721GovernanceToken token = new NFT721GovernanceToken();
-        token.initialize(0, 0);
-        _target = address(token);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT721, BaseNFTExchange, INFT721) returns (bytes32) {
@@ -64,14 +60,5 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
         require(royaltyFee <= INFTFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
 
         _royaltyFee = royaltyFee;
-    }
-
-    function liquidate(uint256 tokenId, uint8 _minimumQuorum) external override returns (address proxy) {
-        bytes memory initData = abi.encodeWithSignature("initialize(uint256,uint8)", tokenId, _minimumQuorum);
-        proxy = _createProxy(_target, initData);
-
-        _transfer(msg.sender, proxy, tokenId);
-
-        emit Liquidate(proxy, tokenId, _minimumQuorum);
     }
 }
