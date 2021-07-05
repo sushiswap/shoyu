@@ -15,7 +15,7 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
         address _owner,
         address royaltyFeeRecipient,
         uint8 royaltyFee
-    ) external initializer {
+    ) external override initializer {
         initialize(_uri, _owner);
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);

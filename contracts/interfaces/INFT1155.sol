@@ -6,6 +6,13 @@ import "./IBaseNFT1155.sol";
 import "./IBaseNFTExchange.sol";
 
 interface INFT1155 is IBaseNFT1155, IBaseNFTExchange {
+    function initialize(
+        string memory _uri,
+        address _owner,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external;
+
     function DOMAIN_SEPARATOR() external view override(IBaseNFT1155, IBaseNFTExchange) returns (bytes32);
 
     function factory() external view override(IBaseNFT1155, IBaseNFTExchange) returns (address);
