@@ -5,13 +5,14 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "./interfaces/IERC721GovernanceToken.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IBaseNFTExchange.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 import "./libraries/Orders.sol";
 
-contract ERC721GovernanceToken is ERC20SnapshotInitializable {
+contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceToken {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
 
@@ -35,14 +36,14 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
 
     uint256 internal constant TOTAL_SUPPLY = 100e18;
 
-    address public factory;
-    address public nft;
-    uint256 public tokenId;
-    uint8 public minimumQuorum; // out of 100
+    address public override factory;
+    address public override nft;
+    uint256 public override tokenId;
+    uint8 public override minimumQuorum; // out of 100
 
-    SellProposal[] public proposals;
-    mapping(uint256 => uint256) public totalPowerOf;
-    mapping(uint256 => mapping(address => uint256)) public powerOf;
+    SellProposal[] public override proposals;
+    mapping(uint256 => uint256) public override totalPowerOf;
+    mapping(uint256 => mapping(address => uint256)) public override powerOf;
 
     mapping(uint256 => bool) internal _sold;
 
@@ -51,7 +52,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         address _nft,
         uint256 _tokenId,
         uint8 _minimumQuorum
-    ) external initializer {
+    ) external override initializer {
         __ERC20_init("Shoyu NFT-721 Governance", "G-ERC721");
         require(_minimumQuorum <= 100, "SHOYU: INVALID_MINIMUM_QUORUM");
 
@@ -61,11 +62,11 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         minimumQuorum = _minimumQuorum;
     }
 
-    function proposalsLength() external view returns (uint256) {
+    function proposalsLength() external view override returns (uint256) {
         return proposals.length;
     }
 
-    function mint(address account, uint256 amount) external {
+    function mint(address account, uint256 amount) external override {
         require(nft == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(account, amount);
@@ -73,7 +74,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         emit Mint(account, amount);
     }
 
-    function claimPayout(uint256 id) external {
+    function claimPayout(uint256 id) external override {
         SellProposal storage proposal = proposals[id];
 
         if (!_sold[id]) {
@@ -120,7 +121,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         uint256 deadline,
         bytes calldata params,
         uint256 expiration
-    ) external {
+    ) external override {
         require(block.number < expiration, "SHOYU: EXPIRED");
 
         uint256 power = balanceOf(msg.sender);
@@ -136,7 +137,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         emit SubmitSellProposal(id, snapshotId, msg.sender, power);
     }
 
-    function confirmSellProposal(uint256 id) external {
+    function confirmSellProposal(uint256 id) external override {
         SellProposal storage proposal = proposals[id];
         require(!proposal.executed, "SHOYU: EXECUTED");
         require(block.number <= proposal.expiration, "SHOYU: EXPIRED");
@@ -158,7 +159,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         }
     }
 
-    function revokeSellProposal(uint256 id) external {
+    function revokeSellProposal(uint256 id) external override {
         SellProposal storage proposal = proposals[id];
         require(!proposal.executed, "SHOYU: EXECUTED");
         require(block.number <= proposal.expiration, "SHOYU: EXPIRED");
@@ -172,7 +173,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         emit RevokeSellProposal(id, msg.sender, power);
     }
 
-    function executeSellProposal(uint256 id) public {
+    function executeSellProposal(uint256 id) public override {
         SellProposal storage proposal = proposals[id];
         require(proposal.expiration < block.number, "SHOYU: NOT_FINISHED");
         require(totalPowerOf[id] > _minPower(), "SHOYU: NOT_SUBMITTED");
