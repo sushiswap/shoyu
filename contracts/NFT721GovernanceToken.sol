@@ -179,6 +179,6 @@ contract NFT721GovernanceToken is ERC20SnapshotInitializable {
     function _executeSellProposal(SellProposal storage proposal) internal {
         proposal.executed = true;
 
-        INFT721(nft).submitOrder(tokenId, 1, proposal.strategy, proposal.currency, proposal.deadline, proposal.params);
+        //        INFT721(nft).submitOrder(tokenId, 1, proposal.strategy, proposal.currency, proposal.deadline, proposal.params);
     }
 }

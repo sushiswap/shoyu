@@ -9,8 +9,6 @@ import "./factories/ProxyFactory.sol";
 import "./NFT721GovernanceToken.sol";
 
 contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
-    event Liquidate(address indexed proxy, uint256 indexed tokenId, uint8 minimumQuorum);
-
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
@@ -54,19 +52,6 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
         uint256
     ) internal override {
         _transfer(from, to, tokenId);
-    }
-
-    function submitOrder(
-        uint256 tokenId,
-        uint256 amount,
-        address strategy,
-        address currency,
-        uint256 deadline,
-        bytes memory params
-    ) external override {
-        bytes32 hash = _submitOrder(address(this), tokenId, amount, strategy, currency, deadline, params);
-
-        emit SubmitOrder(hash);
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {

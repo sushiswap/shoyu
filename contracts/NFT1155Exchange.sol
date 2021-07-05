@@ -4,10 +4,9 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-import "./interfaces/INFTExchange.sol";
 import "./base/BaseNFTExchange.sol";
 
-contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
+contract NFT1155Exchange is BaseNFTExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 
@@ -29,11 +28,11 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
         );
     }
 
-    function DOMAIN_SEPARATOR() public view override(BaseNFTExchange, IBaseNFTExchange) returns (bytes32) {
+    function DOMAIN_SEPARATOR() public view override returns (bytes32) {
         return _DOMAIN_SEPARATOR;
     }
 
-    function factory() public view override(BaseNFTExchange, IBaseNFTExchange) returns (address) {
+    function factory() public view override returns (address) {
         return _factory;
     }
 
@@ -45,19 +44,5 @@ contract NFT1155Exchange is BaseNFTExchange, INFTExchange {
         uint256 amount
     ) internal override {
         IERC1155(nft).safeTransferFrom(from, to, tokenId, amount, "");
-    }
-
-    function submitOrder(
-        address nft,
-        uint256 tokenId,
-        uint256 amount,
-        address strategy,
-        address currency,
-        uint256 deadline,
-        bytes memory params
-    ) external override {
-        bytes32 hash = _submitOrder(nft, tokenId, amount, strategy, currency, deadline, params);
-
-        emit SubmitOrder(hash);
     }
 }

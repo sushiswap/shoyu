@@ -6,22 +6,11 @@ import "./IBaseNFT1155.sol";
 import "./IBaseNFTExchange.sol";
 
 interface INFT1155 is IBaseNFT1155, IBaseNFTExchange {
-    event SubmitOrder(bytes32 hash);
-
     function DOMAIN_SEPARATOR() external view override(IBaseNFT1155, IBaseNFTExchange) returns (bytes32);
 
     function factory() external view override(IBaseNFT1155, IBaseNFTExchange) returns (address);
 
     function royaltyFeeInfo() external view override returns (address recipient, uint8 permil);
-
-    function submitOrder(
-        uint256 tokenId,
-        uint256 amount,
-        address strategy,
-        address currency,
-        uint256 deadline,
-        bytes memory params
-    ) external;
 
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 
