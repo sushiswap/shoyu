@@ -40,6 +40,10 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
         return (_royaltyFeeRecipient, _royaltyFee);
     }
 
+    function canTrade(address nft) public view override(BaseNFTExchange, IBaseNFTExchange) returns (bool) {
+        return nft == address(this);
+    }
+
     function _transfer(
         address,
         address from,

@@ -31,6 +31,8 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         return (address(0), uint8(0));
     }
 
+    function canTrade(address nft) public view virtual override returns (bool);
+
     function _transfer(
         address nft,
         address from,
@@ -40,6 +42,8 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     ) internal virtual;
 
     function cancel(Orders.Ask memory order) external override {
+        require(canTrade(order.nft), "SHOYU: INVALID_EXCHANGE");
+
         require(order.maker == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
@@ -77,6 +81,8 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         uint256 bidAmount,
         uint256 bidPrice
     ) internal returns (bool executed) {
+        require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
+
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.maker, askOrder.v, askOrder.r, askOrder.s);
 
@@ -106,7 +112,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         require(amountFilled[askHash] < ask.amount, "SHOYU: FILLED");
 
         require(ask.maker != address(0), "SHOYU: INVALID_MAKER");
-        require(ask.nft == address(this), "SHOYU: INVALID_NFT");
+        require(ask.nft != address(0), "SHOYU: INVALID_NFT");
         require(ask.amount > 0, "SHOYU: INVALID_AMOUNT");
         require(ask.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(ask.currency != address(0), "SHOYU: INVALID_CURRENCY");

@@ -36,6 +36,10 @@ contract NFT1155Exchange is BaseNFTExchange {
         return _factory;
     }
 
+    function canTrade(address nft) public view override returns (bool) {
+        return !INFTFactory(_factory).isNFT1155(nft);
+    }
+
     function _transfer(
         address nft,
         address from,
