@@ -5,8 +5,8 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./interfaces/INFT721.sol";
 import "./interfaces/INFTFactory.sol";
+import "./interfaces/IBaseNFTExchange.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 import "./libraries/Orders.sol";
@@ -79,7 +79,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable {
         if (!_sold[id]) {
             address exchange = INFTFactory(factory).isNFT721(nft) ? nft : INFTFactory(factory).erc721Exchange();
             bytes32 hash = _hashOrder(proposal);
-            require(INFT721(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
+            require(IBaseNFTExchange(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
 
             _sold[id] = true;
         }
