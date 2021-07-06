@@ -6,8 +6,9 @@ import "../libraries/Orders.sol";
 
 interface IBaseNFTExchange {
     event Cancel(bytes32 indexed hash);
-    event Execute(bytes32 indexed hash, address buyer, uint256 amount, uint256 price);
+    event Execute(bytes32 indexed hash, address executor, uint256 amount, uint256 price);
     event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice);
+    event Claim(bytes32 indexed hash, address claimer);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
@@ -17,9 +18,14 @@ interface IBaseNFTExchange {
 
     function canTrade(address nft) external view returns (bool);
 
-    function bestBidder(bytes32 hash) external view returns (address);
-
-    function bestBidPrice(bytes32 hash) external view returns (uint256);
+    function bestBid(bytes32 hash)
+        external
+        view
+        returns (
+            address bidder,
+            uint256 amount,
+            uint256 price
+        );
 
     function isCancelled(bytes32 hash) external view returns (bool);
 
@@ -34,4 +40,6 @@ interface IBaseNFTExchange {
         uint256 bidAmount,
         uint256 bidPrice
     ) external returns (bool executed);
+
+    function claim(Orders.Ask memory order) external;
 }

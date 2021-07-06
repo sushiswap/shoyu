@@ -18,8 +18,13 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
 
-    mapping(bytes32 => address) public override bestBidder;
-    mapping(bytes32 => uint256) public override bestBidPrice;
+    struct BestBid {
+        address bidder;
+        uint256 amount;
+        uint256 price;
+    }
+
+    mapping(bytes32 => BestBid) public override bestBid;
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
 
@@ -82,13 +87,13 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         uint256 bidPrice
     ) internal returns (bool executed) {
         require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
+        require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
+        require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.maker, askOrder.v, askOrder.r, askOrder.s);
 
-        bool expired = askOrder.deadline < block.number;
-        bool canClaim = bidder == bestBidder[askHash];
-        if ((expired && canClaim) || (!expired && IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice))) {
+        if (IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice)) {
             amountFilled[askHash] += bidAmount;
 
             _transfer(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
@@ -96,27 +101,51 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
 
             emit Execute(askHash, bidder, bidAmount, bidPrice);
             return true;
-        } else if (!expired && IStrategy(askOrder.strategy).canBid(askOrder.params, bidPrice, bestBidPrice[askHash])) {
-            bestBidder[askHash] = bidder;
-            bestBidPrice[askHash] = bidPrice;
-
-            emit Bid(askHash, bidder, bidAmount, bidPrice);
-            return false;
         } else {
-            revert("SHOYU: FAILURE");
+            BestBid storage best = bestBid[askHash];
+            if (IStrategy(askOrder.strategy).canBid(askOrder.params, bidPrice, best.price)) {
+                best.bidder = bidder;
+                best.amount = bidAmount;
+                best.price = bidPrice;
+
+                emit Bid(askHash, bidder, bidAmount, bidPrice);
+                return false;
+            }
         }
+        revert("SHOYU: FAILURE");
     }
 
-    function _validate(Orders.Ask memory ask, bytes32 askHash) internal view {
-        require(!isCancelled[askHash], "SHOYU: CANCELLED");
-        require(amountFilled[askHash] < ask.amount, "SHOYU: FILLED");
+    function claim(Orders.Ask memory askOrder) external override {
+        require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
+        require(askOrder.deadline < block.number, "SHOYU: NOT_CLAIMABLE");
 
-        require(ask.maker != address(0), "SHOYU: INVALID_MAKER");
-        require(ask.nft != address(0), "SHOYU: INVALID_NFT");
-        require(ask.amount > 0, "SHOYU: INVALID_AMOUNT");
-        require(ask.strategy != address(0), "SHOYU: INVALID_STRATEGY");
-        require(ask.currency != address(0), "SHOYU: INVALID_CURRENCY");
-        require(INFTFactory(factory()).isStrategyWhitelisted(ask.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
+        bytes32 askHash = askOrder.hash();
+        _validate(askOrder, askHash);
+        _verify(askHash, askOrder.maker, askOrder.v, askOrder.r, askOrder.s);
+
+        BestBid storage best = bestBid[askHash];
+        (address bidder, uint256 price) = (best.bidder, best.price);
+        require(msg.sender == bidder, "SHOYU: FORBIDDEN");
+        require(IStrategy(askOrder.strategy).canExecute(askOrder.params, price), "SHOYU: FAILURE");
+
+        uint256 amount = best.amount;
+        amountFilled[askHash] += amount;
+
+        _transfer(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, amount);
+        _transferFeesAndFunds(askOrder.maker, askOrder.currency, bidder, price);
+
+        emit Claim(askHash, msg.sender);
+    }
+
+    function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
+        require(!isCancelled[askHash], "SHOYU: CANCELLED");
+
+        require(askOrder.maker != address(0), "SHOYU: INVALID_MAKER");
+        require(askOrder.nft != address(0), "SHOYU: INVALID_NFT");
+        require(askOrder.amount > 0, "SHOYU: INVALID_AMOUNT");
+        require(askOrder.strategy != address(0), "SHOYU: INVALID_STRATEGY");
+        require(askOrder.currency != address(0), "SHOYU: INVALID_CURRENCY");
+        require(INFTFactory(factory()).isStrategyWhitelisted(askOrder.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
     }
 
     function _verify(
