@@ -106,6 +106,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
                 1,
                 proposal.strategy,
                 proposal.currency,
+                address(0),
                 proposal.deadline,
                 proposal.params,
                 uint8(0),
@@ -197,6 +198,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
             1,
             proposal.strategy,
             proposal.currency,
+            address(0),
             proposal.deadline,
             proposal.params
         );

@@ -16,6 +16,7 @@ contract OrderBook is IOrderBook {
         uint256 amount,
         address strategy,
         address currency,
+        address recipient,
         uint256 deadline,
         bytes memory params
     ) external override returns (bytes32 hash) {
@@ -27,6 +28,7 @@ contract OrderBook is IOrderBook {
                 amount,
                 strategy,
                 currency,
+                recipient,
                 deadline,
                 params,
                 0,

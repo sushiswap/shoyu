@@ -9,12 +9,13 @@ interface IOrderBook {
         external
         view
         returns (
-            address maker,
+            address signer,
             address nft,
             uint256 tokenId,
             uint256 amount,
             address strategy,
             address currency,
+            address recipient,
             uint256 deadline,
             bytes memory params,
             uint8 v,
@@ -28,6 +29,7 @@ interface IOrderBook {
         uint256 amount,
         address strategy,
         address currency,
+        address recipient,
         uint256 deadline,
         bytes memory params
     ) external returns (bytes32 hash);
