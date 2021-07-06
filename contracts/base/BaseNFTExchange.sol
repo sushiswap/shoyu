@@ -22,6 +22,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         address bidder;
         uint256 amount;
         uint256 price;
+        address referrer;
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
@@ -68,15 +69,16 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
 
         _verify(bidOrder.hash(), bidOrder.maker, bidOrder.v, bidOrder.r, bidOrder.s);
 
-        return _bid(askOrder, askHash, bidOrder.maker, bidOrder.amount, bidOrder.price);
+        return _bid(askOrder, askHash, bidOrder.maker, bidOrder.amount, bidOrder.price, bidOrder.referrer);
     }
 
     function bid(
         Orders.Ask memory askOrder,
         uint256 bidAmount,
-        uint256 bidPrice
+        uint256 bidPrice,
+        address bidReferrer
     ) external override nonReentrant returns (bool executed) {
-        return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice);
+        return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice, bidReferrer);
     }
 
     function _bid(
@@ -84,7 +86,8 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         bytes32 askHash,
         address bidder,
         uint256 bidAmount,
-        uint256 bidPrice
+        uint256 bidPrice,
+        address bidReferrer // TODO
     ) internal returns (bool executed) {
         require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
         require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
@@ -99,7 +102,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
             _transfer(askOrder.nft, askOrder.maker, bidder, askOrder.tokenId, bidAmount);
             _transferFeesAndFunds(askOrder.maker, askOrder.currency, bidder, bidPrice);
 
-            emit Execute(askHash, bidder, bidAmount, bidPrice);
+            emit Execute(askHash, bidder, bidAmount, bidPrice, bidReferrer);
             return true;
         } else {
             BestBid storage best = bestBid[askHash];
@@ -107,8 +110,9 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
                 best.bidder = bidder;
                 best.amount = bidAmount;
                 best.price = bidPrice;
+                best.referrer = bidReferrer;
 
-                emit Bid(askHash, bidder, bidAmount, bidPrice);
+                emit Bid(askHash, bidder, bidAmount, bidPrice, bidReferrer);
                 return false;
             }
         }

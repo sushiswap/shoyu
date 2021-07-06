@@ -6,8 +6,8 @@ import "../libraries/Orders.sol";
 
 interface IBaseNFTExchange {
     event Cancel(bytes32 indexed hash);
-    event Execute(bytes32 indexed hash, address executor, uint256 amount, uint256 price);
-    event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice);
+    event Execute(bytes32 indexed hash, address executor, uint256 bidAmount, uint256 bidPrice, address bidReferrer);
+    event Bid(bytes32 indexed hash, address bidder, uint256 bidAmount, uint256 bidPrice, address bidReferrer);
     event Claim(bytes32 indexed hash, address claimer);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
@@ -24,7 +24,8 @@ interface IBaseNFTExchange {
         returns (
             address bidder,
             uint256 amount,
-            uint256 price
+            uint256 price,
+            address referrer
         );
 
     function isCancelled(bytes32 hash) external view returns (bool);
@@ -38,7 +39,8 @@ interface IBaseNFTExchange {
     function bid(
         Orders.Ask memory askOrder,
         uint256 bidAmount,
-        uint256 bidPrice
+        uint256 bidPrice,
+        address bidReferrer
     ) external returns (bool executed);
 
     function claim(Orders.Ask memory order) external;
