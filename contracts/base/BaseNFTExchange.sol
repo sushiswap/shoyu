@@ -99,7 +99,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         uint256 bidAmount,
         uint256 bidPrice,
         address bidRecipient,
-        address bidReferrer // TODO
+        address bidReferrer
     ) internal returns (bool executed) {
         require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
         require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
@@ -145,23 +145,21 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
-        BestBid storage best = bestBid[askHash];
-        (address bidder, uint256 price) = (best.bidder, best.price);
-        require(msg.sender == bidder, "SHOYU: FORBIDDEN");
-        require(IStrategy(askOrder.strategy).canExecute(askOrder.params, price), "SHOYU: FAILURE");
+        BestBid memory best = bestBid[askHash];
+        require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
+        require(IStrategy(askOrder.strategy).canExecute(askOrder.params, best.price), "SHOYU: FAILURE");
 
-        uint256 amount = best.amount;
-        amountFilled[askHash] += amount;
+        amountFilled[askHash] += best.amount;
 
         address to = askOrder.recipient;
         if (to == address(0)) to = askOrder.signer;
-        _transfer(askOrder.nft, askOrder.signer, bidder, askOrder.tokenId, amount);
+        _transfer(askOrder.nft, askOrder.signer, best.bidder, askOrder.tokenId, best.amount);
 
         address bidTo = best.recipient;
-        if (bidTo == address(0)) bidTo = bidder;
-        _transferFeesAndFunds(askOrder.signer, askOrder.currency, bidder, price);
+        if (bidTo == address(0)) bidTo = best.bidder;
+        _transferFeesAndFunds(askOrder.signer, askOrder.currency, best.bidder, best.price);
 
-        emit Claim(askHash, msg.sender);
+        emit Execute(askHash, best.bidder, best.amount, best.price, best.recipient, best.referrer);
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
