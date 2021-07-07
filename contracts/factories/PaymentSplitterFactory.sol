@@ -12,12 +12,17 @@ contract PaymentSplitterFactory is ProxyFactory {
 
     constructor() {
         PaymentSplitter recipients = new PaymentSplitter();
-        recipients.initialize(new address[](0), new uint256[](0));
+        recipients.initialize("", new address[](0), new uint256[](0));
         target = address(recipients);
     }
 
-    function createPaymentSplitter(address[] memory payees, uint256[] memory shares) external returns (address proxy) {
-        bytes memory initData = abi.encodeWithSignature("initialize(address[],uint256[])", payees, shares);
+    function createPaymentSplitter(
+        string memory title,
+        address[] memory payees,
+        uint256[] memory shares
+    ) external returns (address proxy) {
+        bytes memory initData =
+            abi.encodeWithSignature("initialize(string,address[],uint256[])", title, payees, shares);
         proxy = _createProxy(target, initData);
 
         emit CreatePaymentSplitter(proxy, payees, shares);

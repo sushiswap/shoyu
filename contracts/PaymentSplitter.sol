@@ -13,6 +13,8 @@ contract PaymentSplitter is Initializable {
     event PayeeAdded(address account, uint256 shares);
     event PaymentReleased(address token, address to, uint256 amount);
 
+    string public title;
+
     /**
      * @dev Getter for the total shares held by payees.
      */
@@ -42,9 +44,15 @@ contract PaymentSplitter is Initializable {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    function initialize(address[] memory _payees, uint256[] memory _shares) external initializer {
+    function initialize(
+        string memory _title,
+        address[] memory _payees,
+        uint256[] memory _shares
+    ) external initializer {
         require(_payees.length == _shares.length, "SHOYU: LENGTHS_NOT_EQUAL");
         require(_payees.length > 0, "SHOYU: NO_PAYEES");
+
+        title = _title;
 
         for (uint256 i = 0; i < _payees.length; i++) {
             _addPayee(_payees[i], _shares[i]);
