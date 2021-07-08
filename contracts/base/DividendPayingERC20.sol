@@ -48,22 +48,25 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
 
     /// @dev Distributes dividends whenever ether is paid to this contract.
     receive() external payable {
-        distributeDividends(msg.value);
+        if (msg.value > 0) {
+            require(dividendToken == TokenHelper.ETH, "SHOYU: UNABLE_TO_RECEIVE_ETH");
+            distributeDividends(msg.value);
+        }
     }
 
-    /// @notice Distributes ether to token holders as dividends.
+    /// @notice Distributes ether/erc20 to token holders as dividends.
     /// @dev It reverts if the total supply of tokens is 0.
-    /// It emits the `DividendsDistributed` event if the amount of received ether is greater than 0.
-    /// About undistributed ether:
-    ///   In each distribution, there is a small amount of ether not distributed,
+    /// It emits the `DividendsDistributed` event if the amount of received ether/erc20 is greater than 0.
+    /// About undistributed ether/erc20:
+    ///   In each distribution, there is a small amount of ether/erc20 not distributed,
     ///     the magnified amount of which is
     ///     `(msg.value * magnitude) % totalSupply()`.
-    ///   With a well-chosen `magnitude`, the amount of undistributed ether
+    ///   With a well-chosen `magnitude`, the amount of undistributed ether/erc20
     ///     (de-magnified) in a distribution can be less than 1 wei.
-    ///   We can actually keep track of the undistributed ether in a distribution
+    ///   We can actually keep track of the undistributed ether/erc20 in a distribution
     ///     and try to distribute it in the next distribution,
     ///     but keeping track of such data on-chain costs much more than
-    ///     the saved ether, so we don't do that.
+    ///     the saved ether/erc20, so we don't do that.
     function distributeDividends(uint256 amount) public payable override {
         uint256 _totalSupply = totalSupply();
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
@@ -74,8 +77,8 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
         emit DividendsDistributed(msg.sender, amount);
     }
 
-    /// @notice Withdraws the ether distributed to the sender.
-    /// @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether is greater than 0.
+    /// @notice Withdraws the ether/erc20 distributed to the sender.
+    /// @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether/erc20 is greater than 0.
     function withdrawDividend() public override {
         uint256 _withdrawableDividend = withdrawableDividendOf(msg.sender);
         if (_withdrawableDividend > 0) {
