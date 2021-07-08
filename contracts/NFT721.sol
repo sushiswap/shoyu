@@ -5,10 +5,8 @@ pragma solidity =0.8.3;
 import "./interfaces/INFT721.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseNFTExchange.sol";
-import "./factories/ProxyFactory.sol";
-import "./ERC721GovernanceToken.sol";
 
-contract NFT721 is BaseNFT721, BaseNFTExchange, ProxyFactory, INFT721 {
+contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
