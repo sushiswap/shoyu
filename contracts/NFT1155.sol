@@ -13,10 +13,12 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
     function initialize(
         string memory _uri,
         address _owner,
+        uint256[] memory tokenIds,
+        uint256[] memory amounts,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external override initializer {
-        initialize(_uri, _owner);
+        initialize(_uri, _owner, tokenIds, amounts);
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
         setRoyaltyFee(royaltyFee);

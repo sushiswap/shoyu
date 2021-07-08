@@ -7,10 +7,11 @@ import "./IBaseNFTExchange.sol";
 
 interface INFT721 is IBaseNFT721, IBaseNFTExchange {
     function initialize(
-        string memory _baseURI_,
-        string memory _name,
-        string memory _symbol,
+        string calldata _baseURI_,
+        string calldata _name,
+        string calldata _symbol,
         address _owner,
+        uint256[] calldata tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external;

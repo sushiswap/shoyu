@@ -47,11 +47,11 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         erc1155Exchange = address(new ERC1155Exchange());
 
         NFT721 nft721 = new NFT721();
-        nft721.initialize("", "", "", address(0));
+        nft721.initialize("", "", "", address(0), new uint256[](0));
         _target721 = address(nft721);
 
         NFT1155 nft1155 = new NFT1155();
-        nft1155.initialize("", address(0));
+        nft1155.initialize("", address(0), new uint256[](0), new uint256[](0));
         _target1155 = address(nft1155);
     }
 
@@ -97,8 +97,9 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         string calldata baseURI,
         string calldata name,
         string calldata symbol,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] memory tokenIds,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     ) external override returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
@@ -106,18 +107,19 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         nft = _createProxy(
             _target721,
             abi.encodeWithSignature(
-                "initialize(string,string,string,address,address,uint8,uint8)",
+                "initialize(string,string,string,address,uint256[],address,uint8)",
                 baseURI,
                 name,
                 symbol,
                 msg.sender,
                 msg.sender,
-                royaltyFee,
-                charityDenominator
+                tokenIds,
+                royaltyFeeRecipient,
+                royaltyFee
             )
         );
 
-        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, royaltyFee, charityDenominator);
+        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, tokenIds, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
@@ -126,22 +128,25 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     function createNFT1155(
         string calldata uri,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] memory tokenIds,
+        uint256[] memory amounts,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     ) external override returns (address nft) {
         nft = _createProxy(
             _target1155,
             abi.encodeWithSignature(
-                "initialize(string,address,address,uint8,uint8)",
+                "initialize(address,string,address,uint256[],uint256[],address,uint8)",
                 uri,
                 msg.sender,
-                msg.sender,
-                royaltyFee,
-                charityDenominator
+                new uint256[](0),
+                new uint256[](0),
+                royaltyFeeRecipient,
+                royaltyFee
             )
         );
 
-        emit CreateNFT1155(nft, uri, msg.sender, royaltyFee, charityDenominator);
+        emit CreateNFT1155(nft, uri, msg.sender, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT1155(address query) external view override returns (bool result) {

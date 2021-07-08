@@ -18,19 +18,20 @@ interface IBaseNFT721 is IERC721 {
     function noncesForAll(address account) external view returns (uint256);
 
     function initialize(
-        string memory baseURI_,
-        string memory name,
-        string memory symbol,
-        address owner
+        string calldata baseURI_,
+        string calldata name,
+        string calldata symbol,
+        address _owner,
+        uint256[] calldata tokenIds
     ) external;
 
     function mint(address to, uint256 tokenId) external;
 
-    function mintBatch(address to, uint256[] memory tokenIds) external;
+    function mintBatch(address to, uint256[] calldata tokenIds) external;
 
     function burn(uint256 tokenId) external;
 
-    function burnBatch(uint256[] memory tokenIds) external;
+    function burnBatch(uint256[] calldata tokenIds) external;
 
     function permit(
         address spender,

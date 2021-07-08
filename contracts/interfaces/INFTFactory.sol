@@ -9,15 +9,18 @@ interface INFTFactory {
         string name,
         string symbol,
         address indexed owner,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] tokenIds,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     );
     event CreateNFT1155(
         address indexed nft,
         string uri,
         address indexed owner,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] tokenIds,
+        uint256[] amounts,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     );
     event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
@@ -51,16 +54,19 @@ interface INFTFactory {
         string calldata baseURI,
         string calldata name,
         string calldata symbol,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] calldata tokenIds,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     ) external returns (address nft);
 
     function isNFT721(address query) external view returns (bool result);
 
     function createNFT1155(
         string calldata uri,
-        uint8 royaltyFee,
-        uint8 charityDenominator
+        uint256[] memory tokenIds,
+        uint256[] memory amounts,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
     ) external returns (address nft);
 
     function isNFT1155(address query) external view returns (bool result);
@@ -69,7 +75,7 @@ interface INFTFactory {
         address nft,
         address to,
         uint256 tokenId,
-        string[] memory tags
+        string[] calldata tags
     ) external;
 
     function mintWithTags1155(
@@ -77,18 +83,18 @@ interface INFTFactory {
         address to,
         uint256 tokenId,
         uint256 amount,
-        string[] memory tags
+        string[] calldata tags
     ) external;
 
     function setTags721(
         address nft,
         uint256 tokenId,
-        string[] memory tags
+        string[] calldata tags
     ) external;
 
     function setTags1155(
         address nft,
         uint256 tokenId,
-        string[] memory tags
+        string[] calldata tags
     ) external;
 }

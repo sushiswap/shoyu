@@ -27,7 +27,8 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         string memory _baseURI_,
         string memory _name,
         string memory _symbol,
-        address _owner
+        address _owner,
+        uint256[] memory tokenIds
     ) public override initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
@@ -48,6 +49,10 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
                 address(this)
             )
         );
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _mint(_owner, tokenIds[i]);
+        }
     }
 
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32) {
