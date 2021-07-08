@@ -5,8 +5,6 @@ pragma solidity >=0.5.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface IBaseNFT721 is IERC721 {
-    event Mint(address to, uint256 indexed tokenId);
-
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
     function PERMIT_ALL_TYPEHASH() external view returns (bytes32);
@@ -28,7 +26,11 @@ interface IBaseNFT721 is IERC721 {
 
     function mint(address to, uint256 tokenId) external;
 
+    function mintBatch(address to, uint256[] memory tokenIds) external;
+
     function burn(uint256 tokenId) external;
+
+    function burnBatch(uint256[] memory tokenIds) external;
 
     function permit(
         address spender,

@@ -5,8 +5,6 @@ pragma solidity >=0.5.0;
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 interface IBaseNFT1155 is IERC1155 {
-    event Mint(address to, uint256 indexed tokenId, uint256 amount);
-
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);

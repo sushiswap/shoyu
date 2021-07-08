@@ -57,8 +57,6 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(to, tokenId, amount, "");
-
-        emit Mint(to, tokenId, amount);
     }
 
     function mintBatch(
@@ -69,11 +67,6 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mintBatch(to, tokenIds, amounts, "");
-        for (uint256 i; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-
-            emit Mint(to, tokenId, amounts[i]);
-        }
     }
 
     function burn(uint256 tokenId, uint256 amount) external override {

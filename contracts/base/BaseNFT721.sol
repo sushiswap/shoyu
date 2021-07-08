@@ -23,11 +23,6 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
 
     string internal __baseURI;
 
-    modifier onlyOwnerOf(uint256 tokenId) {
-        require(ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
-        _;
-    }
-
     function initialize(
         string memory _baseURI_,
         string memory _name,
@@ -71,12 +66,29 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(to, tokenId);
-
-        emit Mint(to, tokenId);
     }
 
-    function burn(uint256 tokenId) external override onlyOwnerOf(tokenId) {
+    function mintBatch(address to, uint256[] memory tokenIds) external override {
+        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _mint(to, tokenIds[i]);
+        }
+    }
+
+    function burn(uint256 tokenId) external override {
+        require(ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
+
         _burn(tokenId);
+    }
+
+    function burnBatch(uint256[] memory tokenIds) external override {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            require(ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
+
+            _burn(tokenId);
+        }
     }
 
     function permit(
