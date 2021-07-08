@@ -23,6 +23,8 @@ interface INFTFactory {
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
 
+    function MAX_OPERATIONAL_FEE() external view returns (uint8);
+
     function erc721Exchange() external view returns (address);
 
     function erc1155Exchange() external view returns (address);
@@ -40,6 +42,8 @@ interface INFTFactory {
     function setProtocolFeeRecipient(address protocolFeeRecipient) external;
 
     function setOperationalFeeRecipient(address operationalFeeRecipient) external;
+
+    function setOperationalFee(uint8 operationalFee) external;
 
     function setStrategyWhitelisted(address sale, bool whitelisted) external;
 

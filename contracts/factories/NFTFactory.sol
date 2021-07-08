@@ -12,7 +12,8 @@ import "../NFT721.sol";
 import "../NFT1155.sol";
 
 contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
-    uint8 public constant override MAX_ROYALTY_FEE = 250; // out of 1000
+    uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
+    uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
     address internal immutable _target721;
     address internal immutable _target1155;
@@ -78,6 +79,12 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         require(operationalFeeRecipient != address(0), "SHOYU: INVALID_RECIPIENT");
 
         _operationalFeeRecipient = operationalFeeRecipient;
+    }
+
+    function setOperationalFee(uint8 operationalFee) external override onlyOwner {
+        require(operationalFee <= MAX_OPERATIONAL_FEE, "SHOYU: INVALID_FEE");
+
+        _operationalFee = operationalFee;
     }
 
     function setStrategyWhitelisted(address ask, bool whitelisted) external override onlyOwner {
