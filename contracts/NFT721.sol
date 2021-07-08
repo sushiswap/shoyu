@@ -50,7 +50,11 @@ contract NFT721 is BaseNFT721, BaseNFTExchange, INFT721 {
         uint256 tokenId,
         uint256
     ) internal override {
-        _transfer(from, to, tokenId);
+        if (_exists(tokenId)) {
+            _transfer(from, to, tokenId);
+        } else {
+            _mint(to, tokenId);
+        }
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {
