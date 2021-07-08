@@ -4,38 +4,37 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+
+import "./interfaces/IPaymentSplitter.sol";
 import "./libraries/TokenHelper.sol";
 
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/finance/PaymentSplitter.sol
-contract PaymentSplitter is Initializable {
+contract PaymentSplitter is Initializable, IPaymentSplitter {
     using TokenHelper for address;
 
-    event PayeeAdded(address account, uint256 shares);
-    event PaymentReleased(address token, address to, uint256 amount);
-
-    string public title;
+    string public override title;
 
     /**
      * @dev Getter for the total shares held by payees.
      */
-    uint256 public totalShares;
+    uint256 public override totalShares;
     /**
      * @dev Getter for the total amount of token already released.
      */
-    mapping(address => uint256) public totalReleased;
+    mapping(address => uint256) public override totalReleased;
 
     /**
      * @dev Getter for the amount of shares held by an account.
      */
-    mapping(address => uint256) public shares;
+    mapping(address => uint256) public override shares;
     /**
      * @dev Getter for the amount of token already released to a payee.
      */
-    mapping(address => mapping(address => uint256)) public released;
+    mapping(address => mapping(address => uint256)) public override released;
     /**
      * @dev Getter for the address of the payee number `index`.
      */
-    address[] public payees;
+    address[] public override payees;
 
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
@@ -48,7 +47,7 @@ contract PaymentSplitter is Initializable {
         string memory _title,
         address[] memory _payees,
         uint256[] memory _shares
-    ) external initializer {
+    ) external override initializer {
         require(_payees.length == _shares.length, "SHOYU: LENGTHS_NOT_EQUAL");
         require(_payees.length > 0, "SHOYU: NO_PAYEES");
 
@@ -63,7 +62,7 @@ contract PaymentSplitter is Initializable {
      * @dev Triggers a transfer to `account` of the amount of token they are owed, according to their percentage of the
      * total shares and their previous withdrawals.
      */
-    function release(address token, address account) public virtual {
+    function release(address token, address account) public virtual override {
         require(shares[account] > 0, "SHOYU: FORBIDDEN");
 
         uint256 totalReceived = token.balanceOf(address(this)) + totalReleased[token];

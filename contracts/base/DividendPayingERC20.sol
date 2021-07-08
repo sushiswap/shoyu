@@ -5,30 +5,21 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "./ERC20Initializable.sol";
 import "../libraries/TokenHelper.sol";
+import "../interfaces/IDividendPayingERC20.sol";
 
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether/erc20
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
 ///  Reference: https://github.com/Roger-Wu/erc1726-dividend-paying-token/blob/master/contracts/DividendPayingToken.sol
-abstract contract DividendPayingERC20 is ERC20Initializable {
+abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC20 {
     using SafeCast for uint256;
     using SafeCast for int256;
     using TokenHelper for address;
 
-    /// @dev This event MUST emit when ether is distributed to token holders.
-    /// @param from The address which sends ether to this contract.
-    /// @param amount The amount of distributed ether in wei.
-    event DividendsDistributed(address indexed from, uint256 amount);
-
-    /// @dev This event MUST emit when an address withdraws their dividend.
-    /// @param to The address which withdraws ether from this contract.
-    /// @param amount The amount of withdrawn ether in wei.
-    event DividendWithdrawn(address indexed to, uint256 amount);
-
     // For more discussion about choosing the value of `magnitude`,
     //  see https://github.com/ethereum/EIPs/issues/1726#issuecomment-472352728
-    uint256 public constant MAGNITUDE = 2**128;
+    uint256 public constant override MAGNITUDE = 2**128;
 
-    address public dividendToken;
+    address public override dividendToken;
 
     uint256 internal magnifiedDividendPerShare;
 
@@ -73,7 +64,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
     ///     and try to distribute it in the next distribution,
     ///     but keeping track of such data on-chain costs much more than
     ///     the saved ether, so we don't do that.
-    function distributeDividends(uint256 amount) public payable {
+    function distributeDividends(uint256 amount) public payable override {
         uint256 _totalSupply = totalSupply();
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
         require(amount > 0, "SHOYU: INVALID_AMOUNT");
@@ -85,7 +76,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
 
     /// @notice Withdraws the ether distributed to the sender.
     /// @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether is greater than 0.
-    function withdrawDividend() public {
+    function withdrawDividend() public override {
         uint256 _withdrawableDividend = withdrawableDividendOf(msg.sender);
         if (_withdrawableDividend > 0) {
             withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender] + _withdrawableDividend;
@@ -97,21 +88,21 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
     /// @notice View the amount of dividend in wei that an address can withdraw.
     /// @param account The address of a token holder.
     /// @return The amount of dividend in wei that `account` can withdraw.
-    function dividendOf(address account) public view returns (uint256) {
+    function dividendOf(address account) public view override returns (uint256) {
         return withdrawableDividendOf(account);
     }
 
     /// @notice View the amount of dividend in wei that an address can withdraw.
     /// @param account The address of a token holder.
     /// @return The amount of dividend in wei that `account` can withdraw.
-    function withdrawableDividendOf(address account) public view returns (uint256) {
+    function withdrawableDividendOf(address account) public view override returns (uint256) {
         return accumulativeDividendOf(account) - withdrawnDividends[account];
     }
 
     /// @notice View the amount of dividend in wei that an address has withdrawn.
     /// @param account The address of a token holder.
     /// @return The amount of dividend in wei that `account` has withdrawn.
-    function withdrawnDividendOf(address account) public view returns (uint256) {
+    function withdrawnDividendOf(address account) public view override returns (uint256) {
         return withdrawnDividends[account];
     }
 
@@ -120,7 +111,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable {
     /// = (magnifiedDividendPerShare * balanceOf(account) + magnifiedDividendCorrections[account]) / magnitude
     /// @param account The address of a token holder.
     /// @return The amount of dividend in wei that `account` has earned in total.
-    function accumulativeDividendOf(address account) public view returns (uint256) {
+    function accumulativeDividendOf(address account) public view override returns (uint256) {
         return
             (magnifiedDividendPerShare *
                 (balanceOf(account).toInt256() + magnifiedDividendCorrections[account]).toUint256()) / MAGNITUDE;
