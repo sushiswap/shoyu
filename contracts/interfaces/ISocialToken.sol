@@ -5,8 +5,6 @@ pragma solidity >=0.5.0;
 import "./IDividendPayingERC20.sol";
 
 interface ISocialToken is IDividendPayingERC20 {
-    function MINTER_ROLE() external view returns (bytes32);
-
     function initialize(
         string memory _name,
         string memory _symbol,
