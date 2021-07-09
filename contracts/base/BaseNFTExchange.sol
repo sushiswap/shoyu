@@ -49,8 +49,6 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     ) internal virtual;
 
     function cancel(Orders.Ask memory order) external override {
-        require(canTrade(order.nft), "SHOYU: INVALID_EXCHANGE");
-
         require(order.signer == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
@@ -86,10 +84,10 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         Orders.Ask memory askOrder,
         uint256 bidAmount,
         uint256 bidPrice,
-        address bidTo,
+        address bidRecipient,
         address bidReferrer
     ) external override nonReentrant returns (bool executed) {
-        return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice, bidTo, bidReferrer);
+        return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice, bidRecipient, bidReferrer);
     }
 
     function _bid(
@@ -153,13 +151,13 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
 
         address to = askOrder.recipient;
         if (to == address(0)) to = askOrder.signer;
-        _transfer(askOrder.nft, askOrder.signer, best.bidder, askOrder.tokenId, best.amount);
+        _transfer(askOrder.nft, askOrder.signer, to, askOrder.tokenId, best.amount);
 
         address bidTo = best.recipient;
         if (bidTo == address(0)) bidTo = best.bidder;
-        _transferFeesAndFunds(askOrder.signer, askOrder.currency, best.bidder, best.price);
+        _transferFeesAndFunds(askOrder.signer, askOrder.currency, bidTo, best.price);
 
-        emit Execute(askHash, best.bidder, best.amount, best.price, best.recipient, best.referrer);
+        emit Execute(askHash, best.bidder, best.amount, best.price, bidTo, best.referrer);
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
@@ -194,7 +192,7 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     function _transferFeesAndFunds(
         address signer,
         address currency,
-        address bidTo,
+        address bidRecipient,
         uint256 bidPriceSum
     ) internal {
         address _factory = factory();
@@ -202,14 +200,14 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         {
             (address protocolFeeRecipient, uint8 protocolFeePermil) = INFTFactory(_factory).protocolFeeInfo();
             uint256 protocolFeeAmount = (bidPriceSum * protocolFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(bidTo, protocolFeeRecipient, protocolFeeAmount);
+            IERC20(currency).safeTransferFrom(bidRecipient, protocolFeeRecipient, protocolFeeAmount);
             remainder -= protocolFeeAmount;
         }
 
         {
             (address operationalFeeRecipient, uint8 operationalFeePermil) = INFTFactory(_factory).operationalFeeInfo();
             uint256 operationalFeeAmount = (bidPriceSum * operationalFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(bidTo, operationalFeeRecipient, operationalFeeAmount);
+            IERC20(currency).safeTransferFrom(bidRecipient, operationalFeeRecipient, operationalFeeAmount);
             remainder -= operationalFeeAmount;
         }
 
@@ -217,9 +215,9 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
         uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
         if (royaltyFeeAmount > 0) {
             remainder -= royaltyFeeAmount;
-            IERC20(currency).safeTransferFrom(bidTo, royaltyFeeRecipient, royaltyFeeAmount);
+            IERC20(currency).safeTransferFrom(bidRecipient, royaltyFeeRecipient, royaltyFeeAmount);
         }
 
-        IERC20(currency).safeTransferFrom(bidTo, signer, remainder);
+        IERC20(currency).safeTransferFrom(bidRecipient, signer, remainder);
     }
 }
