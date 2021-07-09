@@ -5,7 +5,7 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./interfaces/IERC721Liquidator.sol";
-import "./factories/ProxyFactory.sol";
+import "./base/ProxyFactory.sol";
 import "./ERC721GovernanceToken.sol";
 
 contract ERC721Liquidator is ProxyFactory, IERC721Liquidator {

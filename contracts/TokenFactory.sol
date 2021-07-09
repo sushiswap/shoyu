@@ -4,13 +4,13 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../interfaces/ITokenFactory.sol";
-import "../factories/ProxyFactory.sol";
-import "../ERC721Exchange.sol";
-import "../ERC1155Exchange.sol";
-import "../NFT721.sol";
-import "../NFT1155.sol";
-import "../SocialToken.sol";
+import "./interfaces/ITokenFactory.sol";
+import "./base/ProxyFactory.sol";
+import "./ERC721Exchange.sol";
+import "./ERC1155Exchange.sol";
+import "./NFT721.sol";
+import "./NFT1155.sol";
+import "./SocialToken.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
