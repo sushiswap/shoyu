@@ -4,7 +4,6 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "../interfaces/IERC1271.sol";
@@ -12,8 +11,9 @@ import "../interfaces/IBaseNFTExchange.sol";
 import "../interfaces/INFTFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../libraries/Orders.sol";
+import "./ReentrancyGuardInitializable.sol";
 
-abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
+abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExchange {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
@@ -29,6 +29,10 @@ abstract contract BaseNFTExchange is IBaseNFTExchange, ReentrancyGuard {
     mapping(bytes32 => BestBid) public override bestBid;
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
+
+    function __BaseNFTExchange_init() internal {
+        __ReentrancyGuard_init();
+    }
 
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32);
 

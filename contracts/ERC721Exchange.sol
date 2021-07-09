@@ -11,6 +11,7 @@ contract ERC721Exchange is BaseNFTExchange {
     address internal immutable _factory;
 
     constructor() {
+        __BaseNFTExchange_init();
         _factory = msg.sender;
 
         uint256 chainId;

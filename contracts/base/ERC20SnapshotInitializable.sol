@@ -32,7 +32,7 @@ import "./ERC20Initializable.sol";
  * only significant for the first transfer that immediately follows a snapshot for a particular account. Subsequent
  * transfers will have normal cost until the next snapshot, and so on.
  */
-abstract contract ERC20SnapshotInitializable is Initializable, ERC20Initializable {
+abstract contract ERC20SnapshotInitializable is ERC20Initializable {
     function __ERC20Snapshot_init() internal initializer {
         __ERC20Snapshot_init_unchained();
     }
