@@ -4,9 +4,9 @@ pragma solidity =0.8.3;
 
 import "./interfaces/INFT1155.sol";
 import "./base/BaseNFT1155.sol";
-import "./base/BaseNFTExchange.sol";
+import "./base/BaseExchange.sol";
 
-contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
+contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
@@ -25,25 +25,16 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
         setRoyaltyFee(royaltyFee);
     }
 
-    function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseNFTExchange, INFT1155) returns (bytes32) {
+    function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (bytes32) {
         return _DOMAIN_SEPARATOR;
     }
 
-    function factory() public view override(BaseNFT1155, BaseNFTExchange, INFT1155) returns (address) {
+    function factory() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (address) {
         return _factory;
     }
 
-    function royaltyFeeInfo()
-        public
-        view
-        override(BaseNFTExchange, INFT1155)
-        returns (address recipient, uint8 permil)
-    {
+    function royaltyFeeInfo() public view override(BaseExchange, INFT1155) returns (address recipient, uint8 permil) {
         return (_royaltyFeeRecipient, _royaltyFee);
-    }
-
-    function canTrade(address nft) public view override(BaseNFTExchange, IBaseNFTExchange) returns (bool) {
-        return nft == address(this);
     }
 
     function _transfer(
@@ -64,7 +55,7 @@ contract NFT1155 is BaseNFT1155, BaseNFTExchange, INFT1155 {
     }
 
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
-        require(royaltyFee <= INFTFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+        require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
 
         _royaltyFee = royaltyFee;
     }

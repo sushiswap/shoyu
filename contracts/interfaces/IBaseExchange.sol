@@ -4,7 +4,7 @@ pragma solidity >=0.5.0;
 
 import "../libraries/Orders.sol";
 
-interface IBaseNFTExchange {
+interface IBaseExchange {
     event Cancel(bytes32 indexed hash);
     event Execute(
         bytes32 indexed hash,
@@ -22,7 +22,7 @@ interface IBaseNFTExchange {
 
     function royaltyFeeInfo() external view returns (address recipient, uint8 permil);
 
-    function canTrade(address nft) external view returns (bool);
+    function canTrade(address token) external view returns (bool);
 
     function bestBid(bytes32 hash)
         external

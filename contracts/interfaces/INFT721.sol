@@ -3,9 +3,9 @@
 pragma solidity >=0.5.0;
 
 import "./IBaseNFT721.sol";
-import "./IBaseNFTExchange.sol";
+import "./IBaseExchange.sol";
 
-interface INFT721 is IBaseNFT721, IBaseNFTExchange {
+interface INFT721 is IBaseNFT721, IBaseExchange {
     function initialize(
         string calldata _baseURI_,
         string calldata _name,
@@ -16,9 +16,9 @@ interface INFT721 is IBaseNFT721, IBaseNFTExchange {
         uint8 royaltyFee
     ) external;
 
-    function DOMAIN_SEPARATOR() external view override(IBaseNFT721, IBaseNFTExchange) returns (bytes32);
+    function DOMAIN_SEPARATOR() external view override(IBaseNFT721, IBaseExchange) returns (bytes32);
 
-    function factory() external view override(IBaseNFT721, IBaseNFTExchange) returns (address);
+    function factory() external view override(IBaseNFT721, IBaseExchange) returns (address);
 
     function royaltyFeeInfo() external view override returns (address recipient, uint8 permil);
 

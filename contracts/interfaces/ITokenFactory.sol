@@ -2,7 +2,7 @@
 
 pragma solidity >=0.5.0;
 
-interface INFTFactory {
+interface ITokenFactory {
     event CreateNFT721(
         address indexed nft,
         string baseURI,
@@ -21,6 +21,13 @@ interface INFTFactory {
         uint256[] amounts,
         address royaltyFeeRecipient,
         uint8 royaltyFee
+    );
+    event CreateSocialToken(
+        address indexed proxy,
+        string name,
+        string symbol,
+        address indexed dividendToken,
+        address indexed owner
     );
     event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
@@ -70,6 +77,14 @@ interface INFTFactory {
     ) external returns (address nft);
 
     function isNFT1155(address query) external view returns (bool result);
+
+    function createSocialToken(
+        string memory name,
+        string memory symbol,
+        address dividendToken
+    ) external returns (address proxy);
+
+    function isSocialToken(address query) external view returns (bool result);
 
     function mintWithTags721(
         address nft,

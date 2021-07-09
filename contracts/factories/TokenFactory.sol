@@ -4,19 +4,21 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../interfaces/INFTFactory.sol";
+import "../interfaces/ITokenFactory.sol";
 import "../factories/ProxyFactory.sol";
 import "../ERC721Exchange.sol";
 import "../ERC1155Exchange.sol";
 import "../NFT721.sol";
 import "../NFT1155.sol";
+import "../SocialToken.sol";
 
-contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
+contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
     address internal immutable _target721;
     address internal immutable _target1155;
+    address internal immutable _targetSocialToken;
 
     address internal _protocolFeeRecipient;
     uint8 internal _protocolFee; // out of 1000
@@ -53,6 +55,10 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
         NFT1155 nft1155 = new NFT1155();
         nft1155.initialize("", address(0), new uint256[](0), new uint256[](0));
         _target1155 = address(nft1155);
+
+        SocialToken token = new SocialToken();
+        token.initialize("", "", address(0), address(0));
+        _targetSocialToken = address(token);
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
@@ -151,6 +157,28 @@ contract NFTFactory is ProxyFactory, Ownable, INFTFactory {
 
     function isNFT1155(address query) external view override returns (bool result) {
         return _isProxy(_target1155, query);
+    }
+
+    function createSocialToken(
+        string memory name,
+        string memory symbol,
+        address dividendToken
+    ) external override returns (address proxy) {
+        bytes memory initData =
+            abi.encodeWithSignature(
+                "initialize(string,string,address,address)",
+                name,
+                symbol,
+                dividendToken,
+                msg.sender
+            );
+        proxy = _createProxy(_targetSocialToken, initData);
+
+        emit CreateSocialToken(proxy, name, symbol, msg.sender, dividendToken);
+    }
+
+    function isSocialToken(address query) external view override returns (bool result) {
+        return _isProxy(_targetSocialToken, query);
     }
 
     function mintWithTags721(

@@ -7,13 +7,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "../interfaces/IERC1271.sol";
-import "../interfaces/IBaseNFTExchange.sol";
-import "../interfaces/INFTFactory.sol";
+import "../interfaces/IBaseExchange.sol";
+import "../interfaces/ITokenFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../libraries/Orders.sol";
 import "./ReentrancyGuardInitializable.sol";
 
-abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExchange {
+abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
     using Orders for Orders.Bid;
@@ -42,10 +42,12 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
         return (address(0), uint8(0));
     }
 
-    function canTrade(address nft) public view virtual override returns (bool);
+    function canTrade(address token) public view virtual override returns (bool) {
+        return token == address(this);
+    }
 
     function _transfer(
-        address nft,
+        address token,
         address from,
         address to,
         uint256 tokenId,
@@ -103,7 +105,7 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
         address bidRecipient,
         address bidReferrer
     ) internal returns (bool executed) {
-        require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
+        require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
         require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
         require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
@@ -115,7 +117,7 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
 
             address to = askOrder.recipient;
             if (to == address(0)) to = askOrder.signer;
-            _transfer(askOrder.nft, askOrder.signer, to, askOrder.tokenId, bidAmount);
+            _transfer(askOrder.token, askOrder.signer, to, askOrder.tokenId, bidAmount);
 
             address bidTo = bidRecipient;
             if (bidTo == address(0)) bidTo = bidder;
@@ -140,7 +142,7 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
     }
 
     function claim(Orders.Ask memory askOrder) external override {
-        require(canTrade(askOrder.nft), "SHOYU: INVALID_EXCHANGE");
+        require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
         require(askOrder.deadline < block.number, "SHOYU: NOT_CLAIMABLE");
 
         bytes32 askHash = askOrder.hash();
@@ -155,7 +157,7 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
 
         address to = askOrder.recipient;
         if (to == address(0)) to = askOrder.signer;
-        _transfer(askOrder.nft, askOrder.signer, to, askOrder.tokenId, best.amount);
+        _transfer(askOrder.token, askOrder.signer, to, askOrder.tokenId, best.amount);
 
         address bidTo = best.recipient;
         if (bidTo == address(0)) bidTo = best.bidder;
@@ -168,11 +170,11 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
         require(!isCancelled[askHash], "SHOYU: CANCELLED");
 
         require(askOrder.signer != address(0), "SHOYU: INVALID_MAKER");
-        require(askOrder.nft != address(0), "SHOYU: INVALID_NFT");
+        require(askOrder.token != address(0), "SHOYU: INVALID_NFT");
         require(askOrder.amount > 0, "SHOYU: INVALID_AMOUNT");
         require(askOrder.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(askOrder.currency != address(0), "SHOYU: INVALID_CURRENCY");
-        require(INFTFactory(factory()).isStrategyWhitelisted(askOrder.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
+        require(ITokenFactory(factory()).isStrategyWhitelisted(askOrder.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
     }
 
     function _verify(
@@ -202,14 +204,15 @@ abstract contract BaseNFTExchange is ReentrancyGuardInitializable, IBaseNFTExcha
         address _factory = factory();
         uint256 remainder = bidPriceSum;
         {
-            (address protocolFeeRecipient, uint8 protocolFeePermil) = INFTFactory(_factory).protocolFeeInfo();
+            (address protocolFeeRecipient, uint8 protocolFeePermil) = ITokenFactory(_factory).protocolFeeInfo();
             uint256 protocolFeeAmount = (bidPriceSum * protocolFeePermil) / 1000;
             IERC20(currency).safeTransferFrom(bidRecipient, protocolFeeRecipient, protocolFeeAmount);
             remainder -= protocolFeeAmount;
         }
 
         {
-            (address operationalFeeRecipient, uint8 operationalFeePermil) = INFTFactory(_factory).operationalFeeInfo();
+            (address operationalFeeRecipient, uint8 operationalFeePermil) =
+                ITokenFactory(_factory).operationalFeeInfo();
             uint256 operationalFeeAmount = (bidPriceSum * operationalFeePermil) / 1000;
             IERC20(currency).safeTransferFrom(bidRecipient, operationalFeeRecipient, operationalFeeAmount);
             remainder -= operationalFeeAmount;

@@ -2,9 +2,10 @@
 
 pragma solidity >=0.5.0;
 
+import "./IBaseExchange.sol";
 import "./IDividendPayingERC20.sol";
 
-interface ISocialToken is IDividendPayingERC20 {
+interface ISocialToken is IBaseExchange, IDividendPayingERC20 {
     function initialize(
         string memory _name,
         string memory _symbol,

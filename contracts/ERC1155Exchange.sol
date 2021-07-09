@@ -4,9 +4,9 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-import "./base/BaseNFTExchange.sol";
+import "./base/BaseExchange.sol";
 
-contract ERC1155Exchange is BaseNFTExchange {
+contract ERC1155Exchange is BaseExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 
@@ -38,7 +38,7 @@ contract ERC1155Exchange is BaseNFTExchange {
     }
 
     function canTrade(address nft) public view override returns (bool) {
-        return !INFTFactory(_factory).isNFT1155(nft);
+        return !ITokenFactory(_factory).isNFT1155(nft);
     }
 
     function _transfer(

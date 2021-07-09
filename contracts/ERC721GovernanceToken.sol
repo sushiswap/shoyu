@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IERC721GovernanceToken.sol";
-import "./interfaces/INFTFactory.sol";
-import "./interfaces/IBaseNFTExchange.sol";
+import "./interfaces/ITokenFactory.sol";
+import "./interfaces/IBaseExchange.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 import "./libraries/Orders.sol";
@@ -78,9 +78,9 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         SellProposal storage proposal = proposals[id];
 
         if (!_sold[id]) {
-            address exchange = INFTFactory(factory).isNFT721(nft) ? nft : INFTFactory(factory).erc721Exchange();
+            address exchange = ITokenFactory(factory).isNFT721(nft) ? nft : ITokenFactory(factory).erc721Exchange();
             bytes32 hash = _hashOrder(proposal);
-            require(IBaseNFTExchange(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
+            require(IBaseExchange(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
 
             _sold[id] = true;
         }
@@ -191,7 +191,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     function _executeSellProposal(SellProposal storage proposal) internal {
         proposal.executed = true;
 
-        address orderBook = INFTFactory(factory).orderBook();
+        address orderBook = ITokenFactory(factory).orderBook();
         IOrderBook(orderBook).submitOrder(
             nft,
             tokenId,
