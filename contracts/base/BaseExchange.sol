@@ -10,6 +10,7 @@ import "../interfaces/IERC1271.sol";
 import "../interfaces/IBaseExchange.sol";
 import "../interfaces/ITokenFactory.sol";
 import "../interfaces/IStrategy.sol";
+import "../interfaces/IDividendPayingERC20.sol";
 import "../libraries/Orders.sol";
 import "./ReentrancyGuardInitializable.sol";
 
@@ -115,13 +116,12 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         if (IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice)) {
             amountFilled[askHash] += bidAmount;
 
-            address to = askOrder.recipient;
-            if (to == address(0)) to = askOrder.signer;
-            _transfer(askOrder.token, askOrder.signer, to, askOrder.tokenId, bidAmount);
+            if (bidRecipient == address(0)) bidRecipient = bidder;
+            _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, bidAmount);
 
-            address bidTo = bidRecipient;
-            if (bidTo == address(0)) bidTo = bidder;
-            _transferFeesAndFunds(askOrder.signer, askOrder.currency, bidTo, bidPrice);
+            address recipient = askOrder.recipient;
+            if (recipient == address(0)) recipient = askOrder.signer;
+            _transferFeesAndFunds(askOrder.currency, bidder, recipient, bidPrice * bidAmount);
 
             emit Execute(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
             return true;
@@ -155,15 +155,15 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         amountFilled[askHash] += best.amount;
 
-        address to = askOrder.recipient;
-        if (to == address(0)) to = askOrder.signer;
-        _transfer(askOrder.token, askOrder.signer, to, askOrder.tokenId, best.amount);
+        address bidRecipient = best.recipient;
+        if (bidRecipient == address(0)) bidRecipient = best.bidder;
+        _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, best.amount);
 
-        address bidTo = best.recipient;
-        if (bidTo == address(0)) bidTo = best.bidder;
-        _transferFeesAndFunds(askOrder.signer, askOrder.currency, bidTo, best.price);
+        address recipient = askOrder.recipient;
+        if (recipient == address(0)) recipient = askOrder.signer;
+        _transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount);
 
-        emit Execute(askHash, best.bidder, best.amount, best.price, bidTo, best.referrer);
+        emit Execute(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
@@ -196,25 +196,25 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     }
 
     function _transferFeesAndFunds(
-        address signer,
         address currency,
-        address bidRecipient,
-        uint256 bidPriceSum
+        address from,
+        address to,
+        uint256 amount
     ) internal {
         address _factory = factory();
-        uint256 remainder = bidPriceSum;
+        uint256 remainder = amount;
         {
             (address protocolFeeRecipient, uint8 protocolFeePermil) = ITokenFactory(_factory).protocolFeeInfo();
-            uint256 protocolFeeAmount = (bidPriceSum * protocolFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(bidRecipient, protocolFeeRecipient, protocolFeeAmount);
+            uint256 protocolFeeAmount = (amount * protocolFeePermil) / 1000;
+            IERC20(currency).safeTransferFrom(from, protocolFeeRecipient, protocolFeeAmount);
             remainder -= protocolFeeAmount;
         }
 
         {
             (address operationalFeeRecipient, uint8 operationalFeePermil) =
                 ITokenFactory(_factory).operationalFeeInfo();
-            uint256 operationalFeeAmount = (bidPriceSum * operationalFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(bidRecipient, operationalFeeRecipient, operationalFeeAmount);
+            uint256 operationalFeeAmount = (amount * operationalFeePermil) / 1000;
+            IERC20(currency).safeTransferFrom(from, operationalFeeRecipient, operationalFeeAmount);
             remainder -= operationalFeeAmount;
         }
 
@@ -222,9 +222,9 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
         if (royaltyFeeAmount > 0) {
             remainder -= royaltyFeeAmount;
-            IERC20(currency).safeTransferFrom(bidRecipient, royaltyFeeRecipient, royaltyFeeAmount);
+            IERC20(currency).safeTransferFrom(from, royaltyFeeRecipient, royaltyFeeAmount);
         }
 
-        IERC20(currency).safeTransferFrom(bidRecipient, signer, remainder);
+        IERC20(currency).safeTransferFrom(from, to, remainder);
     }
 }
