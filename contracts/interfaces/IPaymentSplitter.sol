@@ -18,11 +18,5 @@ interface IPaymentSplitter {
 
     function payees(uint256 index) external view returns (address);
 
-    function initialize(
-        string calldata _title,
-        address[] calldata _payees,
-        uint256[] calldata _shares
-    ) external;
-
     function release(address token, address account) external;
 }
