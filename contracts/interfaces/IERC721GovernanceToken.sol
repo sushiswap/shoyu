@@ -3,6 +3,11 @@
 pragma solidity >=0.5.0;
 
 interface IERC721GovernanceToken {
+    event SubmitSellProposal(uint256 id, uint256 snapshotId, address indexed from, uint256 power);
+    event ConfirmSellProposal(uint256 id, address indexed from, uint256 power);
+    event RevokeSellProposal(uint256 id, address indexed from, uint256 power);
+    event ExecuteSellProposal(uint256 id);
+
     function initialize(
         address _orderBook,
         address _nft,

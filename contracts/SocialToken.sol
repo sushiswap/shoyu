@@ -10,9 +10,6 @@ import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
 
 contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
-    event Mint(address indexed account, uint256 indexed value);
-    event Burn(address indexed account, uint256 indexed value, bytes32 data);
-
     bytes32 internal _DOMAIN_SEPARATOR;
     address internal _factory;
 
@@ -62,13 +59,15 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
 
     function mint(address account, uint256 value) external override onlyOwner {
         _mint(account, value);
-
-        emit Mint(account, value);
     }
 
-    function burn(uint256 value, bytes32 data) external override {
+    function burn(
+        uint256 value,
+        uint256 id,
+        bytes32 data
+    ) external override {
         _burn(msg.sender, value);
 
-        emit Burn(msg.sender, value, data);
+        emit Log(id, data);
     }
 }

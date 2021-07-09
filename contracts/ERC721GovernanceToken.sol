@@ -26,14 +26,6 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         uint256 snapshotId;
     }
 
-    event Mint(address indexed account, uint256 balance);
-    event Burn(address indexed account, uint256 balance);
-
-    event SubmitSellProposal(uint256 id, uint256 snapshotId, address indexed from, uint256 power);
-    event ConfirmSellProposal(uint256 id, address indexed from, uint256 power);
-    event RevokeSellProposal(uint256 id, address indexed from, uint256 power);
-    event ExecuteSellProposal(uint256 id);
-
     uint256 internal constant TOTAL_SUPPLY = 100e18;
 
     address public override factory;
@@ -70,8 +62,6 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         require(nft == msg.sender, "SHOYU: FORBIDDEN");
 
         _mint(account, amount);
-
-        emit Mint(account, amount);
     }
 
     function claimPayout(uint256 id) external override {
@@ -93,8 +83,6 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         uint256 payout = IERC20(_currency).balanceOf(address(this));
         uint256 amount = (payout * share) / totalSupply();
         IERC20(_currency).safeTransfer(msg.sender, amount);
-
-        emit Burn(msg.sender, amount);
     }
 
     function _hashOrder(SellProposal storage proposal) internal view returns (bytes32) {
