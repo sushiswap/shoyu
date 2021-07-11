@@ -47,7 +47,7 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         uint256 tokenId,
         uint256
     ) internal override {
-        if (from == owner() && !_exists(tokenId)) {
+        if (from == owner() && (!_exists(tokenId) || _parked(tokenId))) {
             _mint(to, tokenId);
         } else {
             _transfer(from, to, tokenId);

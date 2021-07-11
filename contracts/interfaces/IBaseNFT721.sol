@@ -5,6 +5,8 @@ pragma solidity >=0.5.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface IBaseNFT721 is IERC721 {
+    event ParkTokenIds(uint256 toTokenId);
+
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
     function PERMIT_ALL_TYPEHASH() external view returns (bytes32);
@@ -17,6 +19,8 @@ interface IBaseNFT721 is IERC721 {
 
     function noncesForAll(address account) external view returns (uint256);
 
+    function parked(uint256 tokenId) external view returns (bool);
+
     function initialize(
         string calldata baseURI_,
         string calldata name,
@@ -24,6 +28,8 @@ interface IBaseNFT721 is IERC721 {
         address _owner,
         uint256[] calldata tokenIds
     ) external;
+
+    function parkTokenIds(uint256 toTokenId) external;
 
     function mint(address to, uint256 tokenId) external;
 
