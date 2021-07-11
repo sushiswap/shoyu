@@ -55,11 +55,15 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         require(royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _royaltyFeeRecipient = royaltyFeeRecipient;
+
+        emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
 
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
         require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
 
         _royaltyFee = royaltyFee;
+
+        emit SetRoyaltyFee(royaltyFee);
     }
 }

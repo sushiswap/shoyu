@@ -6,6 +6,9 @@ import "./IBaseNFT1155.sol";
 import "./IBaseExchange.sol";
 
 interface INFT1155 is IBaseNFT1155, IBaseExchange {
+    event SetRoyaltyFeeRecipient(address recipient);
+    event SetRoyaltyFee(uint8 fee);
+
     function initialize(
         address _owner,
         uint256[] calldata tokenIds,
