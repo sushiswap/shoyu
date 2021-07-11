@@ -46,6 +46,8 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
 
         _parkTokenIds(toTokenId);
 
+        emit ParkTokenIds(toTokenId);
+
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
         setRoyaltyFee(royaltyFee);
     }
