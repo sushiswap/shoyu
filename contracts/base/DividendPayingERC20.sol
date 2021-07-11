@@ -20,6 +20,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     uint256 public constant override MAGNITUDE = 2**128;
 
     address public override dividendToken;
+    uint256 public override totalDividend;
 
     uint256 internal magnifiedDividendPerShare;
 
@@ -46,17 +47,18 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     mapping(address => int256) internal magnifiedDividendCorrections;
     mapping(address => uint256) internal withdrawnDividends;
 
-    /// @dev Distributes dividends whenever ether is paid to this contract.
+    /// @dev Syncs dividends whenever ether is paid to this contract.
     receive() external payable {
         if (msg.value > 0) {
             require(dividendToken == TokenHelper.ETH, "SHOYU: UNABLE_TO_RECEIVE_ETH");
-            distributeDividends(msg.value);
+            sync();
         }
     }
 
-    /// @notice Distributes ether/erc20 to token holders as dividends.
+    /// @notice Syncs the amount of ether/erc20 increased to token holders as dividends.
     /// @dev It reverts if the total supply of tokens is 0.
-    /// It emits the `DividendsDistributed` event if the amount of received ether/erc20 is greater than 0.
+    /// @return increased The amount of total dividend increased
+    /// It emits the `Sync` event if the amount of received ether/erc20 is greater than 0.
     /// About undistributed ether/erc20:
     ///   In each distribution, there is a small amount of ether/erc20 not distributed,
     ///     the magnified amount of which is
@@ -67,14 +69,18 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     ///     and try to distribute it in the next distribution,
     ///     but keeping track of such data on-chain costs much more than
     ///     the saved ether/erc20, so we don't do that.
-    function distributeDividends(uint256 amount) public payable override {
+    function sync() public payable override returns (uint256 increased) {
         uint256 _totalSupply = totalSupply();
         require(_totalSupply > 0, "SHOYU: NO_SUPPLY");
-        require(amount > 0, "SHOYU: INVALID_AMOUNT");
 
-        dividendToken.safeTransferFromSender(amount);
-        magnifiedDividendPerShare += (amount * MAGNITUDE) / _totalSupply;
-        emit DividendsDistributed(msg.sender, amount);
+        uint256 balance = dividendToken.balanceOf(address(this));
+        increased = balance - totalDividend;
+        require(increased > 0, "SHOYU: INSUFFICIENT_AMOUNT");
+
+        magnifiedDividendPerShare += (increased * MAGNITUDE) / _totalSupply;
+        totalDividend = balance;
+
+        emit Sync(increased);
     }
 
     /// @notice Withdraws the ether/erc20 distributed to the sender.
@@ -82,8 +88,9 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     function withdrawDividend() public override {
         uint256 _withdrawableDividend = withdrawableDividendOf(msg.sender);
         if (_withdrawableDividend > 0) {
-            withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender] + _withdrawableDividend;
+            withdrawnDividends[msg.sender] += _withdrawableDividend;
             emit DividendWithdrawn(msg.sender, _withdrawableDividend);
+            totalDividend -= _withdrawableDividend;
             dividendToken.safeTransfer(msg.sender, _withdrawableDividend);
         }
     }
@@ -133,8 +140,8 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
         super._transfer(from, to, value);
 
         int256 _magCorrection = (magnifiedDividendPerShare * value).toInt256();
-        magnifiedDividendCorrections[from] = magnifiedDividendCorrections[from] + _magCorrection;
-        magnifiedDividendCorrections[to] = magnifiedDividendCorrections[to] - _magCorrection;
+        magnifiedDividendCorrections[from] += _magCorrection;
+        magnifiedDividendCorrections[to] -= _magCorrection;
     }
 
     /// @dev Internal function that mints tokens to an account.
@@ -144,9 +151,7 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     function _mint(address account, uint256 value) internal override {
         super._mint(account, value);
 
-        magnifiedDividendCorrections[account] =
-            magnifiedDividendCorrections[account] -
-            (magnifiedDividendPerShare * value).toInt256();
+        magnifiedDividendCorrections[account] -= (magnifiedDividendPerShare * value).toInt256();
     }
 
     /// @dev Internal function that burns an amount of the token of a given account.
@@ -156,8 +161,6 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     function _burn(address account, uint256 value) internal override {
         super._burn(account, value);
 
-        magnifiedDividendCorrections[account] =
-            magnifiedDividendCorrections[account] +
-            (magnifiedDividendPerShare * value).toInt256();
+        magnifiedDividendCorrections[account] += (magnifiedDividendPerShare * value).toInt256();
     }
 }

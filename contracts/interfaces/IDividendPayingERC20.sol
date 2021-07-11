@@ -3,21 +3,22 @@
 pragma solidity >=0.5.0;
 
 interface IDividendPayingERC20 {
-    /// @dev This event MUST emit when ether is distributed to token holders.
-    /// @param from The address which sends ether to this contract.
-    /// @param amount The amount of distributed ether in wei.
-    event DividendsDistributed(address indexed from, uint256 amount);
+    /// @dev This event MUST emit when erc20/ether dividend is synced.
+    /// @param increased The amount of increased erc20/ether in wei.
+    event Sync(uint256 increased);
 
     /// @dev This event MUST emit when an address withdraws their dividend.
-    /// @param to The address which withdraws ether from this contract.
-    /// @param amount The amount of withdrawn ether in wei.
+    /// @param to The address which withdraws erc20/ether from this contract.
+    /// @param amount The amount of withdrawn erc20/ether in wei.
     event DividendWithdrawn(address indexed to, uint256 amount);
 
     function MAGNITUDE() external view returns (uint256);
 
     function dividendToken() external view returns (address);
 
-    function distributeDividends(uint256 amount) external payable;
+    function totalDividend() external view returns (uint256);
+
+    function sync() external payable returns (uint256 increased);
 
     function withdrawDividend() external;
 

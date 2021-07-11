@@ -234,21 +234,9 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address to,
         uint256 amount
     ) internal {
+        IERC20(currency).safeTransferFrom(from, to, amount);
         if (Address.isContract(to)) {
-            IERC20(currency).safeTransferFrom(from, address(this), amount);
-            bool transferred;
-            try IDividendPayingERC20(to).dividendToken() returns (address token) {
-                if (currency == token) {
-                    try IDividendPayingERC20(to).distributeDividends(amount) {
-                        transferred = true;
-                    } catch {}
-                }
-            } catch {}
-            if (!transferred) {
-                IERC20(currency).safeTransfer(to, amount);
-            }
-        } else {
-            IERC20(currency).safeTransferFrom(from, to, amount);
+            try IDividendPayingERC20(to).sync() returns (uint256) {} catch {}
         }
     }
 }
