@@ -16,7 +16,7 @@ contract ProxyFactory {
 
         if (initData.length > 0) {
             (bool success, ) = proxy.call(initData);
-            require(success);
+            require(success, "SHOYU: CALL_FAILURE");
         }
     }
 

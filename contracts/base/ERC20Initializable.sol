@@ -157,7 +157,7 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
         _transfer(sender, recipient, amount);
 
         uint256 currentAllowance = _allowances[sender][msg.sender];
-        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
+        require(currentAllowance >= amount, "SHOYU: INSUFFICIENT_ALLOWANCE");
         _approve(sender, msg.sender, currentAllowance - amount);
 
         return true;
@@ -196,7 +196,7 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         uint256 currentAllowance = _allowances[msg.sender][spender];
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        require(currentAllowance >= subtractedValue, "SHOYU: ALLOWANCE_UNDERFLOW");
         _approve(msg.sender, spender, currentAllowance - subtractedValue);
 
         return true;
@@ -221,13 +221,13 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        require(sender != address(0), "SHOYU: INVALID_SENDER");
+        require(recipient != address(0), "SHOYU: INVALID_RECIPIENT");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = _balances[sender];
-        require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
+        require(senderBalance >= amount, "SHOYU: INSUFFICIENT_BALANCE");
         _balances[sender] = senderBalance - amount;
         _balances[recipient] += amount;
 
@@ -244,7 +244,7 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+        require(account != address(0), "SHOYU: INVALID_ACCOUNT");
 
         _beforeTokenTransfer(address(0), account, amount);
 
@@ -265,12 +265,12 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
+        require(account != address(0), "SHOYU: INVALID_ACCOUNT");
 
         _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = _balances[account];
-        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        require(accountBalance >= amount, "SHOYU: INSUFFICIENT_BALANCE");
         _balances[account] = accountBalance - amount;
         _totalSupply -= amount;
 
@@ -295,8 +295,8 @@ contract ERC20Initializable is Initializable, IERC20, IERC20Metadata {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(owner != address(0), "SHOYU: INVALID_OWNER");
+        require(spender != address(0), "SHOYU: INVALID_SPENDER");
 
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);

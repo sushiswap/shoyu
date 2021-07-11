@@ -54,7 +54,7 @@ abstract contract ReentrancyGuardInitializable is Initializable {
      */
     modifier nonReentrant() {
         // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        require(_status != _ENTERED, "SHOYU: REENTRANT");
 
         // Any calls to nonReentrant after this point will fail
         _status = _ENTERED;

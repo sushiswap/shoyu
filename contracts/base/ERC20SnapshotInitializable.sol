@@ -135,9 +135,9 @@ abstract contract ERC20SnapshotInitializable is ERC20Initializable {
     }
 
     function _valueAt(uint256 snapshotId, Snapshots storage snapshots) private view returns (bool, uint256) {
-        require(snapshotId > 0, "ERC20Snapshot: id is 0");
+        require(snapshotId > 0, "SHOYU: INVALID_SNAPSHOT_ID");
         // solhint-disable-next-line max-line-length
-        require(snapshotId <= _currentSnapshotId.current(), "ERC20Snapshot: nonexistent id");
+        require(snapshotId <= _currentSnapshotId.current(), "SHOYU: NON_EXISTENT");
 
         // When a valid snapshot is queried, there are three possibilities:
         //  a) The queried value was not modified after the snapshot was taken. Therefore, a snapshot entry was never
