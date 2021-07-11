@@ -30,13 +30,11 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     address public immutable override erc721Exchange;
     address public immutable override erc1155Exchange;
-    address public override orderBook;
     mapping(address => bool) public override isStrategyWhitelisted;
 
     mapping(address => mapping(uint256 => uint256)) public tagNonces;
 
     constructor(
-        address _orderBook,
         address protocolFeeRecipient,
         uint8 protocolFee,
         address operationalFeeRecipient,
@@ -44,7 +42,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         string memory _baseURI721,
         string memory _baseURI1155
     ) {
-        orderBook = _orderBook;
         _protocolFeeRecipient = protocolFeeRecipient;
         _protocolFee = protocolFee;
         _operationalFeeRecipient = operationalFeeRecipient;
@@ -83,12 +80,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     function setBaseURI1155(string memory uri) external override onlyOwner {
         baseURI1155 = uri;
-    }
-
-    function setOrderBook(address _orderBook) external override onlyOwner {
-        require(_orderBook != address(0), "SHOYU: INVALID_ORDER_BOOK");
-
-        orderBook = _orderBook;
     }
 
     function setProtocolFeeRecipient(address protocolFeeRecipient) external override onlyOwner {

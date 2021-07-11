@@ -29,6 +29,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     uint256 internal constant TOTAL_SUPPLY = 100e18;
 
     address public override factory;
+    address public override orderBook;
     address public override nft;
     uint256 public override tokenId;
     uint8 public override minimumQuorum; // out of 100
@@ -41,6 +42,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
 
     function initialize(
         address _factory,
+        address _orderBook,
         address _nft,
         uint256 _tokenId,
         uint8 _minimumQuorum
@@ -49,6 +51,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         require(_minimumQuorum <= 100, "SHOYU: INVALID_MINIMUM_QUORUM");
 
         factory = _factory;
+        orderBook = _orderBook;
         nft = _nft;
         tokenId = _tokenId;
         minimumQuorum = _minimumQuorum;
@@ -179,7 +182,6 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     function _executeSellProposal(SellProposal storage proposal) internal {
         proposal.executed = true;
 
-        address orderBook = ITokenFactory(factory).orderBook();
         IOrderBook(orderBook).submitOrder(
             nft,
             tokenId,

@@ -50,8 +50,6 @@ interface ITokenFactory {
 
     function erc1155Exchange() external view returns (address);
 
-    function orderBook() external view returns (address);
-
     function protocolFeeInfo() external view returns (address recipient, uint8 permil);
 
     function operationalFeeInfo() external view returns (address recipient, uint8 permil);
@@ -61,8 +59,6 @@ interface ITokenFactory {
     function setBaseURI721(string memory uri) external;
 
     function setBaseURI1155(string memory uri) external;
-
-    function setOrderBook(address _orderBook) external;
 
     function setProtocolFeeRecipient(address protocolFeeRecipient) external;
 

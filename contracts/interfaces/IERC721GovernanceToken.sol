@@ -9,6 +9,7 @@ interface IERC721GovernanceToken {
     event ExecuteSellProposal(uint256 id);
 
     function initialize(
+        address _factory,
         address _orderBook,
         address _nft,
         uint256 _tokenId,
@@ -16,6 +17,8 @@ interface IERC721GovernanceToken {
     ) external;
 
     function factory() external view returns (address);
+
+    function orderBook() external view returns (address);
 
     function nft() external view returns (address);
 

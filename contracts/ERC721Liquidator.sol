@@ -10,13 +10,15 @@ import "./ERC721GovernanceToken.sol";
 
 contract ERC721Liquidator is ProxyFactory, IERC721Liquidator {
     address public immutable factory;
+    address public immutable orderBook;
     address internal immutable _target;
 
-    constructor(address _factory) {
+    constructor(address _factory, address _orderBook) {
         factory = _factory;
+        orderBook = _orderBook;
 
         ERC721GovernanceToken token = new ERC721GovernanceToken();
-        token.initialize(address(0), address(0), 0, 0);
+        token.initialize(address(0), address(0), address(0), 0, 0);
         _target = address(token);
     }
 
@@ -26,7 +28,14 @@ contract ERC721Liquidator is ProxyFactory, IERC721Liquidator {
         uint8 minimumQuorum
     ) external override returns (address proxy) {
         bytes memory initData =
-            abi.encodeWithSignature("initialize(address,address,uint256,uint8)", factory, nft, tokenId, minimumQuorum);
+            abi.encodeWithSignature(
+                "initialize(address,address,address,uint256,uint8)",
+                factory,
+                orderBook,
+                nft,
+                tokenId,
+                minimumQuorum
+            );
         proxy = _createProxy(_target, initData);
 
         IERC721(nft).safeTransferFrom(msg.sender, proxy, tokenId);
