@@ -20,13 +20,15 @@ interface IBaseNFT1155 is IERC1155 {
     function mint(
         address to,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        bytes calldata data
     ) external;
 
     function mintBatch(
         address to,
         uint256[] calldata tokenIds,
-        uint256[] calldata amounts
+        uint256[] calldata amounts,
+        bytes calldata data
     ) external;
 
     function burn(uint256 tokenId, uint256 amount) external;

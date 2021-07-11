@@ -84,17 +84,25 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         emit ParkTokenIds(toTokenId);
     }
 
-    function mint(address to, uint256 tokenId) external override {
+    function mint(
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) external override {
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
-        _mint(to, tokenId);
+        _safeMint(to, tokenId, data);
     }
 
-    function mintBatch(address to, uint256[] memory tokenIds) external override {
+    function mintBatch(
+        address to,
+        uint256[] memory tokenIds,
+        bytes memory data
+    ) external override {
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(to, tokenIds[i]);
+            _safeMint(to, tokenIds[i], data);
         }
     }
 

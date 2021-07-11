@@ -213,10 +213,11 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address nft,
         address to,
         uint256 tokenId,
+        bytes memory data,
         string[] memory tags
     ) external override {
-        IBaseNFT721(nft).mint(to, tokenId);
         _setTags(nft, tokenId, tags);
+        IBaseNFT721(nft).mint(to, tokenId, data);
     }
 
     function mintWithTags1155(
@@ -224,10 +225,11 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address to,
         uint256 tokenId,
         uint256 amount,
+        bytes memory data,
         string[] memory tags
     ) external override {
-        IBaseNFT1155(nft).mint(to, tokenId, amount);
         _setTags(nft, tokenId, tags);
+        IBaseNFT1155(nft).mint(to, tokenId, amount, data);
     }
 
     function setTags721(

@@ -31,9 +31,17 @@ interface IBaseNFT721 is IERC721 {
 
     function parkTokenIds(uint256 toTokenId) external;
 
-    function mint(address to, uint256 tokenId) external;
+    function mint(
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
 
-    function mintBatch(address to, uint256[] calldata tokenIds) external;
+    function mintBatch(
+        address to,
+        uint256[] calldata tokenIds,
+        bytes calldata data
+    ) external;
 
     function burn(uint256 tokenId) external;
 

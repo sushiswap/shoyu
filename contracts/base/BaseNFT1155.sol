@@ -70,21 +70,23 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     function mint(
         address to,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        bytes memory data
     ) external override {
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
-        _mint(to, tokenId, amount, "");
+        _mint(to, tokenId, amount, data);
     }
 
     function mintBatch(
         address to,
         uint256[] memory tokenIds,
-        uint256[] memory amounts
+        uint256[] memory amounts,
+        bytes memory data
     ) external override {
         require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
 
-        _mintBatch(to, tokenIds, amounts, "");
+        _mintBatch(to, tokenIds, amounts, data);
     }
 
     function burn(uint256 tokenId, uint256 amount) external override {

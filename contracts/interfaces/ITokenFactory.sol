@@ -107,6 +107,7 @@ interface ITokenFactory {
         address nft,
         address to,
         uint256 tokenId,
+        bytes calldata data,
         string[] calldata tags
     ) external;
 
@@ -115,6 +116,7 @@ interface ITokenFactory {
         address to,
         uint256 tokenId,
         uint256 amount,
+        bytes calldata data,
         string[] calldata tags
     ) external;
 
