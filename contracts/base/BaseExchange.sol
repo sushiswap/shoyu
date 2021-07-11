@@ -141,7 +141,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         revert("SHOYU: FAILURE");
     }
 
-    function claim(Orders.Ask memory askOrder) external override {
+    function claim(Orders.Ask memory askOrder) external override nonReentrant {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
         require(askOrder.deadline < block.number, "SHOYU: NOT_CLAIMABLE");
 
