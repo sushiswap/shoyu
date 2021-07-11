@@ -25,8 +25,7 @@ interface IBaseNFT721 is IERC721 {
         string calldata baseURI_,
         string calldata name,
         string calldata symbol,
-        address _owner,
-        uint256[] calldata tokenIds
+        address _owner
     ) external;
 
     function parkTokenIds(uint256 toTokenId) external;

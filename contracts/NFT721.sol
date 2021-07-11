@@ -22,7 +22,29 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
-        initialize(_baseURI_, _name, _symbol, _owner, tokenIds);
+        initialize(_baseURI_, _name, _symbol, _owner);
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _mint(_owner, tokenIds[i]);
+        }
+
+        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        setRoyaltyFee(royaltyFee);
+    }
+
+    function initialize(
+        string memory _baseURI_,
+        string memory _name,
+        string memory _symbol,
+        address _owner,
+        uint256 toTokenId,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external override initializer {
+        __BaseNFTExchange_init();
+        initialize(_baseURI_, _name, _symbol, _owner);
+
+        _parkTokenIds(toTokenId);
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
         setRoyaltyFee(royaltyFee);

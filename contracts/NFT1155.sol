@@ -19,7 +19,11 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
-        initialize(_uri, _owner, tokenIds, amounts);
+        initialize(_uri, _owner);
+
+        if (tokenIds.length > 0) {
+            _mintBatch(_owner, tokenIds, amounts, "");
+        }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
         setRoyaltyFee(royaltyFee);

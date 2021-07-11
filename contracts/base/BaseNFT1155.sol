@@ -21,12 +21,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
 
     mapping(address => uint256) public override nonces;
 
-    function initialize(
-        string memory _uri,
-        address _owner,
-        uint256[] memory tokenIds,
-        uint256[] memory amounts
-    ) public override initializer {
+    function initialize(string memory _uri, address _owner) public override initializer {
         __ERC1155_init(_uri);
         __Ownable_init(_owner);
         _factory = msg.sender;
@@ -44,10 +39,6 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
                 address(this)
             )
         );
-
-        if (tokenIds.length > 0) {
-            _mintBatch(_owner, tokenIds, amounts, "");
-        }
     }
 
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32) {

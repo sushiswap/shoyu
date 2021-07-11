@@ -13,12 +13,7 @@ interface IBaseNFT1155 is IERC1155 {
 
     function nonces(address account) external view returns (uint256);
 
-    function initialize(
-        string calldata _uri,
-        address _owner,
-        uint256[] calldata tokenIds,
-        uint256[] calldata amount
-    ) external;
+    function initialize(string calldata _uri, address _owner) external;
 
     function mint(
         address to,

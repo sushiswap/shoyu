@@ -13,6 +13,16 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
+    event CreateNFT721(
+        address indexed nft,
+        string baseURI,
+        string name,
+        string symbol,
+        address indexed owner,
+        uint256 toTokenId,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    );
     event CreateNFT1155(
         address indexed nft,
         string uri,
@@ -62,6 +72,15 @@ interface ITokenFactory {
         string calldata name,
         string calldata symbol,
         uint256[] calldata tokenIds,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external returns (address nft);
+
+    function createNFT721(
+        string calldata baseURI,
+        string calldata name,
+        string calldata symbol,
+        uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external returns (address nft);

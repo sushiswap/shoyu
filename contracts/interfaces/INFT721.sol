@@ -16,6 +16,16 @@ interface INFT721 is IBaseNFT721, IBaseExchange {
         uint8 royaltyFee
     ) external;
 
+    function initialize(
+        string calldata _baseURI_,
+        string calldata _name,
+        string calldata _symbol,
+        address _owner,
+        uint256 toTokenId,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external;
+
     function DOMAIN_SEPARATOR() external view override(IBaseNFT721, IBaseExchange) returns (bytes32);
 
     function factory() external view override(IBaseNFT721, IBaseExchange) returns (address);

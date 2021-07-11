@@ -49,11 +49,11 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         erc1155Exchange = address(new ERC1155Exchange());
 
         NFT721 nft721 = new NFT721();
-        nft721.initialize("", "", "", address(0), new uint256[](0));
+        nft721.initialize("", "", "", address(0));
         _target721 = address(nft721);
 
         NFT1155 nft1155 = new NFT1155();
-        nft1155.initialize("", address(0), new uint256[](0), new uint256[](0));
+        nft1155.initialize("", address(0));
         _target1155 = address(nft1155);
 
         SocialToken token = new SocialToken();
@@ -126,6 +126,35 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         );
 
         emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, tokenIds, royaltyFeeRecipient, royaltyFee);
+    }
+
+    function createNFT721(
+        string calldata baseURI,
+        string calldata name,
+        string calldata symbol,
+        uint256 toTokenId,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external override returns (address nft) {
+        require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
+        require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
+
+        nft = _createProxy(
+            _target721,
+            abi.encodeWithSignature(
+                "initialize(string,string,string,address,uint256,address,uint8)",
+                baseURI,
+                name,
+                symbol,
+                msg.sender,
+                msg.sender,
+                toTokenId,
+                royaltyFeeRecipient,
+                royaltyFee
+            )
+        );
+
+        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, toTokenId, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
