@@ -59,7 +59,7 @@ contract PaymentSplitter is IPaymentSplitter {
      * @dev Triggers a transfer to `account` of the amount of token they are owed, according to their percentage of the
      * total shares and their previous withdrawals.
      */
-    function release(address token, address account) public virtual override {
+    function release(address token, address account) external virtual override {
         require(shares[account] > 0, "SHOYU: FORBIDDEN");
 
         uint256 totalReceived = token.balanceOf(address(this)) + totalReleased[token];
