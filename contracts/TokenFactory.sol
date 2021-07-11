@@ -25,6 +25,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     address internal _operationalFeeRecipient;
     uint8 internal _operationalFee; // out of 1000
 
+    string public override baseURI721;
+    string public override baseURI1155;
+
     address public immutable override erc721Exchange;
     address public immutable override erc1155Exchange;
     address public override orderBook;
@@ -37,7 +40,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address protocolFeeRecipient,
         uint8 protocolFee,
         address operationalFeeRecipient,
-        uint8 operationalFee
+        uint8 operationalFee,
+        string memory _baseURI721,
+        string memory _baseURI1155
     ) {
         orderBook = _orderBook;
         _protocolFeeRecipient = protocolFeeRecipient;
@@ -45,15 +50,18 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         _operationalFeeRecipient = operationalFeeRecipient;
         _operationalFee = operationalFee;
 
+        baseURI721 = _baseURI721;
+        baseURI1155 = _baseURI1155;
+
         erc721Exchange = address(new ERC721Exchange());
         erc1155Exchange = address(new ERC1155Exchange());
 
         NFT721 nft721 = new NFT721();
-        nft721.initialize("", "", "", address(0));
+        nft721.initialize("", "", address(0));
         _target721 = address(nft721);
 
         NFT1155 nft1155 = new NFT1155();
-        nft1155.initialize("", address(0));
+        nft1155.initialize(address(0));
         _target1155 = address(nft1155);
 
         SocialToken token = new SocialToken();
@@ -67,6 +75,14 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     function operationalFeeInfo() external view override returns (address recipient, uint8 permil) {
         return (_operationalFeeRecipient, _operationalFee);
+    }
+
+    function setBaseURI721(string memory uri) external override onlyOwner {
+        baseURI721 = uri;
+    }
+
+    function setBaseURI1155(string memory uri) external override onlyOwner {
+        baseURI1155 = uri;
     }
 
     function setOrderBook(address _orderBook) external override onlyOwner {
@@ -100,7 +116,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function createNFT721(
-        string calldata baseURI,
         string calldata name,
         string calldata symbol,
         uint256[] memory tokenIds,
@@ -113,11 +128,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         nft = _createProxy(
             _target721,
             abi.encodeWithSignature(
-                "initialize(string,string,string,address,uint256[],address,uint8)",
-                baseURI,
+                "initialize(string,string,address,uint256[],address,uint8)",
                 name,
                 symbol,
-                msg.sender,
                 msg.sender,
                 tokenIds,
                 royaltyFeeRecipient,
@@ -125,11 +138,10 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, tokenIds, royaltyFeeRecipient, royaltyFee);
+        emit CreateNFT721(nft, name, symbol, msg.sender, tokenIds, royaltyFeeRecipient, royaltyFee);
     }
 
     function createNFT721(
-        string calldata baseURI,
         string calldata name,
         string calldata symbol,
         uint256 toTokenId,
@@ -142,11 +154,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         nft = _createProxy(
             _target721,
             abi.encodeWithSignature(
-                "initialize(string,string,string,address,uint256,address,uint8)",
-                baseURI,
+                "initialize(string,string,address,uint256,address,uint8)",
                 name,
                 symbol,
-                msg.sender,
                 msg.sender,
                 toTokenId,
                 royaltyFeeRecipient,
@@ -154,7 +164,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit CreateNFT721(nft, baseURI, name, symbol, msg.sender, toTokenId, royaltyFeeRecipient, royaltyFee);
+        emit CreateNFT721(nft, name, symbol, msg.sender, toTokenId, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
@@ -162,7 +172,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function createNFT1155(
-        string calldata uri,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         address royaltyFeeRecipient,
@@ -171,17 +180,16 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         nft = _createProxy(
             _target1155,
             abi.encodeWithSignature(
-                "initialize(address,string,address,uint256[],uint256[],address,uint8)",
-                uri,
+                "initialize(address,uint256[],uint256[],address,uint8)",
                 msg.sender,
-                new uint256[](0),
-                new uint256[](0),
+                tokenIds,
+                amounts,
                 royaltyFeeRecipient,
                 royaltyFee
             )
         );
 
-        emit CreateNFT1155(nft, uri, msg.sender, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
+        emit CreateNFT1155(nft, msg.sender, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT1155(address query) external view override returns (bool result) {

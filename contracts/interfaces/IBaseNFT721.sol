@@ -22,11 +22,12 @@ interface IBaseNFT721 is IERC721 {
     function parked(uint256 tokenId) external view returns (bool);
 
     function initialize(
-        string calldata baseURI_,
         string calldata name,
         string calldata symbol,
         address _owner
     ) external;
+
+    function setBaseURI(string memory uri) external;
 
     function parkTokenIds(uint256 toTokenId) external;
 

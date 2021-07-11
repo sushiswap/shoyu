@@ -13,7 +13,9 @@ interface IBaseNFT1155 is IERC1155 {
 
     function nonces(address account) external view returns (uint256);
 
-    function initialize(string calldata _uri, address _owner) external;
+    function initialize(address _owner) external;
+
+    function setBaseURI(string memory baseURI) external;
 
     function mint(
         address to,

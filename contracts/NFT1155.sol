@@ -11,7 +11,6 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
     uint8 internal _royaltyFee; // out of 1000
 
     function initialize(
-        string memory _uri,
         address _owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
@@ -19,7 +18,7 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
-        initialize(_uri, _owner);
+        initialize(_owner);
 
         if (tokenIds.length > 0) {
             _mintBatch(_owner, tokenIds, amounts, "");

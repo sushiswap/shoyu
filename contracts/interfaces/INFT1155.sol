@@ -7,7 +7,6 @@ import "./IBaseExchange.sol";
 
 interface INFT1155 is IBaseNFT1155, IBaseExchange {
     function initialize(
-        string calldata _uri,
         address _owner,
         uint256[] calldata tokenIds,
         uint256[] calldata amounts,

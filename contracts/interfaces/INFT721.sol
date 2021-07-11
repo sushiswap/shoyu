@@ -7,7 +7,6 @@ import "./IBaseExchange.sol";
 
 interface INFT721 is IBaseNFT721, IBaseExchange {
     function initialize(
-        string calldata _baseURI_,
         string calldata _name,
         string calldata _symbol,
         address _owner,
@@ -17,7 +16,6 @@ interface INFT721 is IBaseNFT721, IBaseExchange {
     ) external;
 
     function initialize(
-        string calldata _baseURI_,
         string calldata _name,
         string calldata _symbol,
         address _owner,

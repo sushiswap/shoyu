@@ -5,7 +5,6 @@ pragma solidity >=0.5.0;
 interface ITokenFactory {
     event CreateNFT721(
         address indexed nft,
-        string baseURI,
         string name,
         string symbol,
         address indexed owner,
@@ -15,7 +14,6 @@ interface ITokenFactory {
     );
     event CreateNFT721(
         address indexed nft,
-        string baseURI,
         string name,
         string symbol,
         address indexed owner,
@@ -25,7 +23,6 @@ interface ITokenFactory {
     );
     event CreateNFT1155(
         address indexed nft,
-        string uri,
         address indexed owner,
         uint256[] tokenIds,
         uint256[] amounts,
@@ -45,6 +42,10 @@ interface ITokenFactory {
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
+    function baseURI721() external view returns (string memory);
+
+    function baseURI1155() external view returns (string memory);
+
     function erc721Exchange() external view returns (address);
 
     function erc1155Exchange() external view returns (address);
@@ -57,6 +58,10 @@ interface ITokenFactory {
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
+    function setBaseURI721(string memory uri) external;
+
+    function setBaseURI1155(string memory uri) external;
+
     function setOrderBook(address _orderBook) external;
 
     function setProtocolFeeRecipient(address protocolFeeRecipient) external;
@@ -68,7 +73,6 @@ interface ITokenFactory {
     function setStrategyWhitelisted(address sale, bool whitelisted) external;
 
     function createNFT721(
-        string calldata baseURI,
         string calldata name,
         string calldata symbol,
         uint256[] calldata tokenIds,
@@ -77,7 +81,6 @@ interface ITokenFactory {
     ) external returns (address nft);
 
     function createNFT721(
-        string calldata baseURI,
         string calldata name,
         string calldata symbol,
         uint256 toTokenId,
@@ -88,7 +91,6 @@ interface ITokenFactory {
     function isNFT721(address query) external view returns (bool result);
 
     function createNFT1155(
-        string calldata uri,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         address royaltyFeeRecipient,

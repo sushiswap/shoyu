@@ -2,8 +2,11 @@
 
 pragma solidity =0.8.3;
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import "../interfaces/IBaseNFT721.sol";
 import "../interfaces/IERC1271.sol";
+import "../interfaces/ITokenFactory.sol";
 import "../base/ERC721Initializable.sol";
 import "../base/OwnableInitializable.sol";
 
@@ -17,21 +20,18 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     bytes32 internal _DOMAIN_SEPARATOR;
 
     address internal _factory;
+    string internal __baseURI;
 
     mapping(uint256 => uint256) public override nonces;
     mapping(address => uint256) public override noncesForAll;
 
-    string internal __baseURI;
-
     function initialize(
-        string memory _baseURI_,
         string memory _name,
         string memory _symbol,
         address _owner
     ) public override initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
-        __baseURI = _baseURI_;
         _factory = msg.sender;
 
         uint256 chainId;
@@ -59,11 +59,21 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return __baseURI;
+        if (bytes(__baseURI).length > 0) {
+            return __baseURI;
+        } else {
+            string memory baseURI_ = ITokenFactory(_factory).baseURI721();
+            string memory addy = Strings.toHexString(uint160(address(this)), 20);
+            return string(abi.encodePacked(baseURI_, addy, "/"));
+        }
     }
 
     function parked(uint256 tokenId) external view override returns (bool) {
         return _parked(tokenId);
+    }
+
+    function setBaseURI(string memory uri) external override onlyOwner {
+        __baseURI = uri;
     }
 
     function parkTokenIds(uint256 toTokenId) external override {

@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "../interfaces/IBaseNFT1155.sol";
 import "../interfaces/IERC1271.sol";
+import "../interfaces/ITokenFactory.sol";
 import "../base/ERC1155Initializable.sol";
 import "../base/OwnableInitializable.sol";
 
@@ -18,11 +19,12 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     bytes32 internal _DOMAIN_SEPARATOR;
 
     address internal _factory;
+    string internal _baseURI;
 
     mapping(address => uint256) public override nonces;
 
-    function initialize(string memory _uri, address _owner) public override initializer {
-        __ERC1155_init(_uri);
+    function initialize(address _owner) public override initializer {
+        __ERC1155_init("");
         __Ownable_init(_owner);
         _factory = msg.sender;
 
@@ -33,7 +35,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(uint256(uint160(address(this))).toHexString())),
+                keccak256(abi.encodePacked(address(this))),
                 keccak256(bytes("1")),
                 chainId,
                 address(this)
@@ -47,6 +49,22 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
 
     function factory() public view virtual override returns (address) {
         return _factory;
+    }
+
+    function uri(uint256) public view virtual override returns (string memory) {
+        string memory baseURI;
+        if (bytes(_baseURI).length > 0) {
+            baseURI = _baseURI;
+        } else {
+            string memory baseURI_ = ITokenFactory(_factory).baseURI1155();
+            string memory addy = Strings.toHexString(uint160(address(this)), 20);
+            baseURI = string(abi.encodePacked(baseURI_, addy, "/"));
+        }
+        return string(abi.encodePacked(baseURI, "/{id}"));
+    }
+
+    function setBaseURI(string memory baseURI) external override onlyOwner {
+        _baseURI = baseURI;
     }
 
     function mint(
