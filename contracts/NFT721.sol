@@ -10,8 +10,6 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
-    address internal _target;
-
     function initialize(
         string memory _name,
         string memory _symbol,
