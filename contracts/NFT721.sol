@@ -22,7 +22,7 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         initialize(_name, _symbol, _owner);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(_owner, tokenIds[i]);
+            _safeMint(_owner, tokenIds[i]);
         }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
@@ -68,7 +68,7 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         uint256
     ) internal override {
         if (from == owner() && _parked(tokenId)) {
-            _mint(to, tokenId);
+            _safeMint(to, tokenId);
         } else {
             _transfer(from, to, tokenId);
         }
