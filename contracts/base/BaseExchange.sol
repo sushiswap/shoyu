@@ -151,9 +151,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         BestBid memory best = bestBid[askHash];
         require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
+        require((amountFilled[askHash] += best.amount) <= askOrder.amount, "SHOYU: SOLD_OUT");
         require(IStrategy(askOrder.strategy).canExecute(askOrder.params, best.price), "SHOYU: FAILURE");
-
-        amountFilled[askHash] += best.amount;
 
         address bidRecipient = best.recipient;
         if (bidRecipient == address(0)) bidRecipient = best.bidder;

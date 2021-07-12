@@ -14,7 +14,7 @@ library TokenHelper {
         if (token == ETH) {
             return account.balance;
         } else {
-            return IERC20(token).balanceOf(address(this));
+            return IERC20(token).balanceOf(account);
         }
     }
 
