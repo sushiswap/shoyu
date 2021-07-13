@@ -81,7 +81,8 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
 
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
-
+    
+    //what if a seller increase royaltyFee during an auction?
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
         require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
 

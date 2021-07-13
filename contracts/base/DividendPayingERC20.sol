@@ -123,8 +123,8 @@ abstract contract DividendPayingERC20 is ERC20Initializable, IDividendPayingERC2
     /// @return The amount of dividend in wei that `account` has earned in total.
     function accumulativeDividendOf(address account) public view override returns (uint256) {
         return
-            (magnifiedDividendPerShare *
-                (balanceOf(account).toInt256() + magnifiedDividendCorrections[account]).toUint256()) / MAGNITUDE;
+            ((magnifiedDividendPerShare * balanceOf(account)).toInt256() + magnifiedDividendCorrections[account])
+                .toUint256() / MAGNITUDE;
     }
 
     /// @dev Internal function that transfer tokens from one address to another.
