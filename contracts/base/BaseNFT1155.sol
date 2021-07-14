@@ -84,7 +84,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         uint256[] memory amounts,
         bytes memory data
     ) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mintBatch(to, tokenIds, amounts, data);
     }
