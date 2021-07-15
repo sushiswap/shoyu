@@ -13,7 +13,7 @@ interface ITokenFactory {
         uint8 royaltyFee
     );
     event CreateNFT721(
-        address indexed nft,
+        address indexed proxy,
         string name,
         string symbol,
         address indexed owner,
@@ -22,7 +22,7 @@ interface ITokenFactory {
         uint8 royaltyFee
     );
     event CreateNFT1155(
-        address indexed nft,
+        address indexed proxy,
         address indexed owner,
         uint256[] tokenIds,
         uint256[] amounts,
@@ -31,10 +31,10 @@ interface ITokenFactory {
     );
     event CreateSocialToken(
         address indexed proxy,
+        address indexed owner,
         string name,
         string symbol,
-        address indexed dividendToken,
-        address indexed owner
+        address indexed dividendToken
     );
     event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
@@ -71,6 +71,7 @@ interface ITokenFactory {
     function createNFT721(
         string calldata name,
         string calldata symbol,
+        address owner,
         uint256[] calldata tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -79,6 +80,7 @@ interface ITokenFactory {
     function createNFT721(
         string calldata name,
         string calldata symbol,
+        address owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -87,6 +89,7 @@ interface ITokenFactory {
     function isNFT721(address query) external view returns (bool result);
 
     function createNFT1155(
+        address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         address royaltyFeeRecipient,
@@ -98,7 +101,8 @@ interface ITokenFactory {
     function createSocialToken(
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        address owner
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);
