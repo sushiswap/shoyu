@@ -8,6 +8,7 @@ contract FixedPriceSale is IStrategy {
     function canExecute(
         uint256 deadline,
         bytes memory params,
+        address,
         uint256 bidPrice
     ) external view override returns (bool) {
         uint256 price = abi.decode(params, (uint256));
@@ -18,6 +19,7 @@ contract FixedPriceSale is IStrategy {
     function canBid(
         uint256,
         bytes memory,
+        address,
         uint256,
         uint256,
         uint256

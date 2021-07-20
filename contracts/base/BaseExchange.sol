@@ -113,7 +113,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
-        if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidPrice)) {
+        if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
             amountFilled[askHash] += bidAmount;
 
             if (bidRecipient == address(0)) bidRecipient = bidder;
@@ -131,6 +131,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 IStrategy(askOrder.strategy).canBid(
                     askOrder.deadline,
                     askOrder.params,
+                    bidder,
                     bidPrice,
                     best.price,
                     best.timestamp
@@ -160,7 +161,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         BestBid memory best = bestBid[askHash];
         require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
         require(
-            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.price),
+            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, msg.sender, best.price),
             "SHOYU: FAILURE"
         );
 

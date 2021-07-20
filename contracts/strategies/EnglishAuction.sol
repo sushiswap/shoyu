@@ -8,6 +8,7 @@ contract EnglishAuction is IStrategy {
     function canExecute(
         uint256 deadline,
         bytes memory,
+        address,
         uint256
     ) external view override returns (bool) {
         return deadline < block.number;
@@ -16,6 +17,7 @@ contract EnglishAuction is IStrategy {
     function canBid(
         uint256 deadline,
         bytes memory params,
+        address,
         uint256 bidPrice,
         uint256 bestBidPrice,
         uint256
