@@ -5,11 +5,17 @@ pragma solidity >=0.5.0;
 import "../libraries/Orders.sol";
 
 interface IStrategy {
-    function canExecute(bytes memory params, uint256 bidPrice) external view returns (bool);
+    function canExecute(
+        uint256 deadline,
+        bytes memory params,
+        uint256 bidPrice
+    ) external view returns (bool);
 
     function canBid(
+        uint256 deadline,
         bytes memory params,
         uint256 bidPrice,
-        uint256 bestPrice
+        uint256 bestBidPrice,
+        uint256 bestBidTimestamp
     ) external view returns (bool);
 }

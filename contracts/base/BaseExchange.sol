@@ -25,6 +25,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 price;
         address recipient;
         address referrer;
+        uint256 timestamp;
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
@@ -107,13 +108,12 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidReferrer
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
-        require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
         require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
-        if (IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice)) {
+        if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidPrice)) {
             amountFilled[askHash] += bidAmount;
 
             if (bidRecipient == address(0)) bidRecipient = bidder;
@@ -127,12 +127,21 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             return true;
         } else {
             BestBid storage best = bestBid[askHash];
-            if (IStrategy(askOrder.strategy).canBid(askOrder.params, bidPrice, best.price)) {
+            if (
+                IStrategy(askOrder.strategy).canBid(
+                    askOrder.deadline,
+                    askOrder.params,
+                    bidPrice,
+                    best.price,
+                    best.timestamp
+                )
+            ) {
                 best.bidder = bidder;
                 best.amount = bidAmount;
                 best.price = bidPrice;
                 best.recipient = bidRecipient;
                 best.referrer = bidReferrer;
+                best.timestamp = block.timestamp;
 
                 emit Bid(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
                 return false;
@@ -143,7 +152,6 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
     function claim(Orders.Ask memory askOrder) external override nonReentrant {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
-        require(askOrder.deadline < block.number, "SHOYU: NOT_CLAIMABLE");
 
         bytes32 askHash = askOrder.hash();
         _validate(askOrder, askHash);
@@ -151,7 +159,10 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         BestBid memory best = bestBid[askHash];
         require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
-        require(IStrategy(askOrder.strategy).canExecute(askOrder.params, best.price), "SHOYU: FAILURE");
+        require(
+            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.price),
+            "SHOYU: FAILURE"
+        );
 
         amountFilled[askHash] += best.amount;
 
