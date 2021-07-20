@@ -14,13 +14,13 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
     address internal _factory;
 
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
-        address _dividendToken,
-        address _owner
+        address _dividendToken
     ) external override initializer {
-        __DividendPayingERC20_init(_name, _symbol, _dividendToken);
         __Ownable_init(_owner);
+        __DividendPayingERC20_init(_name, _symbol, _dividendToken);
         _factory = msg.sender;
 
         uint256 chainId;

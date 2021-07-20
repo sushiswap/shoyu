@@ -9,10 +9,10 @@ interface ISocialToken is IBaseExchange, IDividendPayingERC20 {
     event Log(uint256 indexed id, bytes32 data);
 
     function initialize(
-        string memory _name,
-        string memory _symbol,
-        address _dividendToken,
-        address _owner
+        address owner,
+        string memory name,
+        string memory symbol,
+        address dividendToken
     ) external;
 
     function mint(address account, uint256 value) external;
