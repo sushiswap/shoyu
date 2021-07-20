@@ -14,7 +14,7 @@ contract DesignatedSale is IStrategy {
         (uint256 minPrice, address designee) = abi.decode(params, (uint256, address));
         require(designee != address(0), "SHOYU: INVALID_DESIGNEE");
 
-        return minPrice < bidPrice && bidder == designee;
+        return minPrice <= bidPrice && bidder == designee;
     }
 
     function canBid(
