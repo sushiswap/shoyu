@@ -25,7 +25,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 price;
         address recipient;
         address referrer;
-        uint256 timestamp;
+        uint256 blockNumber;
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
@@ -134,7 +134,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                     bidder,
                     bidPrice,
                     best.price,
-                    best.timestamp
+                    best.blockNumber
                 )
             ) {
                 best.bidder = bidder;
@@ -142,7 +142,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 best.price = bidPrice;
                 best.recipient = bidRecipient;
                 best.referrer = bidReferrer;
-                best.timestamp = block.timestamp;
+                best.blockNumber = block.number;
 
                 emit Bid(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
                 return false;

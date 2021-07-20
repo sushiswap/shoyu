@@ -18,6 +18,6 @@ interface IStrategy {
         address bidder,
         uint256 bidPrice,
         uint256 bestBidPrice,
-        uint256 bestBidTimestamp
+        uint256 bestBidBlock
     ) external view returns (bool);
 }
