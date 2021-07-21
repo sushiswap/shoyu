@@ -56,10 +56,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 amount
     ) internal virtual;
 
+    //can't not cancel if there is bidding or until about 1 day after deadline.
     function cancel(Orders.Ask memory order) external override {
         require(order.signer == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
+        BestBid storage best = bestBid[hash];
+        require(best.blockNumber == 0 || block.number >= order.deadline + 5760, "SHOYU: FORBIDDEN");
+
         isCancelled[hash] = true;
 
         emit Cancel(hash);
@@ -159,7 +163,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
         BestBid memory best = bestBid[askHash];
-        require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
+        require(msg.sender == best.bidder || msg.sender == askOrder.signer, "SHOYU: FORBIDDEN");
         require((amountFilled[askHash] += best.amount) <= askOrder.amount, "SHOYU: SOLD_OUT");
         require(
             IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, msg.sender, best.price),
