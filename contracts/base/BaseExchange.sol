@@ -112,6 +112,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidReferrer
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
+        require(bidAmount > 0, "SHOYU: INVALID_Amount");
         require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
@@ -163,10 +164,9 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
         BestBid memory best = bestBid[askHash];
-        require(msg.sender == best.bidder || msg.sender == askOrder.signer, "SHOYU: FORBIDDEN");
         require((amountFilled[askHash] += best.amount) <= askOrder.amount, "SHOYU: SOLD_OUT");
         require(
-            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, msg.sender, best.price),
+            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.bidder, best.price),
             "SHOYU: FAILURE"
         );
 
