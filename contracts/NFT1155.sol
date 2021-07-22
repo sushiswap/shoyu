@@ -25,7 +25,8 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
-        setRoyaltyFee(royaltyFee);
+        _royaltyFee = type(uint8).max;
+        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (bytes32) {
@@ -60,10 +61,10 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
     }
 
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
-        if (_royaltyFee == 0) {
+        if (_royaltyFee == type(uint8).max) {
             require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
         } else {
-            require(royaltyFee < _royaltyFee && royaltyFee != 0, "SHOYU: INVALID_FEE");
+            require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
         }
 
         _royaltyFee = royaltyFee;

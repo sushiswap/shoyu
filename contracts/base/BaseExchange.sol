@@ -248,10 +248,12 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         }
 
         (address royaltyFeeRecipient, uint8 royaltyFeePermil) = royaltyFeeInfo();
-        uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
-        if (royaltyFeeAmount > 0) {
-            remainder -= royaltyFeeAmount;
-            _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+        if (royaltyFeePermil != type(uint8).max) {
+            uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
+            if (royaltyFeeAmount > 0) {
+                remainder -= royaltyFeeAmount;
+                _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+            }
         }
 
         IERC20(currency).safeTransfer(to, remainder);
