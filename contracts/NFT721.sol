@@ -81,12 +81,12 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
 
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
-
+    
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
         if (_royaltyFee == 0) {
             require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
         } else {
-            require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
+            require(royaltyFee < _royaltyFee && royaltyFee != 0, "SHOYU: INVALID_FEE");
         }
 
         _royaltyFee = royaltyFee;

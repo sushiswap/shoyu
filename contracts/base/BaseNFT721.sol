@@ -77,7 +77,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     }
 
     function parkTokenIds(uint256 toTokenId) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _parkTokenIds(toTokenId);
 
@@ -99,7 +99,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         uint256[] memory tokenIds,
         bytes memory data
     ) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _safeMint(to, tokenIds[i], data);
