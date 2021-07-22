@@ -73,6 +73,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     {
         bytes32 askHash = askOrder.hash();
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
+        require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
 
         _verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s);
 
