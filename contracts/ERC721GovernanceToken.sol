@@ -114,6 +114,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         bytes calldata params,
         uint256 expiration
     ) external override {
+        require(msg.sender == tx.origin, "SHOYU: CONTRACT_CALL_FORBIDDEN");
         require(block.number < expiration, "SHOYU: EXPIRED");
 
         uint256 power = balanceOf(msg.sender);
