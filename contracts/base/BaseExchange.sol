@@ -176,6 +176,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         if (recipient == address(0)) recipient = askOrder.signer;
         _transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount);
 
+        delete bestBid[askHash];
+
         emit Execute(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
     }
 
