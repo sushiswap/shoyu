@@ -82,24 +82,28 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         baseURI1155 = uri;
     }
 
+    // This function should be called by a multi-sig `owner`, not an EOA
     function setProtocolFeeRecipient(address protocolFeeRecipient) external override onlyOwner {
         require(protocolFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _protocolFeeRecipient = protocolFeeRecipient;
     }
 
+    // This function should be called by a multi-sig `owner`, not an EOA
     function setOperationalFeeRecipient(address operationalFeeRecipient) external override onlyOwner {
         require(operationalFeeRecipient != address(0), "SHOYU: INVALID_RECIPIENT");
 
         _operationalFeeRecipient = operationalFeeRecipient;
     }
 
+    // This function should be called by a multi-sig `owner`, not an EOA
     function setOperationalFee(uint8 operationalFee) external override onlyOwner {
         require(operationalFee <= MAX_OPERATIONAL_FEE, "SHOYU: INVALID_FEE");
 
         _operationalFee = operationalFee;
     }
 
+    // This function should be called by a multi-sig `owner`, not an EOA
     function setStrategyWhitelisted(address ask, bool whitelisted) external override onlyOwner {
         require(ask != address(0), "SHOYU: INVALID_SALE");
 
