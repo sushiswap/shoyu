@@ -168,7 +168,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     function executeSellProposal(uint256 id) external override {
         SellProposal storage proposal = proposals[id];
         require(!proposal.executed, "SHOYU: EXECUTED");
-        require(proposal.expiration < block.number, "SHOYU: NOT_FINISHED");
+        require(block.number <= proposal.expiration, "SHOYU: EXPIRED");
         require(totalPowerOf[id] > _minPower(), "SHOYU: NOT_SUBMITTED");
 
         _executeSellProposal(proposal);
