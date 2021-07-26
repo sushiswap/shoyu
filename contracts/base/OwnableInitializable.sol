@@ -44,7 +44,7 @@ abstract contract OwnableInitializable is Initializable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(_owner == msg.sender, "SHOYU: FORBIDDEN");
         _;
     }
 
