@@ -42,7 +42,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
-                bytes(_name),
+                keccak256(bytes(_name)),
                 keccak256(bytes("1")),
                 chainId,
                 address(this)
@@ -77,7 +77,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     }
 
     function parkTokenIds(uint256 toTokenId) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _parkTokenIds(toTokenId);
 
@@ -99,7 +99,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         uint256[] memory tokenIds,
         bytes memory data
     ) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _safeMint(to, tokenIds[i], data);

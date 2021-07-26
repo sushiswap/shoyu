@@ -35,7 +35,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(abi.encodePacked(address(this))),
+                keccak256(bytes(Strings.toHexString(uint160(address(this))))),
                 keccak256(bytes("1")),
                 chainId,
                 address(this)
@@ -84,7 +84,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         uint256[] memory amounts,
         bytes memory data
     ) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mintBatch(to, tokenIds, amounts, data);
     }

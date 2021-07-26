@@ -32,7 +32,8 @@ interface IBaseExchange {
             uint256 amount,
             uint256 price,
             address recipient,
-            address referrer
+            address referrer,
+            uint256 blockNumber
         );
 
     function isCancelled(bytes32 hash) external view returns (bool);

@@ -4,16 +4,17 @@ pragma solidity =0.8.3;
 
 import "../interfaces/IStrategy.sol";
 
-contract FixedPriceSale is IStrategy {
+contract DesignatedSale is IStrategy {
     function canExecute(
-        uint256 deadline,
+        uint256,
         bytes memory params,
-        address,
+        address bidder,
         uint256 bidPrice
-    ) external view override returns (bool) {
-        uint256 price = abi.decode(params, (uint256));
-        require(price > 0, "SHOYU: INVALID_PRICE");
-        return block.number <= deadline && bidPrice == price;
+    ) external pure override returns (bool) {
+        (uint256 minPrice, address designee) = abi.decode(params, (uint256, address));
+        require(designee != address(0), "SHOYU: INVALID_DESIGNEE");
+
+        return minPrice <= bidPrice && bidder == designee;
     }
 
     function canBid(

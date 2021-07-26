@@ -299,7 +299,7 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
      */
     function _mint(address to, uint256 tokenId) internal virtual {
         require(to != address(0), "SHOYU: INVALID_TO");
-        require(!_exists(tokenId) || _parked(tokenId), "SHOYU: ALREADY_MINTED");
+        require(!_exists(tokenId), "SHOYU: ALREADY_MINTED");
 
         _beforeTokenTransfer(address(0), to, tokenId);
 

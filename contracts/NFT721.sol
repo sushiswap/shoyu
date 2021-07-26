@@ -22,11 +22,12 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         initialize(_name, _symbol, _owner);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _mint(_owner, tokenIds[i]);
+            _safeMint(_owner, tokenIds[i]);
         }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
-        setRoyaltyFee(royaltyFee);
+        _royaltyFee = type(uint8).max;
+        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
     }
 
     function initialize(
@@ -67,8 +68,8 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
         uint256 tokenId,
         uint256
     ) internal override {
-        if (from == owner() && (!_exists(tokenId) || _parked(tokenId))) {
-            _mint(to, tokenId);
+        if (from == owner() && _parked(tokenId)) {
+            _safeMint(to, tokenId);
         } else {
             _transfer(from, to, tokenId);
         }
@@ -81,9 +82,13 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
 
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
-
+    
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
-        require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+        if (_royaltyFee == type(uint8).max) {
+            require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+        } else {
+            require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
+        }
 
         _royaltyFee = royaltyFee;
 

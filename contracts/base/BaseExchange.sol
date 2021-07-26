@@ -25,6 +25,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 price;
         address recipient;
         address referrer;
+        uint256 blockNumber;
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
@@ -59,6 +60,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(order.signer == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
+        require(bestBid[hash].bidder == address(0), "SHOYU: BID_EXISTS");
+
         isCancelled[hash] = true;
 
         emit Cancel(hash);
@@ -72,6 +75,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     {
         bytes32 askHash = askOrder.hash();
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
+        require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
 
         _verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s);
 
@@ -107,32 +111,45 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidReferrer
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
-        require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
+        require(bidAmount > 0, "SHOYU: INVALID_AMOUNT");
         require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
-        if (IStrategy(askOrder.strategy).canExecute(askOrder.params, bidPrice)) {
+        if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
             amountFilled[askHash] += bidAmount;
-
-            if (bidRecipient == address(0)) bidRecipient = bidder;
-            _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, bidAmount);
 
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
-            _transferFeesAndFunds(askOrder.currency, bidder, recipient, bidPrice * bidAmount);
+            require(
+                _transferFeesAndFunds(askOrder.currency, bidder, recipient, bidPrice * bidAmount),
+                "SHOYU: FAILED_TO_TRANSFER_FUNDS"
+            );
+
+            if (bidRecipient == address(0)) bidRecipient = bidder;
+            _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, bidAmount);
 
             emit Execute(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
             return true;
         } else {
             BestBid storage best = bestBid[askHash];
-            if (IStrategy(askOrder.strategy).canBid(askOrder.params, bidPrice, best.price)) {
+            if (
+                IStrategy(askOrder.strategy).canBid(
+                    askOrder.deadline,
+                    askOrder.params,
+                    bidder,
+                    bidPrice,
+                    best.price,
+                    best.blockNumber
+                )
+            ) {
                 best.bidder = bidder;
                 best.amount = bidAmount;
                 best.price = bidPrice;
                 best.recipient = bidRecipient;
                 best.referrer = bidReferrer;
+                best.blockNumber = block.number;
 
                 emit Bid(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
                 return false;
@@ -143,27 +160,34 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
     function claim(Orders.Ask memory askOrder) external override nonReentrant {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
-        require(askOrder.deadline < block.number, "SHOYU: NOT_CLAIMABLE");
 
         bytes32 askHash = askOrder.hash();
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
         BestBid memory best = bestBid[askHash];
-        require(msg.sender == best.bidder, "SHOYU: FORBIDDEN");
-        require(IStrategy(askOrder.strategy).canExecute(askOrder.params, best.price), "SHOYU: FAILURE");
-
-        amountFilled[askHash] += best.amount;
-
-        address bidRecipient = best.recipient;
-        if (bidRecipient == address(0)) bidRecipient = best.bidder;
-        _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, best.amount);
+        require(
+            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.bidder, best.price),
+            "SHOYU: FAILURE"
+        );
 
         address recipient = askOrder.recipient;
         if (recipient == address(0)) recipient = askOrder.signer;
-        _transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount);
+        if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
+            amountFilled[askHash] += best.amount;
 
-        emit Execute(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
+            address bidRecipient = best.recipient;
+            if (bidRecipient == address(0)) bidRecipient = best.bidder;
+            _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, best.amount);
+
+            delete bestBid[askHash];
+
+            emit Execute(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
+        } else {
+            isCancelled[askHash] = true;
+
+            emit Cancel(askHash);
+        }
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
@@ -200,13 +224,17 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal returns (bool) {
+        if (!_safeTransferFrom(currency, from, address(this), amount)) {
+            return false;
+        }
+
         address _factory = factory();
         uint256 remainder = amount;
         {
             (address protocolFeeRecipient, uint8 protocolFeePermil) = ITokenFactory(_factory).protocolFeeInfo();
             uint256 protocolFeeAmount = (amount * protocolFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(from, protocolFeeRecipient, protocolFeeAmount);
+            IERC20(currency).safeTransfer(protocolFeeRecipient, protocolFeeAmount);
             remainder -= protocolFeeAmount;
         }
 
@@ -214,27 +242,40 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             (address operationalFeeRecipient, uint8 operationalFeePermil) =
                 ITokenFactory(_factory).operationalFeeInfo();
             uint256 operationalFeeAmount = (amount * operationalFeePermil) / 1000;
-            IERC20(currency).safeTransferFrom(from, operationalFeeRecipient, operationalFeeAmount);
+            IERC20(currency).safeTransfer(operationalFeeRecipient, operationalFeeAmount);
             remainder -= operationalFeeAmount;
         }
 
         (address royaltyFeeRecipient, uint8 royaltyFeePermil) = royaltyFeeInfo();
-        uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
-        if (royaltyFeeAmount > 0) {
-            remainder -= royaltyFeeAmount;
-            _transferRoyaltyFee(currency, from, royaltyFeeRecipient, royaltyFeeAmount);
+        if (royaltyFeePermil != type(uint8).max) {
+            uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
+            if (royaltyFeeAmount > 0) {
+                remainder -= royaltyFeeAmount;
+                _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+            }
         }
 
-        IERC20(currency).safeTransferFrom(from, to, remainder);
+        IERC20(currency).safeTransfer(to, remainder);
+        return true;
+    }
+
+    function _safeTransferFrom(
+        address token,
+        address from,
+        address to,
+        uint256 value
+    ) private returns (bool) {
+        (bool success, bytes memory returndata) =
+            token.call(abi.encodeWithSelector(IERC20(token).transferFrom.selector, from, to, value));
+        return success && (returndata.length == 0 || abi.decode(returndata, (bool)));
     }
 
     function _transferRoyaltyFee(
         address currency,
-        address from,
         address to,
         uint256 amount
     ) internal {
-        IERC20(currency).safeTransferFrom(from, to, amount);
+        IERC20(currency).safeTransfer(to, amount);
         if (Address.isContract(to)) {
             try IDividendPayingERC20(to).sync() returns (uint256) {} catch {}
         }

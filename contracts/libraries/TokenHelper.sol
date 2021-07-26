@@ -14,7 +14,7 @@ library TokenHelper {
         if (token == ETH) {
             return account.balance;
         } else {
-            return IERC20(token).balanceOf(address(this));
+            return IERC20(token).balanceOf(account);
         }
     }
 
@@ -24,7 +24,8 @@ library TokenHelper {
         uint256 amount
     ) internal {
         if (token == ETH) {
-            payable(to).transfer(amount);
+            (bool success, ) = to.call{value: amount}("");
+            require(success, "SHOYU: TRANSFER_FAILURE");
         } else {
             IERC20(token).safeTransfer(to, amount);
         }
