@@ -99,10 +99,10 @@ interface ITokenFactory {
     function isNFT1155(address query) external view returns (bool result);
 
     function createSocialToken(
+        address owner,
         string memory name,
         string memory symbol,
-        address dividendToken,
-        address owner
+        address dividendToken
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);
