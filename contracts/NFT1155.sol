@@ -62,7 +62,7 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
 
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
         if (_royaltyFee == type(uint8).max) {
-            require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+            require(royaltyFee <= MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
         } else {
             require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
         }
