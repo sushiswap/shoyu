@@ -8,7 +8,7 @@ interface ITokenFactory {
     event UpgradeSocialToken(address newTarget);
     event UpgradeERC721Exchange(address exchange);
     event UpgradeERC1155Exchange(address exchange);
-    event CreateNFT721(
+    event DeployNFT721(
         address indexed nft,
         string name,
         string symbol,
@@ -17,7 +17,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateNFT721(
+    event DeployNFT721(
         address indexed proxy,
         string name,
         string symbol,
@@ -26,7 +26,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateNFT1155(
+    event DeployNFT1155(
         address indexed proxy,
         address indexed owner,
         uint256[] tokenIds,
@@ -34,7 +34,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateSocialToken(
+    event DeploySocialToken(
         address indexed proxy,
         address indexed owner,
         string name,
@@ -61,6 +61,8 @@ interface ITokenFactory {
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
+    function isDeployerWhitelisted(address strategy) external view returns (bool);
+
     function setBaseURI721(string memory uri) external;
 
     function setBaseURI1155(string memory uri) external;
@@ -71,7 +73,9 @@ interface ITokenFactory {
 
     function setOperationalFee(uint8 operationalFee) external;
 
-    function setStrategyWhitelisted(address sale, bool whitelisted) external;
+    function setDeployerWhitelisted(address deployer, bool whitelisted) external;
+
+    function setStrategyWhitelisted(address strategy, bool whitelisted) external;
 
     function upgradeNFT721(address newTarget) external;
 
@@ -83,7 +87,7 @@ interface ITokenFactory {
 
     function upgradeERC1155Exchange(address exchange) external;
 
-    function createNFT721(
+    function deployNFT721(
         string calldata name,
         string calldata symbol,
         address owner,
@@ -92,7 +96,7 @@ interface ITokenFactory {
         uint8 royaltyFee
     ) external returns (address nft);
 
-    function createNFT721(
+    function deployNFT721(
         string calldata name,
         string calldata symbol,
         address owner,
@@ -103,7 +107,7 @@ interface ITokenFactory {
 
     function isNFT721(address query) external view returns (bool result);
 
-    function createNFT1155(
+    function deployNFT1155(
         address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
@@ -113,7 +117,7 @@ interface ITokenFactory {
 
     function isNFT1155(address query) external view returns (bool result);
 
-    function createSocialToken(
+    function deploySocialToken(
         address owner,
         string memory name,
         string memory symbol,
