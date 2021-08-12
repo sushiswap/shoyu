@@ -2,6 +2,7 @@ import "dotenv/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
 import "@nomiclabs/hardhat-waffle";
+import "hardhat-abi-exporter";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "hardhat-spdx-license-identifier";
@@ -31,6 +32,13 @@ task("accounts", "Prints the list of accounts", async (args, { ethers }) => {
 });
 
 const config: HardhatUserConfig = {
+  abiExporter: {
+    path: "./abi",
+    clear: true,
+    flat: true,
+    only: [],
+    spacing: 2,
+  },
   defaultNetwork: "hardhat",
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

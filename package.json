@@ -1,18 +1,28 @@
 {
-  "name": "hardhat-foundation",
-  "description": "Hardhat foundation",
+  "name": "@shoyunft/contracts",
+  "version": "1.0.0-alpha.0",
+  "description": "Shoyu NFT platform contracts",
   "keywords": [
-    "hardhat"
+    "solidity",
+    "shoyu",
+    "nft"
   ],
-  "homepage": "https://github.com/sushiswap/hardhat-foundation#readme",
+  "homepage": "https://github.com/sushiswap/shoyu#readme",
   "bugs": {
-    "url": "https://github.com/sushiswap/hardhat-foundation/issues",
+    "url": "https://github.com/sushiswap/shoyu/issues",
     "email": "bugs@sushi.com"
   },
   "license": "MIT",
-  "author": "Matthew Lilley <hello@matthewlilley.com>",
+  "author": "LevX <team@levx.io>",
+  "files": [
+    "abi",
+    "contracts",
+    "deployments",
+    "exports",
+    "typechain"
+  ],
   "scripts": {
-    "build": "hardhat compile",
+    "build": "rimraf abi typechain && hardhat compile",
     "console": "hardhat console",
     "mainnet:deploy": "hardhat --network mainnet deploy",
     "mainnet:verify": "hardhat --network mainnet etherscan-verify --solc-input --license MIT",
@@ -36,7 +46,8 @@
     "arbitrum:export": "hardhat --network arbitrum export --export exports/arbitrum.json",
     "test": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat test",
     "test:coverage": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" hardhat coverage",
-    "test:gas": "cross-env REPORT_GAS=true yarn test"
+    "test:gas": "cross-env REPORT_GAS=true yarn test",
+    "prepublishOnl": "yarn build"
   },
   "lint-staged": {
     "*.ts": [
@@ -89,6 +100,8 @@
     "typescript": "^4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0"
+    "@openzeppelin/contracts": "^4.1.0",
+    "hardhat-abi-exporter": "^2.2.1",
+    "rimraf": "^3.0.2"
   }
 }
