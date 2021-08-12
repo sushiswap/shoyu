@@ -108,10 +108,16 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         }
     }
 
-    function burn(uint256 tokenId) external override {
+    function burn(
+        uint256 tokenId,
+        uint256 label,
+        bytes32 data
+    ) external override {
         require(ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
 
         _burn(tokenId);
+
+        emit Burn(label, data);
     }
 
     function burnBatch(uint256[] memory tokenIds) external override {

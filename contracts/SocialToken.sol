@@ -63,11 +63,11 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
 
     function burn(
         uint256 value,
-        uint256 id,
+        uint256 label,
         bytes32 data
     ) external override {
         _burn(msg.sender, value);
 
-        emit Log(id, data);
+        emit Burn(label, data);
     }
 }
