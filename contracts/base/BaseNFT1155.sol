@@ -17,6 +17,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     bytes32 public constant override PERMIT_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
     bytes32 internal _DOMAIN_SEPARATOR;
+    uint8 internal MAX_ROYALTY_FEE;
 
     address internal _factory;
     string internal _baseURI;
@@ -27,6 +28,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         __ERC1155_init("");
         __Ownable_init(_owner);
         _factory = msg.sender;
+        MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         uint256 chainId;
         assembly {
@@ -36,7 +38,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes(Strings.toHexString(uint160(address(this))))),
-                keccak256(bytes("1")),
+                0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
                 chainId,
                 address(this)
             )

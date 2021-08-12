@@ -112,13 +112,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
         require(bidAmount > 0, "SHOYU: INVALID_AMOUNT");
-        require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
+        uint256 _amountFilled = amountFilled[askHash];
+        require(_amountFilled + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
         if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
-            amountFilled[askHash] += bidAmount;
+            amountFilled[askHash] = _amountFilled + bidAmount;
 
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
@@ -173,8 +174,9 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         address recipient = askOrder.recipient;
         if (recipient == address(0)) recipient = askOrder.signer;
+        
         if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
-            amountFilled[askHash] += best.amount;
+            amountFilled[askHash] = amountFilled[askHash] + best.amount;
 
             address bidRecipient = best.recipient;
             if (bidRecipient == address(0)) bidRecipient = best.bidder;

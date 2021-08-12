@@ -13,7 +13,6 @@ import "./NFT1155.sol";
 import "./SocialToken.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
-    //TODO: optimization. move MAX_XXX_FEEs to BaseExchange.sol
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
@@ -196,10 +195,10 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function createSocialToken(
+        address owner,
         string memory name,
         string memory symbol,
-        address dividendToken,
-        address owner
+        address dividendToken
     ) external override returns (address proxy) {
         bytes memory initData =
             abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
