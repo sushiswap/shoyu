@@ -13,7 +13,7 @@ import "./NFT1155V0.sol";
 import "./SocialTokenV0.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
-    uint8 public constant override MAX_ROYALTY_FEE = 100; // 10%
+    uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
     address[] internal _targets721;
