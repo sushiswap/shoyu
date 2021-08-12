@@ -28,7 +28,6 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         __ERC1155_init("");
         __Ownable_init(_owner);
         _factory = msg.sender;
-        MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         uint256 chainId;
         assembly {

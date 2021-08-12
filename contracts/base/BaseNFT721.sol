@@ -18,7 +18,6 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     bytes32 public constant override PERMIT_ALL_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
     bytes32 internal _DOMAIN_SEPARATOR;
-    uint8 internal MAX_ROYALTY_FEE;
 
     address internal _factory;
     string internal __baseURI;
@@ -34,7 +33,6 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         __ERC721_init(_name, _symbol);
         __Ownable_init(_owner);
         _factory = msg.sender;
-        MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         uint256 chainId;
         assembly {
