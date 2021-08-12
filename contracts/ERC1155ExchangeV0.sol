@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 import "./base/BaseExchange.sol";
 
-contract ERC1155Exchange is BaseExchange {
+contract ERC1155ExchangeV0 is BaseExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 

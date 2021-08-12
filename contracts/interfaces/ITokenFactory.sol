@@ -6,6 +6,8 @@ interface ITokenFactory {
     event UpgradeNFT721(address newTarget);
     event UpgradeNFT1155(address newTarget);
     event UpgradeSocialToken(address newTarget);
+    event UpgradeERC721Exchange(address exchange);
+    event UpgradeERC1155Exchange(address exchange);
     event CreateNFT721(
         address indexed nft,
         string name,
@@ -76,6 +78,10 @@ interface ITokenFactory {
     function upgradeNFT1155(address newTarget) external;
 
     function upgradeSocialToken(address newTarget) external;
+
+    function upgradeERC721Exchange(address exchange) external;
+
+    function upgradeERC1155Exchange(address exchange) external;
 
     function createNFT721(
         string calldata name,

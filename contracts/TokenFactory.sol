@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./base/ProxyFactory.sol";
-import "./ERC721Exchange.sol";
-import "./ERC1155Exchange.sol";
+import "./ERC721ExchangeV0.sol";
+import "./ERC1155ExchangeV0.sol";
 import "./NFT721V0.sol";
 import "./NFT1155V0.sol";
 import "./SocialTokenV0.sol";
@@ -28,8 +28,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     string public override baseURI721;
     string public override baseURI1155;
 
-    address public immutable override erc721Exchange;
-    address public immutable override erc1155Exchange;
+    address public override erc721Exchange;
+    address public override erc1155Exchange;
     mapping(address => bool) public override isStrategyWhitelisted;
 
     mapping(address => mapping(uint256 => uint256)) public tagNonces;
@@ -50,8 +50,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         baseURI721 = _baseURI721;
         baseURI1155 = _baseURI1155;
 
-        erc721Exchange = address(new ERC721Exchange());
-        erc1155Exchange = address(new ERC1155Exchange());
+        erc721Exchange = address(new ERC721ExchangeV0());
+        erc1155Exchange = address(new ERC1155ExchangeV0());
 
         NFT721V0 nft721 = new NFT721V0();
         nft721.initialize("", "", address(0));
@@ -129,6 +129,20 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         _targetsSocialToken.push(newTarget);
 
         emit UpgradeSocialToken(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeERC721Exchange(address exchange) external override onlyOwner {
+        erc721Exchange = exchange;
+
+        emit UpgradeERC721Exchange(exchange);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeERC1155Exchange(address exchange) external override onlyOwner {
+        erc1155Exchange = exchange;
+
+        emit UpgradeERC1155Exchange(exchange);
     }
 
     function createNFT721(
