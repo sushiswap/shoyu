@@ -9,7 +9,7 @@ import "./base/BaseExchange.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
 
-contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
+contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
     bytes32 internal _DOMAIN_SEPARATOR;
     address internal _factory;
 

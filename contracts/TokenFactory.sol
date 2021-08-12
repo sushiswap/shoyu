@@ -6,19 +6,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./base/ProxyFactory.sol";
-import "./ERC721Exchange.sol";
-import "./ERC1155Exchange.sol";
-import "./NFT721.sol";
-import "./NFT1155.sol";
-import "./SocialToken.sol";
+import "./ERC721ExchangeV0.sol";
+import "./ERC1155ExchangeV0.sol";
+import "./NFT721V0.sol";
+import "./NFT1155V0.sol";
+import "./SocialTokenV0.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 100; // 10%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
-    address internal immutable _target721;
-    address internal immutable _target1155;
-    address internal immutable _targetSocialToken;
+    address[] internal _targets721;
+    address[] internal _targets1155;
+    address[] internal _targetsSocialToken;
 
     address internal _protocolFeeRecipient;
     uint8 internal _protocolFee; // out of 1000
@@ -28,11 +28,18 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     string public override baseURI721;
     string public override baseURI1155;
 
-    address public immutable override erc721Exchange;
-    address public immutable override erc1155Exchange;
+    address public override erc721Exchange;
+    address public override erc1155Exchange;
+    // any account can deploy proxies if isDeployerWhitelisted[0x0000000000000000000000000000000000000000] == true
+    mapping(address => bool) public override isDeployerWhitelisted;
     mapping(address => bool) public override isStrategyWhitelisted;
 
     mapping(address => mapping(uint256 => uint256)) public tagNonces;
+
+    modifier onlyDeployer {
+        require(isDeployerWhitelisted[address(0)] || isDeployerWhitelisted[msg.sender], "SHOYU: FORBIDDEN");
+        _;
+    }
 
     constructor(
         address protocolFeeRecipient,
@@ -50,20 +57,20 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         baseURI721 = _baseURI721;
         baseURI1155 = _baseURI1155;
 
-        erc721Exchange = address(new ERC721Exchange());
-        erc1155Exchange = address(new ERC1155Exchange());
+        erc721Exchange = address(new ERC721ExchangeV0());
+        erc1155Exchange = address(new ERC1155ExchangeV0());
 
-        NFT721 nft721 = new NFT721();
+        NFT721V0 nft721 = new NFT721V0();
         nft721.initialize("", "", address(0));
-        _target721 = address(nft721);
+        _targets721.push(address(nft721));
 
-        NFT1155 nft1155 = new NFT1155();
+        NFT1155V0 nft1155 = new NFT1155V0();
         nft1155.initialize(address(0));
-        _target1155 = address(nft1155);
+        _targets1155.push(address(nft1155));
 
-        SocialToken token = new SocialToken();
+        SocialTokenV0 token = new SocialTokenV0();
         token.initialize(address(0), "", "", address(0));
-        _targetSocialToken = address(token);
+        _targetsSocialToken.push(address(token));
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
@@ -104,25 +111,67 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
-    function setStrategyWhitelisted(address ask, bool whitelisted) external override onlyOwner {
-        require(ask != address(0), "SHOYU: INVALID_SALE");
+    function setDeployerWhitelisted(address deployer, bool whitelisted) external override onlyOwner {
+        require(deployer != address(0), "SHOYU: INVALID_ADDRESS");
 
-        isStrategyWhitelisted[ask] = whitelisted;
+        isDeployerWhitelisted[deployer] = whitelisted;
     }
 
-    function createNFT721(
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function setStrategyWhitelisted(address strategy, bool whitelisted) external override onlyOwner {
+        require(strategy != address(0), "SHOYU: INVALID_ADDRESS");
+
+        isStrategyWhitelisted[strategy] = whitelisted;
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeNFT721(address newTarget) external override onlyOwner {
+        _targets721.push(newTarget);
+
+        emit UpgradeNFT721(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeNFT1155(address newTarget) external override onlyOwner {
+        _targets1155.push(newTarget);
+
+        emit UpgradeNFT1155(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeSocialToken(address newTarget) external override onlyOwner {
+        _targetsSocialToken.push(newTarget);
+
+        emit UpgradeSocialToken(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeERC721Exchange(address exchange) external override onlyOwner {
+        erc721Exchange = exchange;
+
+        emit UpgradeERC721Exchange(exchange);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeERC1155Exchange(address exchange) external override onlyOwner {
+        erc1155Exchange = exchange;
+
+        emit UpgradeERC1155Exchange(exchange);
+    }
+
+    function deployNFT721(
         string calldata name,
         string calldata symbol,
         address owner,
         uint256[] memory tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
-    ) external override returns (address nft) {
+    ) external override onlyDeployer returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
 
         nft = _createProxy(
-            _target721,
+            _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
                 "initialize(string,string,address,uint256[],address,uint8)",
                 name,
@@ -134,22 +183,22 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit CreateNFT721(nft, name, symbol, owner, tokenIds, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721(nft, name, symbol, owner, tokenIds, royaltyFeeRecipient, royaltyFee);
     }
 
-    function createNFT721(
+    function deployNFT721(
         string calldata name,
         string calldata symbol,
         address owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
-    ) external override returns (address nft) {
+    ) external override onlyDeployer returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
 
         nft = _createProxy(
-            _target721,
+            _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
                 "initialize(string,string,address,uint256,address,uint8)",
                 name,
@@ -161,22 +210,27 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit CreateNFT721(nft, name, symbol, owner, toTokenId, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721(nft, name, symbol, owner, toTokenId, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
-        return _isProxy(_target721, query);
+        for (uint256 i = _targets721.length - 1; i >= 0; i--) {
+            if (_isProxy(_targets721[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    function createNFT1155(
+    function deployNFT1155(
         address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         address royaltyFeeRecipient,
         uint8 royaltyFee
-    ) external override returns (address nft) {
+    ) external override onlyDeployer returns (address nft) {
         nft = _createProxy(
-            _target1155,
+            _targets1155[_targets1155.length - 1],
             abi.encodeWithSignature(
                 "initialize(address,uint256[],uint256[],address,uint8)",
                 owner,
@@ -187,28 +241,38 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit CreateNFT1155(nft, owner, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT1155(nft, owner, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
-        return _isProxy(_target1155, query);
+        for (uint256 i = _targets1155.length - 1; i >= 0; i--) {
+            if (_isProxy(_targets1155[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    function createSocialToken(
+    function deploySocialToken(
         address owner,
         string memory name,
         string memory symbol,
         address dividendToken
-    ) external override returns (address proxy) {
+    ) external override onlyDeployer returns (address proxy) {
         bytes memory initData =
             abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
-        proxy = _createProxy(_targetSocialToken, initData);
+        proxy = _createProxy(_targetsSocialToken[_targetsSocialToken.length - 1], initData);
 
-        emit CreateSocialToken(proxy, owner, name, symbol, dividendToken);
+        emit DeploySocialToken(proxy, owner, name, symbol, dividendToken);
     }
 
     function isSocialToken(address query) external view override returns (bool result) {
-        return _isProxy(_targetSocialToken, query);
+        for (uint256 i = _targetsSocialToken.length - 1; i >= 0; i--) {
+            if (_isProxy(_targetsSocialToken[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function mintWithTags721(
