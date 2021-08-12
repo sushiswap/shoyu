@@ -2,26 +2,27 @@
 
 pragma solidity =0.8.3;
 
-import "./interfaces/INFT1155.sol";
-import "./base/BaseNFT1155.sol";
+import "./interfaces/INFT721.sol";
+import "./base/BaseNFT721.sol";
 import "./base/BaseExchange.sol";
 
-contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
+contract NFT721V0 is BaseNFT721, BaseExchange, INFT721 {
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
     function initialize(
+        string memory _name,
+        string memory _symbol,
         address _owner,
         uint256[] memory tokenIds,
-        uint256[] memory amounts,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
-        initialize(_owner);
+        initialize(_name, _symbol, _owner);
 
-        if (tokenIds.length > 0) {
-            _mintBatch(_owner, tokenIds, amounts, "");
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _safeMint(_owner, tokenIds[i]);
         }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
@@ -29,15 +30,34 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
     }
 
-    function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (bytes32) {
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _owner,
+        uint256 toTokenId,
+        address royaltyFeeRecipient,
+        uint8 royaltyFee
+    ) external override initializer {
+        __BaseNFTExchange_init();
+        initialize(_name, _symbol, _owner);
+
+        _parkTokenIds(toTokenId);
+
+        emit ParkTokenIds(toTokenId);
+
+        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        setRoyaltyFee(royaltyFee);
+    }
+
+    function DOMAIN_SEPARATOR() public view override(BaseNFT721, BaseExchange, INFT721) returns (bytes32) {
         return _DOMAIN_SEPARATOR;
     }
 
-    function factory() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (address) {
+    function factory() public view override(BaseNFT721, BaseExchange, INFT721) returns (address) {
         return _factory;
     }
 
-    function royaltyFeeInfo() public view override(BaseExchange, INFT1155) returns (address recipient, uint8 permil) {
+    function royaltyFeeInfo() public view override(BaseExchange, INFT721) returns (address recipient, uint8 permil) {
         return (_royaltyFeeRecipient, _royaltyFee);
     }
 
@@ -46,10 +66,13 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
         address from,
         address to,
         uint256 tokenId,
-        uint256 amount
+        uint256
     ) internal override {
-        _transfer(from, to, tokenId, amount);
-        emit TransferSingle(msg.sender, from, to, tokenId, amount);
+        if (from == owner() && _parked(tokenId)) {
+            _safeMint(to, tokenId);
+        } else {
+            _transfer(from, to, tokenId);
+        }
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {

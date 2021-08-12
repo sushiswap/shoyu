@@ -3,6 +3,9 @@
 pragma solidity >=0.5.0;
 
 interface ITokenFactory {
+    event UpgradeNFT721(address newTarget);
+    event UpgradeNFT1155(address newTarget);
+    event UpgradeSocialToken(address newTarget);
     event CreateNFT721(
         address indexed nft,
         string name,
@@ -67,6 +70,12 @@ interface ITokenFactory {
     function setOperationalFee(uint8 operationalFee) external;
 
     function setStrategyWhitelisted(address sale, bool whitelisted) external;
+
+    function upgradeNFT721(address newTarget) external;
+
+    function upgradeNFT1155(address newTarget) external;
+
+    function upgradeSocialToken(address newTarget) external;
 
     function createNFT721(
         string calldata name,

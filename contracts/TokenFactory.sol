@@ -8,17 +8,17 @@ import "./interfaces/ITokenFactory.sol";
 import "./base/ProxyFactory.sol";
 import "./ERC721Exchange.sol";
 import "./ERC1155Exchange.sol";
-import "./NFT721.sol";
-import "./NFT1155.sol";
-import "./SocialToken.sol";
+import "./NFT721V0.sol";
+import "./NFT1155V0.sol";
+import "./SocialTokenV0.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 100; // 10%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
 
-    address internal immutable _target721;
-    address internal immutable _target1155;
-    address internal immutable _targetSocialToken;
+    address[] internal _targets721;
+    address[] internal _targets1155;
+    address[] internal _targetsSocialToken;
 
     address internal _protocolFeeRecipient;
     uint8 internal _protocolFee; // out of 1000
@@ -53,17 +53,17 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         erc721Exchange = address(new ERC721Exchange());
         erc1155Exchange = address(new ERC1155Exchange());
 
-        NFT721 nft721 = new NFT721();
+        NFT721V0 nft721 = new NFT721V0();
         nft721.initialize("", "", address(0));
-        _target721 = address(nft721);
+        _targets721.push(address(nft721));
 
-        NFT1155 nft1155 = new NFT1155();
+        NFT1155V0 nft1155 = new NFT1155V0();
         nft1155.initialize(address(0));
-        _target1155 = address(nft1155);
+        _targets1155.push(address(nft1155));
 
-        SocialToken token = new SocialToken();
+        SocialTokenV0 token = new SocialTokenV0();
         token.initialize(address(0), "", "", address(0));
-        _targetSocialToken = address(token);
+        _targetsSocialToken.push(address(token));
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
@@ -110,6 +110,27 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         isStrategyWhitelisted[ask] = whitelisted;
     }
 
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeNFT721(address newTarget) external override onlyOwner {
+        _targets721.push(newTarget);
+
+        emit UpgradeNFT721(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeNFT1155(address newTarget) external override onlyOwner {
+        _targets1155.push(newTarget);
+
+        emit UpgradeNFT1155(newTarget);
+    }
+
+    // This function should be called by a multi-sig `owner`, not an EOA
+    function upgradeSocialToken(address newTarget) external override onlyOwner {
+        _targetsSocialToken.push(newTarget);
+
+        emit UpgradeSocialToken(newTarget);
+    }
+
     function createNFT721(
         string calldata name,
         string calldata symbol,
@@ -122,7 +143,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
 
         nft = _createProxy(
-            _target721,
+            _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
                 "initialize(string,string,address,uint256[],address,uint8)",
                 name,
@@ -149,7 +170,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
 
         nft = _createProxy(
-            _target721,
+            _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
                 "initialize(string,string,address,uint256,address,uint8)",
                 name,
@@ -165,7 +186,12 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT721(address query) external view override returns (bool result) {
-        return _isProxy(_target721, query);
+        for (uint256 i = _targets721.length - 1; i >= 0; i--) {
+            if (_isProxy(_targets721[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function createNFT1155(
@@ -176,7 +202,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         uint8 royaltyFee
     ) external override returns (address nft) {
         nft = _createProxy(
-            _target1155,
+            _targets1155[_targets1155.length - 1],
             abi.encodeWithSignature(
                 "initialize(address,uint256[],uint256[],address,uint8)",
                 owner,
@@ -191,7 +217,12 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
-        return _isProxy(_target1155, query);
+        for (uint256 i = _targets1155.length - 1; i >= 0; i--) {
+            if (_isProxy(_targets1155[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function createSocialToken(
@@ -202,13 +233,18 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) external override returns (address proxy) {
         bytes memory initData =
             abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
-        proxy = _createProxy(_targetSocialToken, initData);
+        proxy = _createProxy(_targetsSocialToken[_targetsSocialToken.length - 1], initData);
 
         emit CreateSocialToken(proxy, owner, name, symbol, dividendToken);
     }
 
     function isSocialToken(address query) external view override returns (bool result) {
-        return _isProxy(_targetSocialToken, query);
+        for (uint256 i = _targetsSocialToken.length - 1; i >= 0; i--) {
+            if (_isProxy(_targetsSocialToken[i], query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function mintWithTags721(
