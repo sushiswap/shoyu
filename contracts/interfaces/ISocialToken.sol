@@ -6,7 +6,7 @@ import "./IBaseExchange.sol";
 import "./IDividendPayingERC20.sol";
 
 interface ISocialToken is IBaseExchange, IDividendPayingERC20 {
-    event Log(uint256 indexed id, bytes32 data);
+    event Burn(uint256 indexed label, bytes32 data);
 
     function initialize(
         address owner,
