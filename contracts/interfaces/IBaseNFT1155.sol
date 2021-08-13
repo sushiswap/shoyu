@@ -17,6 +17,8 @@ interface IBaseNFT1155 is IERC1155 {
 
     function initialize(address _owner) external;
 
+    function setURI(uint256 id, string memory uri) external;
+
     function setBaseURI(string memory baseURI) external;
 
     function mint(

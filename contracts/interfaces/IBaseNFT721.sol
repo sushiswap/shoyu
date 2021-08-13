@@ -29,6 +29,8 @@ interface IBaseNFT721 is IERC721 {
         address _owner
     ) external;
 
+    function setTokenURI(uint256 id, string memory uri) external;
+
     function setBaseURI(string memory uri) external;
 
     function parkTokenIds(uint256 toTokenId) external;

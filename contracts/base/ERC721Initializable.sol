@@ -95,7 +95,7 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId) || _parked(tokenId), "SHOYU: INVALID_TOKEN_ID");
+        require(_exists(tokenId), "SHOYU: INVALID_TOKEN_ID");
 
         string memory baseURI = _baseURI();
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "";

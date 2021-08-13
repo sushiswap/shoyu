@@ -21,6 +21,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
 
     address internal _factory;
     string internal __baseURI;
+    mapping(uint256 => string) internal _uris;
 
     mapping(uint256 => uint256) public override nonces;
     mapping(address => uint256) public override noncesForAll;
@@ -58,18 +59,30 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         return _factory;
     }
 
-    function _baseURI() internal view override returns (string memory) {
-        if (bytes(__baseURI).length > 0) {
-            return __baseURI;
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_exists(tokenId) || _parked(tokenId), "SHOYU: INVALID_TOKEN_ID");
+
+        string memory _uri = _uris[tokenId];
+        if (bytes(_uri).length > 0) {
+            return _uri;
         } else {
-            string memory baseURI_ = ITokenFactory(_factory).baseURI721();
-            string memory addy = Strings.toHexString(uint160(address(this)), 20);
-            return string(abi.encodePacked(baseURI_, addy, "/"));
+            string memory baseURI = __baseURI;
+            if (bytes(baseURI).length > 0) {
+                return string(abi.encodePacked(baseURI, Strings.toString(tokenId), ".json"));
+            } else {
+                baseURI = ITokenFactory(_factory).baseURI721();
+                string memory addy = Strings.toHexString(uint160(address(this)), 20);
+                return string(abi.encodePacked(baseURI, addy, "/", Strings.toString(tokenId), ".json"));
+            }
         }
     }
 
     function parked(uint256 tokenId) external view override returns (bool) {
         return _parked(tokenId);
+    }
+
+    function setTokenURI(uint256 id, string memory newURI) external override onlyOwner {
+        _uris[id] = newURI;
     }
 
     function setBaseURI(string memory uri) external override onlyOwner {
