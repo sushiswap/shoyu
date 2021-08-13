@@ -10,9 +10,9 @@ contract ERC721ExchangeV0 is BaseExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 
-    constructor() {
+    constructor(address factory_) {
         __BaseNFTExchange_init();
-        _factory = msg.sender;
+        _factory = factory_;
 
         uint256 chainId;
         assembly {

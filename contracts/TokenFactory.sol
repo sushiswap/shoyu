@@ -5,12 +5,11 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
+import "./interfaces/IBaseNFT721.sol";
+import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
 import "./ERC721ExchangeV0.sol";
 import "./ERC1155ExchangeV0.sol";
-import "./NFT721V0.sol";
-import "./NFT1155V0.sol";
-import "./SocialTokenV0.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
@@ -56,21 +55,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
         baseURI721 = _baseURI721;
         baseURI1155 = _baseURI1155;
-
-        erc721Exchange = address(new ERC721ExchangeV0());
-        erc1155Exchange = address(new ERC1155ExchangeV0());
-
-        NFT721V0 nft721 = new NFT721V0();
-        nft721.initialize("", "", address(0));
-        _targets721.push(address(nft721));
-
-        NFT1155V0 nft1155 = new NFT1155V0();
-        nft1155.initialize(address(0));
-        _targets1155.push(address(nft1155));
-
-        SocialTokenV0 token = new SocialTokenV0();
-        token.initialize(address(0), "", "", address(0));
-        _targetsSocialToken.push(address(token));
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
