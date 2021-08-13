@@ -24,6 +24,7 @@
   "scripts": {
     "build": "rimraf abi typechain && hardhat compile",
     "console": "hardhat console",
+    "hardhat:deploy": "hardhat --network hardhat deploy",
     "mainnet:deploy": "hardhat --network mainnet deploy",
     "mainnet:verify": "hardhat --network mainnet etherscan-verify --solc-input --license MIT",
     "mainnet:export": "hardhat --network mainnet export",
@@ -82,6 +83,7 @@
     "ethereum-waffle": "^3.2.0",
     "ethers": "^5.0.0",
     "hardhat": "^2.3.0",
+    "hardhat-abi-exporter": "^2.2.1",
     "hardhat-deploy": "^0.7.9",
     "hardhat-gas-reporter": "^1.0.0",
     "hardhat-log-remover": "^2.0.0",
@@ -93,6 +95,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.3",
+    "rimraf": "^3.0.2",
     "solidity-coverage": "^0.7.0",
     "ts-generator": "^0.1.0",
     "ts-node": "^9.1.0",
@@ -100,8 +103,6 @@
     "typescript": "^4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
-    "hardhat-abi-exporter": "^2.2.1",
-    "rimraf": "^3.0.2"
+    "@openzeppelin/contracts": "^4.1.0"
   }
 }
