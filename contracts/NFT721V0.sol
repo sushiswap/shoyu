@@ -14,9 +14,9 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
     uint8 internal _royaltyFee; // out of 1000
 
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
-        address _owner,
         uint256[] memory tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -35,9 +35,9 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
     }
 
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
-        address _owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee

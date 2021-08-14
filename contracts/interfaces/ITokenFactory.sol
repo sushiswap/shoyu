@@ -9,19 +9,19 @@ interface ITokenFactory {
     event UpgradeERC721Exchange(address exchange);
     event UpgradeERC1155Exchange(address exchange);
     event DeployNFT721(
-        address indexed nft,
+        address indexed proxy,
+        address indexed owner,
         string name,
         string symbol,
-        address indexed owner,
         uint256[] tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
     event DeployNFT721(
         address indexed proxy,
+        address indexed owner,
         string name,
         string symbol,
-        address indexed owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -88,18 +88,18 @@ interface ITokenFactory {
     function upgradeERC1155Exchange(address exchange) external;
 
     function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256[] calldata tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external returns (address nft);
 
     function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
