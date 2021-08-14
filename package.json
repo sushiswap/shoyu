@@ -15,14 +15,14 @@
   "license": "MIT",
   "author": "LevX <team@levx.io>",
   "files": [
-    "abi",
+    "abis",
     "contracts",
     "deployments",
     "exports",
     "typechain"
   ],
   "scripts": {
-    "build": "rimraf abi typechain && hardhat compile",
+    "build": "rimraf abis typechain && hardhat compile",
     "console": "hardhat console",
     "hardhat:deploy": "hardhat --network hardhat deploy",
     "mainnet:deploy": "hardhat --network mainnet deploy",
