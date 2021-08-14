@@ -144,9 +144,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256[] memory tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -157,23 +157,23 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         nft = _createProxy(
             _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
-                "initialize(string,string,address,uint256[],address,uint8)",
+                "initialize(address,string,string,uint256[],address,uint8)",
+                owner,
                 name,
                 symbol,
-                owner,
                 tokenIds,
                 royaltyFeeRecipient,
                 royaltyFee
             )
         );
 
-        emit DeployNFT721(nft, name, symbol, owner, tokenIds, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721(nft, owner, name, symbol, tokenIds, royaltyFeeRecipient, royaltyFee);
     }
 
     function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -184,17 +184,17 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         nft = _createProxy(
             _targets721[_targets721.length - 1],
             abi.encodeWithSignature(
-                "initialize(string,string,address,uint256,address,uint8)",
+                "initialize(address,string,string,uint256,address,uint8)",
+                owner,
                 name,
                 symbol,
-                owner,
                 toTokenId,
                 royaltyFeeRecipient,
                 royaltyFee
             )
         );
 
-        emit DeployNFT721(nft, name, symbol, owner, toTokenId, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721(nft, owner, name, symbol, toTokenId, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
