@@ -2,7 +2,9 @@
 
 pragma solidity >=0.5.0;
 
-interface IERC721GovernanceToken {
+import "./IERC20Snapshot.sol";
+
+interface IERC721GovernanceToken is IERC20Snapshot {
     event SubmitSellProposal(uint256 id, uint256 snapshotId, address indexed from, uint256 power);
     event ConfirmSellProposal(uint256 id, address indexed from, uint256 power);
     event RevokeSellProposal(uint256 id, address indexed from, uint256 power);

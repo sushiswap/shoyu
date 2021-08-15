@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Arrays.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "../interfaces/IERC20Snapshot.sol";
 import "./ERC20Initializable.sol";
 
 /**
@@ -32,7 +33,7 @@ import "./ERC20Initializable.sol";
  * only significant for the first transfer that immediately follows a snapshot for a particular account. Subsequent
  * transfers will have normal cost until the next snapshot, and so on.
  */
-abstract contract ERC20SnapshotInitializable is ERC20Initializable {
+abstract contract ERC20SnapshotInitializable is ERC20Initializable, IERC20Snapshot {
     function __ERC20Snapshot_init() internal initializer {
         __ERC20Snapshot_init_unchained();
     }
@@ -95,7 +96,7 @@ abstract contract ERC20SnapshotInitializable is ERC20Initializable {
     /**
      * @dev Retrieves the balance of `account` at the time `snapshotId` was created.
      */
-    function balanceOfAt(address account, uint256 snapshotId) public view virtual returns (uint256) {
+    function balanceOfAt(address account, uint256 snapshotId) public view virtual override returns (uint256) {
         (bool snapshotted, uint256 value) = _valueAt(snapshotId, _accountBalanceSnapshots[account]);
 
         return snapshotted ? value : balanceOf(account);
@@ -104,7 +105,7 @@ abstract contract ERC20SnapshotInitializable is ERC20Initializable {
     /**
      * @dev Retrieves the total supply at the time `snapshotId` was created.
      */
-    function totalSupplyAt(uint256 snapshotId) public view virtual returns (uint256) {
+    function totalSupplyAt(uint256 snapshotId) public view virtual override returns (uint256) {
         (bool snapshotted, uint256 value) = _valueAt(snapshotId, _totalSupplySnapshots);
 
         return snapshotted ? value : totalSupply();

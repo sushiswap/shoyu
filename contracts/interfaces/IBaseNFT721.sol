@@ -3,8 +3,11 @@
 pragma solidity >=0.5.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
-interface IBaseNFT721 is IERC721 {
+import "./IOwnable.sol";
+
+interface IBaseNFT721 is IERC721, IERC721Metadata, IOwnable {
     event Burn(uint256 indexed label, bytes32 data);
 
     event ParkTokenIds(uint256 toTokenId);
