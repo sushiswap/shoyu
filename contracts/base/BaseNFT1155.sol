@@ -113,7 +113,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     ) external override {
         _burn(msg.sender, tokenId, amount);
 
-        emit Burn(label, data);
+        emit Burn(tokenId, amount, label, data);
     }
 
     function burnBatch(uint256[] calldata tokenIds, uint256[] calldata amounts) external override {

@@ -7,7 +7,7 @@ import "./IBaseExchange.sol";
 import "./IOwnable.sol";
 
 interface ISocialToken is IDividendPayingERC20, IBaseExchange, IOwnable {
-    event Burn(uint256 indexed label, bytes32 data);
+    event Burn(uint256 amount, uint256 indexed label, bytes32 data);
 
     function initialize(
         address owner,
