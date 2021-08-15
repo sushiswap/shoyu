@@ -53,7 +53,13 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         return _factory;
     }
 
-    function uri(uint256 id) public view virtual override returns (string memory) {
+    function uri(uint256 id)
+        public
+        view
+        virtual
+        override(ERC1155Initializable, IERC1155MetadataURI)
+        returns (string memory)
+    {
         string memory _uri = _uris[id];
         if (bytes(_uri).length > 0) {
             return _uri;

@@ -59,7 +59,12 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         return _factory;
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721Initializable, IERC721Metadata)
+        returns (string memory)
+    {
         require(_exists(tokenId) || _parked(tokenId), "SHOYU: INVALID_TOKEN_ID");
 
         string memory _uri = _uris[tokenId];
