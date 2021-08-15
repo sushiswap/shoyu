@@ -68,6 +68,6 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
     ) external override {
         _burn(msg.sender, value);
 
-        emit Burn(label, data);
+        emit Burn(value, label, data);
     }
 }

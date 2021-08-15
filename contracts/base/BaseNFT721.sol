@@ -133,7 +133,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
 
         _burn(tokenId);
 
-        emit Burn(label, data);
+        emit Burn(tokenId, label, data);
     }
 
     function burnBatch(uint256[] memory tokenIds) external override {
