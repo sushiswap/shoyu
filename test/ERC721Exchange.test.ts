@@ -1,6 +1,6 @@
 import {
     TokenFactory,
-    ERC721Exchange,
+    ERC721ExchangeV0,
     FixedPriceSale,
     EnglishAuction,
     DutchAuction,
@@ -37,8 +37,8 @@ const setupTest = async () => {
     const dutchAuction = (await DutchAuctionContract.deploy()) as DutchAuction;
     await factory.setStrategyWhitelisted(dutchAuction.address, true);
 
-    const ERC721ExchangeContract = await ethers.getContractFactory("ERC721Exchange");
-    const erc721Exchange = ERC721ExchangeContract.attach(await factory.erc721Exchange()) as ERC721Exchange;
+    const ERC721ExchangeContract = await ethers.getContractFactory("ERC721ExchangeV0");
+    const erc721Exchange = ERC721ExchangeContract.attach(await factory.erc721Exchange()) as ERC721ExchangeV0;
 
     const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
     const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
@@ -69,7 +69,7 @@ describe("ERC721Exchange", () => {
     it("should be able to trade ERC721s using FixedPriceSale", async () => {
         const { erc721Exchange, fixedPriceSale, alice, erc721Mock, erc20Mock } = await setupTest();
 
-        await erc721Mock.safeMint(alice.address, 0, "");
+        await erc721Mock.safeMint(alice.address, 0, "0x");
 
         const signature = await signAsk(
             ethers.provider,
@@ -82,8 +82,8 @@ describe("ERC721Exchange", () => {
             fixedPriceSale.address,
             erc20Mock.address,
             ethers.constants.AddressZero,
-            ethers.constants.MaxUint256,
-            ""
+            Number.MAX_SAFE_INTEGER,
+            "0x"
         );
     });
 });
