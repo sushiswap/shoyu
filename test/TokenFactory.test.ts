@@ -14,8 +14,11 @@ import { ecsign } from "ethereumjs-util";
 import { hexlify } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import { expect } from "chai";
+
 const { BigNumber, utils, constants } = ethers;
 const { AddressZero } = constants;
+
+ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR); // turn off warnings
 
 const setupTest = async () => {
     const signers = await ethers.getSigners();
@@ -79,38 +82,40 @@ describe("TokenFactory", () => {
     it("should be fail if non-owner calls onlyOwner functions", async () => {
         const { factory, alice } = await setupTest();
 
-        await expect(factory.connect(alice).setBaseURI721("https://shoyu.sushi.com/nft721/")).be.revertedWith(
+        await expect(factory.connect(alice).setBaseURI721("https://shoyu.sushi.com/nft721/")).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).setBaseURI1155("https://shoyu.sushi.com/nft1155/")).be.revertedWith(
+        await expect(factory.connect(alice).setBaseURI1155("https://shoyu.sushi.com/nft1155/")).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).setProtocolFeeRecipient(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).setProtocolFeeRecipient(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).setOperationalFeeRecipient(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).setOperationalFeeRecipient(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).setOperationalFee(10)).be.revertedWith("Ownable: caller is not the owner");
-        await expect(factory.connect(alice).setDeployerWhitelisted(alice.address, true)).be.revertedWith(
+        await expect(factory.connect(alice).setOperationalFee(10)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).setStrategyWhitelisted(alice.address, true)).be.revertedWith(
+        await expect(factory.connect(alice).setDeployerWhitelisted(alice.address, true)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).upgradeNFT721(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).setStrategyWhitelisted(alice.address, true)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).upgradeNFT1155(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).upgradeNFT721(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).upgradeSocialToken(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).upgradeNFT1155(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).upgradeERC721Exchange(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).upgradeSocialToken(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
-        await expect(factory.connect(alice).upgradeERC1155Exchange(alice.address)).be.revertedWith(
+        await expect(factory.connect(alice).upgradeERC721Exchange(alice.address)).to.be.revertedWith(
+            "Ownable: caller is not the owner"
+        );
+        await expect(factory.connect(alice).upgradeERC1155Exchange(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
     });

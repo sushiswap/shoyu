@@ -7,10 +7,10 @@ import "hardhat-abi-exporter";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "hardhat-spdx-license-identifier";
-import "hardhat-typechain";
 import "hardhat-watcher";
 import "solidity-coverage";
 import "@tenderly/hardhat-tenderly";
+import "@typechain/hardhat";
 
 import { HardhatUserConfig, task } from "hardhat/config";
 
@@ -175,8 +175,8 @@ const config: HardhatUserConfig = {
         },
     },
     tenderly: {
-        project: process.env.TENDERLY_PROJECT,
-        username: process.env.TENDERLY_USERNAME,
+        project: process.env.TENDERLY_PROJECT || "",
+        username: process.env.TENDERLY_USERNAME || "",
     },
     watcher: {
         compile: {
