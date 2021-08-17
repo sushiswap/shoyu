@@ -17,9 +17,11 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     bytes32 public constant override PERMIT_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
     bytes32 internal _DOMAIN_SEPARATOR;
+    uint8 internal MAX_ROYALTY_FEE;
 
     address internal _factory;
     string internal _baseURI;
+    mapping(uint256 => string) internal _uris;
 
     mapping(address => uint256) public override nonces;
 
@@ -36,7 +38,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes(Strings.toHexString(uint160(address(this))))),
-                keccak256(bytes("1")),
+                0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
                 chainId,
                 address(this)
             )
@@ -51,16 +53,30 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         return _factory;
     }
 
-    function uri(uint256) public view virtual override returns (string memory) {
-        string memory baseURI;
-        if (bytes(_baseURI).length > 0) {
-            baseURI = _baseURI;
+    function uri(uint256 id)
+        public
+        view
+        virtual
+        override(ERC1155Initializable, IERC1155MetadataURI)
+        returns (string memory)
+    {
+        string memory _uri = _uris[id];
+        if (bytes(_uri).length > 0) {
+            return _uri;
         } else {
-            string memory baseURI_ = ITokenFactory(_factory).baseURI1155();
-            string memory addy = Strings.toHexString(uint160(address(this)), 20);
-            baseURI = string(abi.encodePacked(baseURI_, addy, "/"));
+            string memory baseURI = _baseURI;
+            if (bytes(baseURI).length > 0) {
+                return string(abi.encodePacked(baseURI, "{id}.json"));
+            } else {
+                baseURI = ITokenFactory(_factory).baseURI1155();
+                string memory addy = Strings.toHexString(uint160(address(this)), 20);
+                return string(abi.encodePacked(baseURI, addy, "/{id}.json"));
+            }
         }
-        return string(abi.encodePacked(baseURI, "/{id}"));
+    }
+
+    function setURI(uint256 id, string memory newURI) external override onlyOwner {
+        _uris[id] = newURI;
     }
 
     function setBaseURI(string memory baseURI) external override onlyOwner {
@@ -84,13 +100,20 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         uint256[] memory amounts,
         bytes memory data
     ) external override {
-        require(_factory == msg.sender || owner() == msg.sender, "SHOYU: FORBIDDEN");
+        require(owner() == msg.sender, "SHOYU: FORBIDDEN");
 
         _mintBatch(to, tokenIds, amounts, data);
     }
 
-    function burn(uint256 tokenId, uint256 amount) external override {
+    function burn(
+        uint256 tokenId,
+        uint256 amount,
+        uint256 label,
+        bytes32 data
+    ) external override {
         _burn(msg.sender, tokenId, amount);
+
+        emit Burn(tokenId, amount, label, data);
     }
 
     function burnBatch(uint256[] calldata tokenIds, uint256[] calldata amounts) external override {

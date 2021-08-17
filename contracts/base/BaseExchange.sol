@@ -32,7 +32,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
 
-    function __BaseNFTExchange_init() internal {
+    function __BaseNFTExchange_init() internal initializer {
         __ReentrancyGuard_init();
     }
 
@@ -111,13 +111,15 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidReferrer
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
-        require(amountFilled[askHash] + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
+        require(bidAmount > 0, "SHOYU: INVALID_AMOUNT");
+        uint256 _amountFilled = amountFilled[askHash];
+        require(_amountFilled + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
         _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
 
         if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
-            amountFilled[askHash] += bidAmount;
+            amountFilled[askHash] = _amountFilled + bidAmount;
 
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
@@ -166,14 +168,15 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         BestBid memory best = bestBid[askHash];
         require(
-            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, msg.sender, best.price),
+            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.bidder, best.price),
             "SHOYU: FAILURE"
         );
 
         address recipient = askOrder.recipient;
         if (recipient == address(0)) recipient = askOrder.signer;
+
         if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
-            amountFilled[askHash] += best.amount;
+            amountFilled[askHash] = amountFilled[askHash] + best.amount;
 
             address bidRecipient = best.recipient;
             if (bidRecipient == address(0)) bidRecipient = best.bidder;
@@ -246,10 +249,12 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         }
 
         (address royaltyFeeRecipient, uint8 royaltyFeePermil) = royaltyFeeInfo();
-        uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
-        if (royaltyFeeAmount > 0) {
-            remainder -= royaltyFeeAmount;
-            _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+        if (royaltyFeePermil != type(uint8).max) {
+            uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
+            if (royaltyFeeAmount > 0) {
+                remainder -= royaltyFeeAmount;
+                _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+            }
         }
 
         IERC20(currency).safeTransfer(to, remainder);

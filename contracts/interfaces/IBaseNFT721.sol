@@ -3,8 +3,13 @@
 pragma solidity >=0.5.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
-interface IBaseNFT721 is IERC721 {
+import "./IOwnable.sol";
+
+interface IBaseNFT721 is IERC721, IERC721Metadata, IOwnable {
+    event Burn(uint256 indexed tokenId, uint256 indexed label, bytes32 data);
+
     event ParkTokenIds(uint256 toTokenId);
 
     function PERMIT_TYPEHASH() external view returns (bytes32);
@@ -27,6 +32,8 @@ interface IBaseNFT721 is IERC721 {
         address _owner
     ) external;
 
+    function setTokenURI(uint256 id, string memory uri) external;
+
     function setBaseURI(string memory uri) external;
 
     function parkTokenIds(uint256 toTokenId) external;
@@ -43,7 +50,11 @@ interface IBaseNFT721 is IERC721 {
         bytes calldata data
     ) external;
 
-    function burn(uint256 tokenId) external;
+    function burn(
+        uint256 tokenId,
+        uint256 label,
+        bytes32 data
+    ) external;
 
     function burnBatch(uint256[] calldata tokenIds) external;
 

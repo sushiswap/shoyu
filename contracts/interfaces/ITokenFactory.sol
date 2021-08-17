@@ -3,25 +3,30 @@
 pragma solidity >=0.5.0;
 
 interface ITokenFactory {
-    event CreateNFT721(
-        address indexed nft,
+    event UpgradeNFT721(address newTarget);
+    event UpgradeNFT1155(address newTarget);
+    event UpgradeSocialToken(address newTarget);
+    event UpgradeERC721Exchange(address exchange);
+    event UpgradeERC1155Exchange(address exchange);
+    event DeployNFT721(
+        address indexed proxy,
+        address indexed owner,
         string name,
         string symbol,
-        address indexed owner,
         uint256[] tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateNFT721(
+    event DeployNFT721(
         address indexed proxy,
+        address indexed owner,
         string name,
         string symbol,
-        address indexed owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateNFT1155(
+    event DeployNFT1155(
         address indexed proxy,
         address indexed owner,
         uint256[] tokenIds,
@@ -29,7 +34,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event CreateSocialToken(
+    event DeploySocialToken(
         address indexed proxy,
         address indexed owner,
         string name,
@@ -41,6 +46,16 @@ interface ITokenFactory {
     function MAX_ROYALTY_FEE() external view returns (uint8);
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
+
+    function NFT721_TYPEHASH() external view returns (bytes32);
+
+    function NFT1155_TYPEHASH() external view returns (bytes32);
+
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
+
+    function nonces721(address account) external view returns (uint256);
+
+    function nonces1155(address account) external view returns (uint256);
 
     function baseURI721() external view returns (string memory);
 
@@ -56,6 +71,8 @@ interface ITokenFactory {
 
     function isStrategyWhitelisted(address strategy) external view returns (bool);
 
+    function isDeployerWhitelisted(address strategy) external view returns (bool);
+
     function setBaseURI721(string memory uri) external;
 
     function setBaseURI1155(string memory uri) external;
@@ -66,21 +83,33 @@ interface ITokenFactory {
 
     function setOperationalFee(uint8 operationalFee) external;
 
-    function setStrategyWhitelisted(address sale, bool whitelisted) external;
+    function setDeployerWhitelisted(address deployer, bool whitelisted) external;
 
-    function createNFT721(
+    function setStrategyWhitelisted(address strategy, bool whitelisted) external;
+
+    function upgradeNFT721(address newTarget) external;
+
+    function upgradeNFT1155(address newTarget) external;
+
+    function upgradeSocialToken(address newTarget) external;
+
+    function upgradeERC721Exchange(address exchange) external;
+
+    function upgradeERC1155Exchange(address exchange) external;
+
+    function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256[] calldata tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external returns (address nft);
 
-    function createNFT721(
+    function deployNFT721(
+        address owner,
         string calldata name,
         string calldata symbol,
-        address owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
@@ -88,7 +117,7 @@ interface ITokenFactory {
 
     function isNFT721(address query) external view returns (bool result);
 
-    function createNFT1155(
+    function deployNFT1155(
         address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
@@ -98,21 +127,45 @@ interface ITokenFactory {
 
     function isNFT1155(address query) external view returns (bool result);
 
-    function createSocialToken(
+    function deploySocialToken(
+        address owner,
         string memory name,
         string memory symbol,
-        address dividendToken,
-        address owner
+        address dividendToken
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);
+
+    function mint721(
+        address nft,
+        address to,
+        uint256 tokenId,
+        bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
+    function mint1155(
+        address nft,
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 
     function mintWithTags721(
         address nft,
         address to,
         uint256 tokenId,
         bytes calldata data,
-        string[] calldata tags
+        string[] calldata tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external;
 
     function mintWithTags1155(
@@ -121,7 +174,10 @@ interface ITokenFactory {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data,
-        string[] calldata tags
+        string[] calldata tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external;
 
     function setTags721(

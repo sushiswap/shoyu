@@ -182,17 +182,19 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     }
 
     function _executeSellProposal(SellProposal storage proposal) internal {
-        proposal.executed = true;
-
-        IOrderBook(orderBook).submitOrder(
-            nft,
-            tokenId,
-            1,
-            proposal.strategy,
-            proposal.currency,
-            address(0),
-            proposal.deadline,
-            proposal.params
-        );
+        try
+            IOrderBook(orderBook).submitOrder(
+                nft,
+                tokenId,
+                1,
+                proposal.strategy,
+                proposal.currency,
+                address(0),
+                proposal.deadline,
+                proposal.params
+            )
+        returns (bytes32) {
+            proposal.executed = true;
+        } catch {}
     }
 }

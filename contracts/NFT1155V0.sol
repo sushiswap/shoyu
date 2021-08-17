@@ -3,10 +3,13 @@
 pragma solidity =0.8.3;
 
 import "./interfaces/INFT1155.sol";
+import "./interfaces/IERC2981.sol";
 import "./base/BaseNFT1155.sol";
 import "./base/BaseExchange.sol";
 
-contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
+contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
+    uint8 internal _MAX_ROYALTY_FEE;
+
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
@@ -19,13 +22,25 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
     ) external override initializer {
         __BaseNFTExchange_init();
         initialize(_owner);
+        _MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         if (tokenIds.length > 0) {
             _mintBatch(_owner, tokenIds, amounts, "");
         }
 
         setRoyaltyFeeRecipient(royaltyFeeRecipient);
-        setRoyaltyFee(royaltyFee);
+        _royaltyFee = type(uint8).max;
+        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC1155Initializable, IERC165)
+        returns (bool)
+    {
+        return interfaceId == 0x2a55205a || super.supportsInterface(interfaceId);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (bytes32) {
@@ -38,6 +53,10 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
 
     function royaltyFeeInfo() public view override(BaseExchange, INFT1155) returns (address recipient, uint8 permil) {
         return (_royaltyFeeRecipient, _royaltyFee);
+    }
+
+    function royaltyInfo(uint256, uint256 _salePrice) external view override returns (address, uint256) {
+        return (_royaltyFeeRecipient, (_salePrice * _royaltyFee) / 1000);
     }
 
     function _transfer(
@@ -60,8 +79,8 @@ contract NFT1155 is BaseNFT1155, BaseExchange, INFT1155 {
     }
 
     function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
-        if (_royaltyFee == 0) {
-            require(royaltyFee <= ITokenFactory(_factory).MAX_ROYALTY_FEE(), "SHOYU: INVALID_FEE");
+        if (_royaltyFee == type(uint8).max) {
+            require(royaltyFee <= _MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
         } else {
             require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
         }

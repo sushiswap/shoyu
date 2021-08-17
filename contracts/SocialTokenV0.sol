@@ -9,7 +9,7 @@ import "./base/BaseExchange.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
 
-contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
+contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
     bytes32 internal _DOMAIN_SEPARATOR;
     address internal _factory;
 
@@ -32,7 +32,7 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 bytes(_name),
-                keccak256(bytes("1")),
+                0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
                 chainId,
                 address(this)
             )
@@ -63,11 +63,11 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
 
     function burn(
         uint256 value,
-        uint256 id,
+        uint256 label,
         bytes32 data
     ) external override {
         _burn(msg.sender, value);
 
-        emit Log(id, data);
+        emit Burn(value, label, data);
     }
 }

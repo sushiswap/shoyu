@@ -2,17 +2,17 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./base/BaseExchange.sol";
 
-contract ERC1155Exchange is BaseExchange {
+contract ERC721ExchangeV0 is BaseExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     address internal immutable _factory;
 
-    constructor() {
+    constructor(address factory_) {
         __BaseNFTExchange_init();
-        _factory = msg.sender;
+        _factory = factory_;
 
         uint256 chainId;
         assembly {
@@ -21,7 +21,7 @@ contract ERC1155Exchange is BaseExchange {
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256("ERC1155Exchange"),
+                keccak256("ERC721Exchange"),
                 keccak256(bytes("1")),
                 chainId,
                 address(this)
@@ -38,7 +38,7 @@ contract ERC1155Exchange is BaseExchange {
     }
 
     function canTrade(address nft) public view override returns (bool) {
-        return !ITokenFactory(_factory).isNFT1155(nft);
+        return !ITokenFactory(_factory).isNFT721(nft);
     }
 
     function _transfer(
@@ -46,8 +46,8 @@ contract ERC1155Exchange is BaseExchange {
         address from,
         address to,
         uint256 tokenId,
-        uint256 amount
+        uint256
     ) internal override {
-        IERC1155(nft).safeTransferFrom(from, to, tokenId, amount, "");
+        IERC721(nft).safeTransferFrom(from, to, tokenId);
     }
 }
