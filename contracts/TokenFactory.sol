@@ -120,8 +120,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     // This function should be called by a multi-sig `owner`, not an EOA
     function setDeployerWhitelisted(address deployer, bool whitelisted) external override onlyOwner {
-        require(deployer != address(0), "SHOYU: INVALID_ADDRESS");
-
         isDeployerWhitelisted[deployer] = whitelisted;
     }
 
