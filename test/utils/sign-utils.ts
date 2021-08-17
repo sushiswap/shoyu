@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { getChainId, RSV, signData } from "./rpc";
 
 interface Domain {
@@ -108,7 +109,7 @@ export const signAsk = async (
     currency,
     recipient,
     deadline,
-    params,
+    params: ethers.utils.keccak256(params),
   };
 
   const domain = await getDomain(provider, exchangeName, exchangeAddress);
