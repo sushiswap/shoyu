@@ -2,14 +2,14 @@
 
 pragma solidity =0.8.3;
 
+import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
-import "./ERC721ExchangeV0.sol";
-import "./ERC1155ExchangeV0.sol";
+import "./interfaces/IERC1271.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
@@ -120,8 +120,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     // This function should be called by a multi-sig `owner`, not an EOA
     function setDeployerWhitelisted(address deployer, bool whitelisted) external override onlyOwner {
-        require(deployer != address(0), "SHOYU: INVALID_ADDRESS");
-
         isDeployerWhitelisted[deployer] = whitelisted;
     }
 
