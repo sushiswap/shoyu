@@ -10,12 +10,13 @@ import {
     ERC20Mock,
 } from "../typechain";
 
-import { ecsign } from "ethereumjs-util";
+import { domainSeparator, getMint1155Digest, getMint721Digest, getRSV, sign } from "./utils/sign-utils";
 import { hexlify } from "ethers/lib/utils";
-import { ethers } from "hardhat";
+import { ethers, getNamedAccounts } from "hardhat";
 import { expect } from "chai";
+import { ContractReceipt } from "@ethersproject/contracts";
 
-const { BigNumber, utils, constants } = ethers;
+const { BigNumber, utils, constants, Contract } = ethers;
 const { AddressZero } = constants;
 
 ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR); // turn off warnings
@@ -132,52 +133,272 @@ describe("TokenFactory", () => {
         );
     });
 
-    it.only("should be that NFT721, NFT1155, SocialToken can't be deployed if upgradeXXX functions are not called before", async () => {
-        const { factory, alice, bob, carol, erc721Mock, erc1155Mock, erc20Mock, nft721, nft1155, socialToken } = await setupTest();
+    it("should be that NFT721, NFT1155, SocialToken can't be deployed if upgradeXXX functions are not called before", async () => {
+        const { factory, alice, bob, carol, erc20Mock, nft721, nft1155, socialToken } = await setupTest();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
 
-        await expect(factory.connect(alice)["deployNFT721(address,string,string,uint256[],address,uint8)"](alice.address, "N", "S", [0,2], bob.address, 10)).to.be.reverted;
-        await expect(factory.connect(bob)["deployNFT721(address,string,string,uint256,address,uint8)"](carol.address, "N", "S", 10, alice.address, 10)).to.be.reverted;
-        await expect(factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10)).to.be.reverted;
+        await expect(
+            factory
+                .connect(alice)
+                ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                    alice.address,
+                    "N",
+                    "S",
+                    [0, 2],
+                    bob.address,
+                    10
+                )
+        ).to.be.reverted;
+        await expect(
+            factory
+                .connect(bob)
+                ["deployNFT721(address,string,string,uint256,address,uint8)"](
+                    carol.address,
+                    "N",
+                    "S",
+                    10,
+                    alice.address,
+                    10
+                )
+        ).to.be.reverted;
+        await expect(factory.connect(carol).deployNFT1155(alice.address, [0, 2], [11, 33], bob.address, 10)).to.be
+            .reverted;
         await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
 
         await factory.upgradeNFT721(nft721.address);
-        await factory.connect(alice)["deployNFT721(address,string,string,uint256[],address,uint8)"](alice.address, "N", "S", [0,2], bob.address, 10);
-        // await factory.connect(bob)["deployNFT721(address,string,string,uint256,address,uint8)"](carol.address, "N", "S", 10, alice.address, 10);
-        // await expect(factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10)).to.be.reverted;
-        // await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+        await factory
+            .connect(alice)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                alice.address,
+                "N",
+                "S",
+                [0, 2],
+                bob.address,
+                10
+            );
+        await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                10,
+                alice.address,
+                10
+            );
+        await expect(factory.connect(carol).deployNFT1155(alice.address, [0, 2], [11, 33], bob.address, 10)).to.be
+            .reverted;
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
 
-        // await factory.upgradeNFT1155(nft1155.address);
-        // await factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10);
-        // await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+        await factory.upgradeNFT1155(nft1155.address);
+        await factory.connect(carol).deployNFT1155(alice.address, [0, 2], [11, 33], bob.address, 10);
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
 
-        // await factory.upgradeNFT1155(nft1155.address);
-        // await factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address);
+        await factory.upgradeSocialToken(socialToken.address);
+        await factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address);
     });
 
-    it("should be that any account can deploy proxies if isDeployerWhitelisted(address(0)) is true", async () => {
-        const { factory, alice, bob, carol, erc721Mock, erc1155Mock, erc20Mock } = await setupTest();
+    it("should be that only accounts in DeployerWhitelist can deploy proxies if isDeployerWhitelisted(address(0)) is false", async () => {
+        const { factory, alice, bob, nft721 } = await setupTest();
 
-        // await expect(factory.connect(alice).deployNFT721(alice.address, "N", "S", [0,2,4], bob.address, 10)).to.be.revertedWith(
-        //     "Ownable: caller is not the owner"
+        await factory.upgradeNFT721(nft721.address);
+        expect(await factory.isDeployerWhitelisted(AddressZero)).to.be.false;
+
+        expect(await factory.isDeployerWhitelisted(bob.address)).to.be.false;
+        await expect(
+            factory
+                .connect(bob)
+                ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                    alice.address,
+                    "N",
+                    "S",
+                    [0, 2],
+                    bob.address,
+                    10
+                )
+        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+
+        await factory.setDeployerWhitelisted(alice.address, true);
+        expect(await factory.isDeployerWhitelisted(alice.address)).to.be.true;
+        await factory
+            .connect(alice)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                alice.address,
+                "N",
+                "S",
+                [0, 2],
+                bob.address,
+                10
+            );
+    });
+
+    it("should be that accounts not in DeployerWhitelist can deploy proxies if isDeployerWhitelisted(address(0)) is true", async () => {
+        const { factory, alice, bob, carol, nft721, nft1155 } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        expect(await factory.isDeployerWhitelisted(AddressZero)).to.be.true;
+
+        expect(await factory.isDeployerWhitelisted(alice.address)).to.be.false;
+        expect(await factory.isDeployerWhitelisted(bob.address)).to.be.false;
+
+        await factory.upgradeNFT721(nft721.address);
+        await factory
+            .connect(alice)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                alice.address,
+                "N",
+                "S",
+                [0, 2],
+                bob.address,
+                10
+            );
+        await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                10,
+                alice.address,
+                10
+            );
+
+        await factory.upgradeNFT1155(nft1155.address);
+        await factory.connect(alice).deployNFT1155(alice.address, [0, 2], [11, 33], bob.address, 10);
+        await factory.connect(bob).deployNFT1155(bob.address, [11, 25], [1, 2], carol.address, 5);
+    });
+
+    it.only("should be that someone who has NFT721/1155 contract owner's signature can call mint721/1155, mintWithTags721/1155 functions", async () => {
+        const {
+            factory,
+            deployer,
+            alice,
+            bob,
+            carol,
+            erc721Mock,
+            erc1155Mock,
+            erc20Mock,
+            nft721,
+            nft1155,
+            socialToken,
+        } = await setupTest();
+
+        function getAddressNFT721(res: ContractReceipt, n: number): string {
+            if (res.events !== undefined) {
+                const args = res.events[n].args;
+                if (args !== undefined) {
+                    return args[0];
+                }
+            }
+            return "";
+        }
+
+        async function getAddressNFT1155(): Promise<string> {
+            const events = await factory.queryFilter(factory.filters.DeployNFT1155(), "latest");
+            return events[0].args[0];
+        }
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+        let tx = await factory
+            .connect(alice)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                [0, 2],
+                bob.address,
+                10
+            );
+        let res = await tx.wait();
+        const nft721_0 = getAddressNFT721(res, 5);
+        tx = await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                10,
+                alice.address,
+                10
+            );
+        res = await tx.wait();
+        const nft721_1 = getAddressNFT721(res, 4);
+
+        await factory.upgradeNFT1155(nft1155.address);
+        await factory.connect(alice).deployNFT1155(carol.address, [0, 2], [11, 33], bob.address, 10);
+        const nft1155_0 = await getAddressNFT1155();
+        await factory.connect(bob).deployNFT1155(carol.address, [11, 25], [1, 2], carol.address, 5);
+        const nft1155_1 = await getAddressNFT1155();
+        
+        const digest721_0 = await getMint721Digest(ethers.provider, nft721_0, alice.address, 1, [], factory.address, 0);
+        const { v: v0, r: r0, s: s0 } = getRSV(await deployer.signMessage(digest721_0));
+
+        // await expect(factory.connect(bob).mint721(nft721_0, bob.address, 1, [], v0, r0, s0)).to.be.revertedWith(
+        //     "SHOYU: UNAUTHORIZED"
         // );
-
+        // await expect(factory.connect(alice).mint721(nft721_0, alice.address, 2, [], v0, r0, s0)).to.be.revertedWith(
+        //     "SHOYU: UNAUTHORIZED"
+        // );
+        // await factory.connect(alice).mint721(nft721_0, alice.address, 1, [], v0, r0, s0);
+        // expect(await )
     });
 
-    it("should be that any account in DeployerWhitelist can deploy proxies although isDeployerWhitelisted(address(0)) is false", async () => {
-        const { factory } = await setupTest();
+    it("should be b", async () => {
+        const {
+            factory,
+            alice,
+            bob,
+            carol,
+            erc721Mock,
+            erc1155Mock,
+            erc20Mock,
+            nft721,
+            nft1155,
+            socialToken,
+        } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+        await factory
+            .connect(alice)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                [0, 2],
+                bob.address,
+                10
+            );
+        await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](
+                carol.address,
+                "N",
+                "S",
+                10,
+                alice.address,
+                10
+            );
+
+        await factory.upgradeNFT1155(nft1155.address);
+        await factory.connect(alice).deployNFT1155(carol.address, [0, 2], [11, 33], bob.address, 10);
+        await factory.connect(bob).deployNFT1155(carol.address, [11, 25], [1, 2], carol.address, 5);
     });
 
     it("should be -", async () => {
-        const { protocolVault, operationalVault, factory } = await setupTest();
-    });
-
-    it("should be -", async () => {
-        const { protocolVault, operationalVault, factory } = await setupTest();
-    });
-
-    it("should be -", async () => {
-        const { protocolVault, operationalVault, factory } = await setupTest();
+        const {
+            factory,
+            alice,
+            bob,
+            carol,
+            erc721Mock,
+            erc1155Mock,
+            erc20Mock,
+            nft721,
+            nft1155,
+            socialToken,
+        } = await setupTest();
     });
 });

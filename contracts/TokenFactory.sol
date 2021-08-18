@@ -10,6 +10,7 @@ import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
 import "./interfaces/IERC1271.sol";
+import "hardhat/console.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
@@ -292,6 +293,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT721(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
+        console.logBytes32(hash);
         _verify(hash, owner, v, r, s);
         IBaseNFT721(nft).mint(to, tokenId, data);
     }
@@ -379,6 +381,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         bytes32 s
     ) internal view {
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hash));
+        console.logBytes32(digest);
         if (Address.isContract(signer)) {
             require(
                 IERC1271(signer).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
