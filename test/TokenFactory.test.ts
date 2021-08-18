@@ -35,10 +35,19 @@ const setupTest = async () => {
     )) as TokenFactory;
 
     const ERC721ExchangeContract = await ethers.getContractFactory("ERC721ExchangeV0");
-    const erc721Exchange = ERC721ExchangeContract.attach(await factory.erc721Exchange()) as ERC721ExchangeV0;
+    const erc721Exchange = (await ERC721ExchangeContract.deploy(factory.address)) as ERC721ExchangeV0;
 
     const ERC1155ExchangeContract = await ethers.getContractFactory("ERC1155ExchangeV0");
-    const erc1155Exchange = ERC1155ExchangeContract.attach(await factory.erc1155Exchange()) as ERC1155ExchangeV0;
+    const erc1155Exchange = (await ERC1155ExchangeContract.deploy(factory.address)) as ERC1155ExchangeV0;
+
+    const NFT721Contract = await ethers.getContractFactory("NFT721V0");
+    const nft721 = (await NFT721Contract.deploy()) as NFT721V0;
+
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
+    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V0;
+
+    const SocialTokenContract = await ethers.getContractFactory("SocialTokenV0");
+    const socialToken = (await SocialTokenContract.deploy()) as SocialTokenV0;
 
     const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
     const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
@@ -56,6 +65,9 @@ const setupTest = async () => {
         factory,
         erc721Exchange,
         erc1155Exchange,
+        nft721,
+        nft1155,
+        socialToken,
         alice,
         bob,
         carol,
@@ -118,5 +130,54 @@ describe("TokenFactory", () => {
         await expect(factory.connect(alice).upgradeERC1155Exchange(alice.address)).to.be.revertedWith(
             "Ownable: caller is not the owner"
         );
+    });
+
+    it.only("should be that NFT721, NFT1155, SocialToken can't be deployed if upgradeXXX functions are not called before", async () => {
+        const { factory, alice, bob, carol, erc721Mock, erc1155Mock, erc20Mock, nft721, nft1155, socialToken } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+
+        await expect(factory.connect(alice)["deployNFT721(address,string,string,uint256[],address,uint8)"](alice.address, "N", "S", [0,2], bob.address, 10)).to.be.reverted;
+        await expect(factory.connect(bob)["deployNFT721(address,string,string,uint256,address,uint8)"](carol.address, "N", "S", 10, alice.address, 10)).to.be.reverted;
+        await expect(factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10)).to.be.reverted;
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+
+        await factory.upgradeNFT721(nft721.address);
+        await factory.connect(alice)["deployNFT721(address,string,string,uint256[],address,uint8)"](alice.address, "N", "S", [0,2], bob.address, 10);
+        // await factory.connect(bob)["deployNFT721(address,string,string,uint256,address,uint8)"](carol.address, "N", "S", 10, alice.address, 10);
+        // await expect(factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10)).to.be.reverted;
+        // await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+
+        // await factory.upgradeNFT1155(nft1155.address);
+        // await factory.connect(carol).deployNFT1155(alice.address, [0,2], [11,33], bob.address, 10);
+        // await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+
+        // await factory.upgradeNFT1155(nft1155.address);
+        // await factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address);
+    });
+
+    it("should be that any account can deploy proxies if isDeployerWhitelisted(address(0)) is true", async () => {
+        const { factory, alice, bob, carol, erc721Mock, erc1155Mock, erc20Mock } = await setupTest();
+
+        // await expect(factory.connect(alice).deployNFT721(alice.address, "N", "S", [0,2,4], bob.address, 10)).to.be.revertedWith(
+        //     "Ownable: caller is not the owner"
+        // );
+
+    });
+
+    it("should be that any account in DeployerWhitelist can deploy proxies although isDeployerWhitelisted(address(0)) is false", async () => {
+        const { factory } = await setupTest();
+    });
+
+    it("should be -", async () => {
+        const { protocolVault, operationalVault, factory } = await setupTest();
+    });
+
+    it("should be -", async () => {
+        const { protocolVault, operationalVault, factory } = await setupTest();
+    });
+
+    it("should be -", async () => {
+        const { protocolVault, operationalVault, factory } = await setupTest();
     });
 });
