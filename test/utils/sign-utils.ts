@@ -1,14 +1,12 @@
 import { ethers } from "ethers";
-import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes } from "ethers/lib/utils";
+import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes, hexlify } from "ethers/lib/utils";
 import { getChainId, RSV, signData } from "./rpc";
+import { ecsign } from "ethereumjs-util";
 
-export const getRSV = (rpcSig: string) => {
-    return {
-        r: rpcSig.slice(0, 66),
-        s: "0x" + rpcSig.slice(66, 130),
-        v: parseInt(rpcSig.slice(130, 132), 16),
-    }
-}
+export const sign = (digest: any, privateKey: any): RSV => {
+    const {v: v0,r: r0,s: s0} = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(privateKey.slice(2), "hex"));
+    return {v: v0, r: hexlify(r0), s: hexlify(s0)};
+};
 
 export const convertToHash = (text: string) => {
     return keccak256(toUtf8Bytes(text));
