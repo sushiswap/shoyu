@@ -76,7 +76,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
         require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
 
-        Signature._verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
+        Signature.verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
 
         return
             _bid(
@@ -115,7 +115,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(_amountFilled + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
-        Signature._verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
+        Signature.verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
 
         if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
             amountFilled[askHash] = _amountFilled + bidAmount;
@@ -163,7 +163,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         bytes32 askHash = askOrder.hash();
         _validate(askOrder, askHash);
-        Signature._verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
+        Signature.verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
 
         BestBid memory best = bestBid[askHash];
         require(

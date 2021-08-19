@@ -291,7 +291,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT721(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
-        Signature._verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
         IBaseNFT721(nft).mint(to, tokenId, data);
     }
 
@@ -307,7 +307,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT1155(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenId, amount, data, nonces1155[owner]++));
-        Signature._verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
         IBaseNFT1155(nft).mint(to, tokenId, amount, data);
     }
 

@@ -34,7 +34,7 @@ library Signature {
         return signer;
     }
 
-    function _verify(
+    function verify(
         bytes32 hash,
         address signer,
         uint8 v,
