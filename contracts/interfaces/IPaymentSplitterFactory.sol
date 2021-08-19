@@ -3,7 +3,7 @@
 pragma solidity >=0.5.0;
 
 interface IPaymentSplitterFactory {
-    event DeployPaymentSplitter(address owner, string title, address[] payees, uint256[] shares);
+    event DeployPaymentSplitter(address indexed owner, string title, address[] payees, uint256[] shares);
 
     function deployPaymentSplitter(
         address owner,
