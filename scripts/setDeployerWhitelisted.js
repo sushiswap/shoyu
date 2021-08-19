@@ -6,7 +6,7 @@ async function main() {
     const set = readlineSync.question("To whitelist (true/false): ");
     const { deployer } = await getNamedAccounts();
     const { execute } = deployments;
-    await execute("TokenFactory", { from: deployer }, "setDeployerWhitelisted", [address, set === "true"]);
+    await execute("TokenFactory", { from: deployer }, "setDeployerWhitelisted", address, set === "true");
 }
 
 main()
