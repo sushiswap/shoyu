@@ -2,18 +2,25 @@
 
 pragma solidity =0.8.3;
 
+import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
-import "./ERC721ExchangeV0.sol";
-import "./ERC1155ExchangeV0.sol";
+import "./interfaces/IERC1271.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
+    // keccak256("NFT721(address nft,address to,uint256 tokenId,bytes data,uint256 nonce)");
+    bytes32 public constant override NFT721_TYPEHASH =
+        0xc168906d06f61a0b44a8e4e89e114a285237f3c7eb34b490a56feeefe2ce3eef;
+    // keccak256("NFT1155(address nft,address to,uint256 tokenId,uint256 amount,bytes data,uint256 nonce)");
+    bytes32 public constant override NFT1155_TYPEHASH =
+        0xa775fac8298714a0a727dc16ef93dfe9da2c45e1cd7f3e9fec481134044c4c7a;
+    bytes32 public immutable override DOMAIN_SEPARATOR;
 
     address[] internal _targets721;
     address[] internal _targets1155;
@@ -23,6 +30,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 internal _protocolFee; // out of 1000
     address internal _operationalFeeRecipient;
     uint8 internal _operationalFee; // out of 1000
+
+    mapping(address => uint256) public override nonces721;
+    mapping(address => uint256) public override nonces1155;
 
     string public override baseURI721;
     string public override baseURI1155;
@@ -55,6 +65,20 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
         baseURI721 = _baseURI721;
         baseURI1155 = _baseURI1155;
+
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256("TokenFactory"),
+                keccak256(bytes("1")),
+                chainId,
+                address(this)
+            )
+        );
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
@@ -96,8 +120,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
     // This function should be called by a multi-sig `owner`, not an EOA
     function setDeployerWhitelisted(address deployer, bool whitelisted) external override onlyOwner {
-        require(deployer != address(0), "SHOYU: INVALID_ADDRESS");
-
         isDeployerWhitelisted[deployer] = whitelisted;
     }
 
@@ -259,15 +281,49 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         return false;
     }
 
+    function mint721(
+        address nft,
+        address to,
+        uint256 tokenId,
+        bytes memory data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public override {
+        address owner = IBaseNFT721(nft).owner();
+        bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
+        _verify(hash, owner, v, r, s);
+        IBaseNFT721(nft).mint(to, tokenId, data);
+    }
+
+    function mint1155(
+        address nft,
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        bytes memory data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public override {
+        address owner = IBaseNFT1155(nft).owner();
+        bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenId, amount, data, nonces1155[owner]++));
+        _verify(hash, owner, v, r, s);
+        IBaseNFT1155(nft).mint(to, tokenId, amount, data);
+    }
+
     function mintWithTags721(
         address nft,
         address to,
         uint256 tokenId,
         bytes memory data,
-        string[] memory tags
+        string[] memory tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external override {
+        mint721(nft, to, tokenId, data, v, r, s);
         _setTags(nft, tokenId, tags);
-        IBaseNFT721(nft).mint(to, tokenId, data);
     }
 
     function mintWithTags1155(
@@ -276,10 +332,13 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         uint256 tokenId,
         uint256 amount,
         bytes memory data,
-        string[] memory tags
+        string[] memory tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external override {
+        mint1155(nft, to, tokenId, amount, data, v, r, s);
         _setTags(nft, tokenId, tags);
-        IBaseNFT1155(nft).mint(to, tokenId, amount, data);
     }
 
     function setTags721(
@@ -309,6 +368,24 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
         for (uint256 i; i < tags.length; i++) {
             emit Tag(nft, tokenId, tags[i], nonce);
+        }
+    }
+
+    function _verify(
+        bytes32 hash,
+        address signer,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal view {
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hash));
+        if (Address.isContract(signer)) {
+            require(
+                IERC1271(signer).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
+                "SHOYU: UNAUTHORIZED"
+            );
+        } else {
+            require(ecrecover(digest, v, r, s) == signer, "SHOYU: UNAUTHORIZED");
         }
     }
 }

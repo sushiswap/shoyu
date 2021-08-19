@@ -47,6 +47,16 @@ interface ITokenFactory {
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
+    function NFT721_TYPEHASH() external view returns (bytes32);
+
+    function NFT1155_TYPEHASH() external view returns (bytes32);
+
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
+
+    function nonces721(address account) external view returns (uint256);
+
+    function nonces1155(address account) external view returns (uint256);
+
     function baseURI721() external view returns (string memory);
 
     function baseURI1155() external view returns (string memory);
@@ -126,12 +136,36 @@ interface ITokenFactory {
 
     function isSocialToken(address query) external view returns (bool result);
 
+    function mint721(
+        address nft,
+        address to,
+        uint256 tokenId,
+        bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
+    function mint1155(
+        address nft,
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
     function mintWithTags721(
         address nft,
         address to,
         uint256 tokenId,
         bytes calldata data,
-        string[] calldata tags
+        string[] calldata tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external;
 
     function mintWithTags1155(
@@ -140,7 +174,10 @@ interface ITokenFactory {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data,
-        string[] calldata tags
+        string[] calldata tags,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
     ) external;
 
     function setTags721(

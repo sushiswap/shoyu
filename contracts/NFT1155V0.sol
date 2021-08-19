@@ -28,9 +28,9 @@ contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
             _mintBatch(_owner, tokenIds, amounts, "");
         }
 
-        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
         _royaltyFee = type(uint8).max;
-        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
+        if (royaltyFee != 0) _setRoyaltyFee(royaltyFee);
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -71,6 +71,14 @@ contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
+    }
+
+    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+        _setRoyaltyFee(royaltyFee);
+    }
+
+    function _setRoyaltyFeeRecipient(address royaltyFeeRecipient) internal {
         require(royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _royaltyFeeRecipient = royaltyFeeRecipient;
@@ -78,7 +86,7 @@ contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
 
-    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+    function _setRoyaltyFee(uint8 royaltyFee) internal {
         if (_royaltyFee == type(uint8).max) {
             require(royaltyFee <= _MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
         } else {

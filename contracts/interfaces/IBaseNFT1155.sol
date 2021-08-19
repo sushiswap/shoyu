@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol
 import "./IOwnable.sol";
 
 interface IBaseNFT1155 is IERC1155, IERC1155MetadataURI, IOwnable {
-    event Burn(uint256 indexed label, bytes32 data);
+    event Burn(uint256 indexed tokenId, uint256 amount, uint256 indexed label, bytes32 data);
 
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
