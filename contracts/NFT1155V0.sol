@@ -44,7 +44,7 @@ contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (bytes32) {
-        return _DOMAIN_SEPARATOR;
+        return BaseNFT1155.DOMAIN_SEPARATOR();
     }
 
     function factory() public view override(BaseNFT1155, BaseExchange, INFT1155) returns (address) {
