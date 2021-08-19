@@ -3,8 +3,13 @@
 pragma solidity >=0.5.0;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 
-interface IBaseNFT1155 is IERC1155 {
+import "./IOwnable.sol";
+
+interface IBaseNFT1155 is IERC1155, IERC1155MetadataURI, IOwnable {
+    event Burn(uint256 indexed tokenId, uint256 amount, uint256 indexed label, bytes32 data);
+
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
@@ -14,6 +19,8 @@ interface IBaseNFT1155 is IERC1155 {
     function nonces(address account) external view returns (uint256);
 
     function initialize(address _owner) external;
+
+    function setURI(uint256 id, string memory uri) external;
 
     function setBaseURI(string memory baseURI) external;
 
@@ -31,7 +38,12 @@ interface IBaseNFT1155 is IERC1155 {
         bytes calldata data
     ) external;
 
-    function burn(uint256 tokenId, uint256 amount) external;
+    function burn(
+        uint256 tokenId,
+        uint256 amount,
+        uint256 label,
+        bytes32 data
+    ) external;
 
     function burnBatch(uint256[] calldata tokenIds, uint256[] calldata amounts) external;
 

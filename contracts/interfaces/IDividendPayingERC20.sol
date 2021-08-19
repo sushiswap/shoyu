@@ -2,7 +2,10 @@
 
 pragma solidity >=0.5.0;
 
-interface IDividendPayingERC20 {
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+interface IDividendPayingERC20 is IERC20, IERC20Metadata {
     /// @dev This event MUST emit when erc20/ether dividend is synced.
     /// @param increased The amount of increased erc20/ether in wei.
     event Sync(uint256 increased);

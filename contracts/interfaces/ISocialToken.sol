@@ -2,11 +2,12 @@
 
 pragma solidity >=0.5.0;
 
-import "./IBaseExchange.sol";
 import "./IDividendPayingERC20.sol";
+import "./IBaseExchange.sol";
+import "./IOwnable.sol";
 
-interface ISocialToken is IBaseExchange, IDividendPayingERC20 {
-    event Log(uint256 indexed id, bytes32 data);
+interface ISocialToken is IDividendPayingERC20, IBaseExchange, IOwnable {
+    event Burn(uint256 amount, uint256 indexed label, bytes32 data);
 
     function initialize(
         address owner,

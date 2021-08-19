@@ -32,7 +32,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     mapping(bytes32 => bool) public override isCancelled;
     mapping(bytes32 => uint256) public override amountFilled;
 
-    function __BaseNFTExchange_init() internal {
+    function __BaseNFTExchange_init() internal initializer {
         __ReentrancyGuard_init();
     }
 
@@ -174,7 +174,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         address recipient = askOrder.recipient;
         if (recipient == address(0)) recipient = askOrder.signer;
-        
+
         if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
             amountFilled[askHash] = amountFilled[askHash] + best.amount;
 

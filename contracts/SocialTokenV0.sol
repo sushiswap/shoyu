@@ -9,7 +9,7 @@ import "./base/BaseExchange.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
 
-contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
+contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
     bytes32 internal _DOMAIN_SEPARATOR;
     address internal _factory;
 
@@ -63,11 +63,11 @@ contract SocialToken is DividendPayingERC20, BaseExchange, OwnableInitializable,
 
     function burn(
         uint256 value,
-        uint256 id,
+        uint256 label,
         bytes32 data
     ) external override {
         _burn(msg.sender, value);
 
-        emit Log(id, data);
+        emit Burn(value, label, data);
     }
 }

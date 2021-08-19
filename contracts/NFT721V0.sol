@@ -3,50 +3,66 @@
 pragma solidity =0.8.3;
 
 import "./interfaces/INFT721.sol";
+import "./interfaces/IERC2981.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseExchange.sol";
 
-contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
+contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
+    uint8 internal _MAX_ROYALTY_FEE;
+
     address internal _royaltyFeeRecipient;
     uint8 internal _royaltyFee; // out of 1000
 
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
-        address _owner,
         uint256[] memory tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
         initialize(_name, _symbol, _owner);
+        _MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _safeMint(_owner, tokenIds[i]);
         }
 
-        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
         _royaltyFee = type(uint8).max;
-        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
+        if (royaltyFee != 0) _setRoyaltyFee(royaltyFee);
     }
 
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
-        address _owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external override initializer {
         __BaseNFTExchange_init();
         initialize(_name, _symbol, _owner);
+        _MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         _parkTokenIds(toTokenId);
 
         emit ParkTokenIds(toTokenId);
 
-        setRoyaltyFeeRecipient(royaltyFeeRecipient);
-        setRoyaltyFee(royaltyFee);
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        _royaltyFee = type(uint8).max;
+        if (royaltyFee != 0) _setRoyaltyFee(royaltyFee);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721Initializable, IERC165)
+        returns (bool)
+    {
+        return interfaceId == 0x2a55205a || super.supportsInterface(interfaceId);
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseNFT721, BaseExchange, INFT721) returns (bytes32) {
@@ -59,6 +75,10 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
 
     function royaltyFeeInfo() public view override(BaseExchange, INFT721) returns (address recipient, uint8 permil) {
         return (_royaltyFeeRecipient, _royaltyFee);
+    }
+
+    function royaltyInfo(uint256, uint256 _salePrice) external view override returns (address, uint256) {
+        return (_royaltyFeeRecipient, (_salePrice * _royaltyFee) / 1000);
     }
 
     function _transfer(
@@ -76,16 +96,24 @@ contract NFT721 is BaseNFT721, BaseExchange, INFT721 {
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
+    }
+
+    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+        _setRoyaltyFee(royaltyFee);
+    }
+
+    function _setRoyaltyFeeRecipient(address royaltyFeeRecipient) internal {
         require(royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _royaltyFeeRecipient = royaltyFeeRecipient;
 
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
-    
-    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+
+    function _setRoyaltyFee(uint8 royaltyFee) internal {
         if (_royaltyFee == type(uint8).max) {
-            require(royaltyFee <= MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
+            require(royaltyFee <= _MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
         } else {
             require(royaltyFee < _royaltyFee, "SHOYU: INVALID_FEE");
         }

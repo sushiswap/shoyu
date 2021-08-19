@@ -10,18 +10,18 @@ interface INFT721 is IBaseNFT721, IBaseExchange {
     event SetRoyaltyFee(uint8 fee);
 
     function initialize(
+        address _owner,
         string calldata _name,
         string calldata _symbol,
-        address _owner,
         uint256[] calldata tokenIds,
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external;
 
     function initialize(
+        address _owner,
         string calldata _name,
         string calldata _symbol,
-        address _owner,
         uint256 toTokenId,
         address royaltyFeeRecipient,
         uint8 royaltyFee
