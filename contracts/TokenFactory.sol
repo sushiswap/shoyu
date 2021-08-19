@@ -2,14 +2,13 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
-import "./interfaces/IERC1271.sol";
+import "./libraries/Signature.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
@@ -289,7 +288,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT721(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
-        _verify(hash, owner, v, r, s);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
         IBaseNFT721(nft).mint(to, tokenId, data);
     }
 
@@ -305,7 +304,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT1155(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenId, amount, data, nonces1155[owner]++));
-        _verify(hash, owner, v, r, s);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR);
         IBaseNFT1155(nft).mint(to, tokenId, amount, data);
     }
 
@@ -365,24 +364,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
         for (uint256 i; i < tags.length; i++) {
             emit Tag(nft, tokenId, tags[i], nonce);
-        }
-    }
-
-    function _verify(
-        bytes32 hash,
-        address signer,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal view {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hash));
-        if (Address.isContract(signer)) {
-            require(
-                IERC1271(signer).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            require(ecrecover(digest, v, r, s) == signer, "SHOYU: UNAUTHORIZED");
         }
     }
 }

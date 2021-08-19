@@ -3,14 +3,13 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
-import "../interfaces/IERC1271.sol";
 import "../interfaces/IBaseExchange.sol";
 import "../interfaces/ITokenFactory.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IDividendPayingERC20.sol";
 import "./ReentrancyGuardInitializable.sol";
+import "../libraries/Signature.sol";
 
 abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     using SafeERC20 for IERC20;
@@ -75,7 +74,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
         require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
 
-        _verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s);
+        Signature.verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
 
         return
             _bid(
@@ -114,7 +113,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(_amountFilled + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
         _validate(askOrder, askHash);
-        _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
+        Signature.verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
 
         if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
             amountFilled[askHash] = _amountFilled + bidAmount;
@@ -162,7 +161,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         bytes32 askHash = askOrder.hash();
         _validate(askOrder, askHash);
-        _verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s);
+        Signature.verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
 
         BestBid memory best = bestBid[askHash];
         require(
@@ -199,24 +198,6 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(askOrder.strategy != address(0), "SHOYU: INVALID_STRATEGY");
         require(askOrder.currency != address(0), "SHOYU: INVALID_CURRENCY");
         require(ITokenFactory(factory()).isStrategyWhitelisted(askOrder.strategy), "SHOYU: STRATEGY_NOT_WHITELISTED");
-    }
-
-    function _verify(
-        bytes32 hash,
-        address signer,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal view {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), hash));
-        if (Address.isContract(signer)) {
-            require(
-                IERC1271(signer).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            require(ecrecover(digest, v, r, s) == signer, "SHOYU: UNAUTHORIZED");
-        }
     }
 
     function _transferFeesAndFunds(

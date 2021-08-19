@@ -9,6 +9,7 @@ import "../interfaces/IERC1271.sol";
 import "../interfaces/ITokenFactory.sol";
 import "../base/ERC1155Initializable.sol";
 import "../base/OwnableInitializable.sol";
+import "../libraries/Signature.sol";
 
 abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBaseNFT1155 {
     using Strings for uint256;
@@ -126,27 +127,12 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         bytes32 s
     ) external override {
         require(block.timestamp <= deadline);
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    _DOMAIN_SEPARATOR,
-                    keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner], deadline))
-                )
-            );
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner], deadline));
+        Signature.verify(hash, owner, v, r, s, _DOMAIN_SEPARATOR);
+
         nonces[owner] += 1;
-
-        if (Address.isContract(owner)) {
-            require(
-                IERC1271(owner).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            address recoveredAddress = ecrecover(digest, v, r, s);
-            require(recoveredAddress != address(0), "SHOYU: INVALID_SIGNATURE");
-            require(recoveredAddress == owner, "SHOYU: UNAUTHORIZED");
-        }
 
         _setApprovalForAll(owner, spender, true);
     }
