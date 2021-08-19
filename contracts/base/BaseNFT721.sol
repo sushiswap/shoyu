@@ -2,8 +2,6 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/utils/Strings.sol";
-
 import "../interfaces/IBaseNFT721.sol";
 import "../interfaces/IERC1271.sol";
 import "../interfaces/ITokenFactory.sol";
