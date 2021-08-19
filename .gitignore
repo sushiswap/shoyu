@@ -24,3 +24,6 @@ typechain/
 # Coverage
 coverage/
 coverage.json
+
+# History
+.history/
