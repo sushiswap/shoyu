@@ -8,29 +8,42 @@ import "./base/BaseExchange.sol";
 
 contract ERC721ExchangeV0 is BaseExchange {
     bytes32 internal immutable _DOMAIN_SEPARATOR;
+    uint256 internal immutable _CACHED_CHAIN_ID;
     address internal immutable _factory;
 
     constructor(address factory_) {
         __BaseNFTExchange_init();
         _factory = factory_;
 
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
+        _CACHED_CHAIN_ID = block.chainid;
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 keccak256("ERC721Exchange"),
-                keccak256(bytes("1")),
-                chainId,
+                0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                block.chainid,
                 address(this)
             )
         );
     }
 
     function DOMAIN_SEPARATOR() public view override returns (bytes32) {
-        return _DOMAIN_SEPARATOR;
+        bytes32 domainSeparator;
+        if (_CACHED_CHAIN_ID == block.chainid) domainSeparator = _DOMAIN_SEPARATOR;
+        else {
+            domainSeparator = keccak256(
+                abi.encode(
+                    // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                    0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+                    keccak256("ERC721Exchange"),
+                    0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                    block.chainid,
+                    address(this)
+                )
+            );
+        }
+        return domainSeparator;
     }
 
     function factory() public view override returns (address) {

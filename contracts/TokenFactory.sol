@@ -2,14 +2,13 @@
 
 pragma solidity =0.8.3;
 
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
 import "./base/ProxyFactory.sol";
-import "./interfaces/IERC1271.sol";
+import "./libraries/Signature.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
@@ -20,7 +19,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     // keccak256("NFT1155(address nft,address to,uint256 tokenId,uint256 amount,bytes data,uint256 nonce)");
     bytes32 public constant override NFT1155_TYPEHASH =
         0xa775fac8298714a0a727dc16ef93dfe9da2c45e1cd7f3e9fec481134044c4c7a;
-    bytes32 public immutable override DOMAIN_SEPARATOR;
+    bytes32 internal immutable _DOMAIN_SEPARATOR;
+    uint256 internal immutable _CACHED_CHAIN_ID;
 
     address[] internal _targets721;
     address[] internal _targets1155;
@@ -66,19 +66,35 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         baseURI721 = _baseURI721;
         baseURI1155 = _baseURI1155;
 
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        DOMAIN_SEPARATOR = keccak256(
+        _CACHED_CHAIN_ID = block.chainid;
+        _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 keccak256("TokenFactory"),
-                keccak256(bytes("1")),
-                chainId,
+                0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                block.chainid,
                 address(this)
             )
         );
+    }
+
+    function DOMAIN_SEPARATOR() public view override returns (bytes32) {
+        bytes32 domainSeparator;
+        if (_CACHED_CHAIN_ID == block.chainid) domainSeparator = _DOMAIN_SEPARATOR;
+        else {
+            domainSeparator = keccak256(
+                abi.encode(
+                    // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                    0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+                    keccak256("TokenFactory"),
+                    0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                    block.chainid,
+                    address(this)
+                )
+            );
+        }
+        return domainSeparator;
     }
 
     function protocolFeeInfo() external view override returns (address recipient, uint8 permil) {
@@ -292,7 +308,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT721(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
-        _verify(hash, owner, v, r, s);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT721(nft).mint(to, tokenId, data);
     }
 
@@ -308,7 +324,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) public override {
         address owner = IBaseNFT1155(nft).owner();
         bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenId, amount, data, nonces1155[owner]++));
-        _verify(hash, owner, v, r, s);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT1155(nft).mint(to, tokenId, amount, data);
     }
 
@@ -368,24 +384,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
 
         for (uint256 i; i < tags.length; i++) {
             emit Tag(nft, tokenId, tags[i], nonce);
-        }
-    }
-
-    function _verify(
-        bytes32 hash,
-        address signer,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal view {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hash));
-        if (Address.isContract(signer)) {
-            require(
-                IERC1271(signer).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            require(ecrecover(digest, v, r, s) == signer, "SHOYU: UNAUTHORIZED");
         }
     }
 }
