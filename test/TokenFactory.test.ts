@@ -14,7 +14,6 @@ import { domainSeparator, getMint1155Digest, getMint721Digest, sign } from "./ut
 import { ethers, getNamedAccounts } from "hardhat";
 import { expect, assert } from "chai";
 import { ContractReceipt } from "@ethersproject/contracts";
-import { Indexed } from "ethers/lib/utils";
 
 const { BigNumber, utils, constants, Contract } = ethers;
 const { AddressZero } = constants;
@@ -77,6 +76,28 @@ const setupTest = async () => {
         erc20Mock,
     };
 };
+
+function getAddressNFT721(res: ContractReceipt, n: number): string {
+    assert.isDefined(res.events);
+    if (res.events !== undefined) {
+        const args = res.events[n].args;
+        assert.isDefined(args);
+        if (args !== undefined) {
+            return args[0];
+        }
+    }
+    return "";
+}
+
+async function getAddressNFT1155(factory: TokenFactory): Promise<string> {
+    const events = await factory.queryFilter(factory.filters.DeployNFT1155(), "latest");
+    return events[0].args[0];
+}
+
+async function getAddressSocialToken(factory: TokenFactory): Promise<string> {
+    const events = await factory.queryFilter(factory.filters.DeploySocialToken(), "latest");
+    return events[0].args[0];
+}
 
 describe("TokenFactory", () => {
     beforeEach(async () => {
@@ -269,29 +290,8 @@ describe("TokenFactory", () => {
         await factory.connect(bob).deployNFT1155(bob.address, [11, 25], [1, 2], carol.address, 5);
     });
 
-    it.only("should be that someone who has NFT721 contract owner's signature can call mint721, mintWithTags721 functions", async () => {
-        const {
-            factory,
-            deployer,
-            alice,
-            bob,
-            carol,
-            erc721Mock,
-            erc20Mock,
-            nft721,
-        } = await setupTest();
-
-        function getAddressNFT721(res: ContractReceipt, n: number): string {
-            assert.isDefined(res.events);
-            if (res.events !== undefined) {
-                const args = res.events[n].args;
-                assert.isDefined(args);
-                if (args !== undefined) {
-                    return args[0];
-                }
-            }
-            return "";
-        }
+    it("should be that someone who has NFT721 contract owner's signature can call mint721, mintWithTags721 functions", async () => {
+        const { factory, alice, bob, carol, nft721 } = await setupTest();
 
         const signer = ethers.Wallet.createRandom();
 
@@ -325,51 +325,45 @@ describe("TokenFactory", () => {
         const digest721_0 = await getMint721Digest(ethers.provider, nft721_0, alice.address, 1, [], factory.address, 0);
         const { v: v0, r: r0, s: s0 } = sign(digest721_0, signer.privateKey);
 
-        await expect(
-            factory.connect(bob).mint721(nft721_0, bob.address, 1, [], v0, r0, s0)
-        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
-        await expect(
-            factory.connect(alice).mint721(nft721_0, alice.address, 2, [], v0, r0, s0)
-        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await expect(factory.connect(bob).mint721(nft721_0, bob.address, 1, [], v0, r0, s0)).to.be.revertedWith(
+            "SHOYU: UNAUTHORIZED"
+        );
+        await expect(factory.connect(alice).mint721(nft721_0, alice.address, 2, [], v0, r0, s0)).to.be.revertedWith(
+            "SHOYU: UNAUTHORIZED"
+        );
         await factory.connect(alice).mint721(nft721_0, alice.address, 1, [], v0, r0, s0);
-        
+
         const digest721_1 = await getMint721Digest(ethers.provider, nft721_1, alice.address, 3, [], factory.address, 1);
         const { v: v1, r: r1, s: s1 } = sign(digest721_1, signer.privateKey);
-        
+
         const fakeSigner = ethers.Wallet.createRandom();
         const { v: fv1, r: fr1, s: fs1 } = sign(digest721_1, fakeSigner.privateKey);
 
-        await expect(
-            factory.connect(bob).mint721(nft721_1, alice.address, 3, [], fv1, fr1, fs1)
-        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await expect(factory.connect(bob).mint721(nft721_1, alice.address, 3, [], fv1, fr1, fs1)).to.be.revertedWith(
+            "SHOYU: UNAUTHORIZED"
+        );
         await factory.connect(bob).mint721(nft721_1, alice.address, 3, [], v1, r1, s1);
 
-        const digest721_2 = await getMint721Digest(ethers.provider, nft721_1, carol.address, 123, [], factory.address, 2);
+        const digest721_2 = await getMint721Digest(
+            ethers.provider,
+            nft721_1,
+            carol.address,
+            123,
+            [],
+            factory.address,
+            2
+        );
         const { v: v2, r: r2, s: s2 } = sign(digest721_2, signer.privateKey);
         const { v: fv2, r: fr2, s: fs2 } = sign(digest721_2, fakeSigner.privateKey);
 
         await expect(
-            factory.connect(carol).mintWithTags721(nft721_1, carol.address, 123, [], ["foo","bar"],fv2, fr2, fs2)
+            factory.connect(carol).mintWithTags721(nft721_1, carol.address, 123, [], ["foo", "bar"], fv2, fr2, fs2)
         ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
-        await factory.connect(carol).mintWithTags721(nft721_1, carol.address, 123, [], ["hello","world"],v2, r2, s2);
+        await factory.connect(carol).mintWithTags721(nft721_1, carol.address, 123, [], ["hello", "world"], v2, r2, s2);
     });
 
     it("should be that someone who has NFT1155 contract owner's signature can call mint1155, mintWithTags1155 functions", async () => {
-        const {
-            factory,
-            deployer,
-            alice,
-            bob,
-            carol,
-            erc1155Mock,
-            erc20Mock,
-            nft1155,
-        } = await setupTest();
-
-        async function getAddressNFT1155(): Promise<string> {
-            const events = await factory.queryFilter(factory.filters.DeployNFT1155(), "latest");
-            return events[0].args[0];
-        }
+        const { factory, alice, bob, carol, nft1155 } = await setupTest();
 
         const signer = ethers.Wallet.createRandom();
 
@@ -377,45 +371,171 @@ describe("TokenFactory", () => {
 
         await factory.upgradeNFT1155(nft1155.address);
         await factory.connect(alice).deployNFT1155(signer.address, [0, 2], [11, 33], bob.address, 10);
-        const nft1155_0 = await getAddressNFT1155();
+        const nft1155_0 = await getAddressNFT1155(factory);
         await factory.connect(bob).deployNFT1155(signer.address, [11, 25], [1, 2], signer.address, 5);
-        const nft1155_1 = await getAddressNFT1155();
+        const nft1155_1 = await getAddressNFT1155(factory);
 
-        // const digest721_0 = await getMint721Digest(ethers.provider, nft721_0, alice.address, 1, [], factory.address, 0);
-        // const { v: v0, r: r0, s: s0 } = sign(digest721_0, signer.privateKey);
+        const digest1155_0 = await getMint1155Digest(
+            ethers.provider,
+            nft1155_0,
+            alice.address,
+            12,
+            345,
+            [],
+            factory.address,
+            0
+        );
+        const { v: v0, r: r0, s: s0 } = sign(digest1155_0, signer.privateKey);
 
-        // await expect(
-        //     factory.connect(bob).mint721(nft721_0, bob.address, 1, [], v0, r0, s0)
-        // ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
-        // await expect(
-        //     factory.connect(alice).mint721(nft721_0, alice.address, 2, [], v0, r0, s0)
-        // ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
-        // await factory.connect(alice).mint721(nft721_0, alice.address, 1, [], v0, r0, s0);
-        
-        // const digest721_1 = await getMint721Digest(ethers.provider, nft721_1, alice.address, 3, [], factory.address, 1);
-        // const { v: v1, r: r1, s: s1 } = sign(digest721_1, signer.privateKey);
-        
-        // const fakeSigner = ethers.Wallet.createRandom();
-        // const { v: fv1, r: fr1, s: fs1 } = sign(digest721_1, fakeSigner.privateKey);
+        await expect(
+            factory.connect(bob).mint1155(nft1155_0, alice.address, 12, 3450, [], v0, r0, s0)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await expect(
+            factory.connect(bob).mint1155(nft1155_0, alice.address, 12, 123, [], v0, r0, s0)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await expect(
+            factory.connect(alice).mint1155(nft1155_0, bob.address, 12, 345, [], v0, r0, s0)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await factory.connect(alice).mint1155(nft1155_0, alice.address, 12, 345, [], v0, r0, s0);
 
-        // await expect(
-        //     factory.connect(bob).mint721(nft721_1, alice.address, 3, [], fv1, fr1, fs1)
-        // ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
-        // await factory.connect(bob).mint721(nft721_1, alice.address, 3, [], v1, r1, s1);
+        const digest1155_1 = await getMint1155Digest(
+            ethers.provider,
+            nft1155_1,
+            carol.address,
+            11,
+            1,
+            [],
+            factory.address,
+            1
+        );
+        const { v: v1, r: r1, s: s1 } = sign(digest1155_1, signer.privateKey);
+
+        const fakeSigner = ethers.Wallet.createRandom();
+        const { v: fv1, r: fr1, s: fs1 } = sign(digest1155_1, fakeSigner.privateKey);
+
+        await expect(
+            factory.connect(bob).mint1155(nft1155_1, carol.address, 11, 1, [], fv1, fr1, fs1)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await factory.connect(bob).mint1155(nft1155_1, carol.address, 11, 1, [], v1, r1, s1);
+
+        const digest1155_2 = await getMint1155Digest(
+            ethers.provider,
+            nft1155_0,
+            bob.address,
+            1,
+            193,
+            [],
+            factory.address,
+            2
+        );
+        const { v: v2, r: r2, s: s2 } = sign(digest1155_2, signer.privateKey);
+        const { v: fv2, r: fr2, s: fs2 } = sign(digest1155_2, fakeSigner.privateKey);
+
+        await expect(
+            factory.connect(carol).mintWithTags1155(nft1155_0, bob.address, 1, 193, [], ["foo", "bar"], fv2, fr2, fs2)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await factory
+            .connect(carol)
+            .mintWithTags1155(nft1155_0, bob.address, 1, 193, [], ["hello", "world"], v2, r2, s2);
     });
 
-    it("should be -", async () => {
-        const {
-            factory,
-            alice,
-            bob,
-            carol,
-            erc721Mock,
-            erc1155Mock,
-            erc20Mock,
-            nft721,
-            nft1155,
-            socialToken,
-        } = await setupTest();
+    it("should be fail when users try to setTags to unpossessed NFT721/1155", async () => {
+        const { factory, alice, bob, carol, nft721, nft1155 } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+        await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                alice.address,
+                "N",
+                "S",
+                [7, 2],
+                carol.address,
+                10
+            );
+        await factory
+            .connect(carol)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](bob.address, "N", "S", 10, alice.address, 10);
     });
+
+    it("should be fail when users try to deploy NFT721/1155/SocialToken with invalid parameters", async () => {
+        const { factory, alice, bob, carol, nft721, nft1155 } = await setupTest();
+    });
+
+    it.only("should work well checking isNFT721/1155/SocialToken functions", async () => {
+        const { factory, alice, bob, carol, nft721, nft1155, socialToken, erc20Mock } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+        await factory.upgradeNFT1155(nft1155.address);
+        await factory.upgradeSocialToken(socialToken.address);
+
+        let tx = await factory
+            .connect(bob)
+            ["deployNFT721(address,string,string,uint256[],address,uint8)"](
+                alice.address,
+                "N",
+                "S",
+                [7, 2],
+                carol.address,
+                10
+            );
+        let res = await tx.wait();
+        const nft721_0 = getAddressNFT721(res, 5);
+
+        await factory.connect(alice).deployNFT1155(alice.address, [0, 2], [11, 33], bob.address, 10);
+        const nft1155_0 = await getAddressNFT1155(factory);
+
+        await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address);
+        const socialT_0 = await getAddressSocialToken(factory);
+
+        const NFT721Contract = await ethers.getContractFactory("NFT721V0");
+        const nft721_new = (await NFT721Contract.deploy()) as NFT721V0;
+
+        const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
+        const nft1155_new = (await NFT1155Contract.deploy()) as NFT1155V0;
+
+        const SocialTokenContract = await ethers.getContractFactory("SocialTokenV0");
+        const socialToken_new = (await SocialTokenContract.deploy()) as SocialTokenV0;
+
+        await factory.upgradeNFT721(nft721_new.address);
+        await factory.upgradeNFT1155(nft1155_new.address);
+        await factory.upgradeSocialToken(socialToken_new.address);
+
+        tx = await factory
+            .connect(carol)
+            ["deployNFT721(address,string,string,uint256,address,uint8)"](bob.address, "N", "S", 10, alice.address, 10);
+        res = await tx.wait();
+        const nft721_1 = getAddressNFT721(res, 4);
+
+        await factory.connect(bob).deployNFT1155(alice.address, [11, 25], [1, 2], alice.address, 5);
+        const nft1155_1 = await getAddressNFT1155(factory);
+
+        await factory.connect(bob).deploySocialToken(bob.address, "N", "S", erc20Mock.address);
+        const socialT_1 = await getAddressSocialToken(factory);
+
+        assert.isTrue(await factory.isNFT721(nft721_0));
+        assert.isTrue(await factory.isNFT721(nft721_1));
+        assert.isFalse(await factory.isNFT721(nft1155_0));
+        assert.isFalse(await factory.isNFT721(nft1155_1));
+        assert.isFalse(await factory.isNFT721(socialT_0));
+        assert.isFalse(await factory.isNFT721(socialT_1));
+
+        assert.isFalse(await factory.isNFT1155(nft721_0));
+        assert.isFalse(await factory.isNFT1155(nft721_1));
+        assert.isTrue(await factory.isNFT1155(nft1155_0));
+        assert.isTrue(await factory.isNFT1155(nft1155_1));
+        assert.isFalse(await factory.isNFT1155(socialT_0));
+        assert.isFalse(await factory.isNFT1155(socialT_1));
+
+        assert.isFalse(await factory.isSocialToken(nft721_0));
+        assert.isFalse(await factory.isSocialToken(nft721_1));
+        assert.isFalse(await factory.isSocialToken(nft1155_0));
+        assert.isFalse(await factory.isSocialToken(nft1155_1));
+        assert.isTrue(await factory.isSocialToken(socialT_0));
+        assert.isTrue(await factory.isSocialToken(socialT_1));
+    });
+
+    //contract signing test
 });
