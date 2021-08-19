@@ -220,8 +220,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT721(address query) external view override returns (bool result) {
-        for (uint256 i = _targets721.length - 1; i >= 0; i--) {
-            if (_isProxy(_targets721[i], query)) {
+        for (uint256 i = _targets721.length; i >= 1; i--) {
+            if (_isProxy(_targets721[i - 1], query)) {
                 return true;
             }
         }
@@ -251,8 +251,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
-        for (uint256 i = _targets1155.length - 1; i >= 0; i--) {
-            if (_isProxy(_targets1155[i], query)) {
+        for (uint256 i = _targets1155.length; i >= 1; i--) {
+            if (_isProxy(_targets1155[i - 1], query)) {
                 return true;
             }
         }
@@ -273,8 +273,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isSocialToken(address query) external view override returns (bool result) {
-        for (uint256 i = _targetsSocialToken.length - 1; i >= 0; i--) {
-            if (_isProxy(_targetsSocialToken[i], query)) {
+        for (uint256 i = _targetsSocialToken.length; i >= 1; i--) {
+            if (_isProxy(_targetsSocialToken[i - 1], query)) {
                 return true;
             }
         }
