@@ -254,6 +254,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         uint8 royaltyFee
     ) external override onlyDeployer returns (address nft) {
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
+        require(tokenIds.length == amounts.length, "SHOYU: LENGTHS_NOT_EQUAL");
         nft = _createProxy(
             _targets1155[_targets1155.length - 1],
             abi.encodeWithSignature(
