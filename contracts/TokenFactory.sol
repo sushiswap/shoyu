@@ -192,6 +192,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) external override onlyDeployer returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
         nft = _createProxy(
             _targets721[_targets721.length - 1],
@@ -219,6 +220,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     ) external override onlyDeployer returns (address nft) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
         nft = _createProxy(
             _targets721[_targets721.length - 1],
@@ -252,6 +254,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     ) external override onlyDeployer returns (address nft) {
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
+        require(tokenIds.length == amounts.length, "SHOYU: LENGTHS_NOT_EQUAL");
         nft = _createProxy(
             _targets1155[_targets1155.length - 1],
             abi.encodeWithSignature(
@@ -282,6 +286,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         string memory symbol,
         address dividendToken
     ) external override onlyDeployer returns (address proxy) {
+        require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
+        require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
         bytes memory initData =
             abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
         proxy = _createProxy(_targetsSocialToken[_targetsSocialToken.length - 1], initData);
