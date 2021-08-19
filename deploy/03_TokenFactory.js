@@ -12,6 +12,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     });
 
     if (result.newlyDeployed) {
+        await execute(
+            "TokenFactory",
+            { from: deployer, log: true },
+            "setDeployerWhitelisted",
+            "0x93c7020393df59A951217d92d982d67A34a1557D",
+            true
+        );
         const nft721 = await get("NFT721V0");
         await execute("TokenFactory", { from: deployer, log: true }, "upgradeNFT721", nft721.address);
         const nft1155 = await get("NFT1155V0");
