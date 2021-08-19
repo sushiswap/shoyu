@@ -3,10 +3,8 @@ node_modules/
 
 # Hardhat
 cache/
+abis/
 artifacts/
-
-# Deployments
-deployments/
 
 # Typechain
 typechain/
@@ -17,3 +15,6 @@ typechain/
 # Coverage
 coverage/
 coverage.json
+
+# History
+.history/
