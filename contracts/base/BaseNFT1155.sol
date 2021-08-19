@@ -18,6 +18,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     bytes32 public constant override PERMIT_TYPEHASH =
         0xdaab21af31ece73a508939fedd476a5ee5129a5ed4bb091f3236ffb45394df62;
     bytes32 internal _DOMAIN_SEPARATOR;
+    uint256 internal _CACHED_CHAIN_ID;
     uint8 internal MAX_ROYALTY_FEE;
 
     address internal _factory;
@@ -31,6 +32,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         __Ownable_init(_owner);
         _factory = msg.sender;
 
+        _CACHED_CHAIN_ID = block.chainid;
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
@@ -44,7 +46,21 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
     }
 
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32) {
-        return _DOMAIN_SEPARATOR;
+        bytes32 domainSeparator;
+        if (_CACHED_CHAIN_ID == block.chainid) domainSeparator = _DOMAIN_SEPARATOR;
+        else {
+            domainSeparator = keccak256(
+                abi.encode(
+                    // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                    0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+                    keccak256(bytes(Strings.toHexString(uint160(address(this))))),
+                    0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                    block.chainid,
+                    address(this)
+                )
+            );
+        }
+        return domainSeparator;
     }
 
     function factory() public view virtual override returns (address) {
@@ -130,7 +146,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
         bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner], deadline));
-        Signature.verify(hash, owner, v, r, s, _DOMAIN_SEPARATOR);
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
 
         nonces[owner] += 1;
 

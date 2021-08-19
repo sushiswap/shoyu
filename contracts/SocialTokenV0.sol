@@ -9,6 +9,7 @@ import "./interfaces/ISocialToken.sol";
 
 contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
     bytes32 internal _DOMAIN_SEPARATOR;
+    uint256 internal _CACHED_CHAIN_ID;
     address internal _factory;
 
     function initialize(
@@ -21,6 +22,7 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
         __DividendPayingERC20_init(_name, _symbol, _dividendToken);
         _factory = msg.sender;
 
+        _CACHED_CHAIN_ID = block.chainid;
         _DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
@@ -34,7 +36,21 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
     }
 
     function DOMAIN_SEPARATOR() public view override(BaseExchange, IBaseExchange) returns (bytes32) {
-        return _DOMAIN_SEPARATOR;
+        bytes32 domainSeparator;
+        if (_CACHED_CHAIN_ID == block.chainid) domainSeparator = _DOMAIN_SEPARATOR;
+        else {
+            domainSeparator = keccak256(
+                abi.encode(
+                    // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
+                    0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+                    keccak256(bytes(name())),
+                    0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
+                    block.chainid,
+                    address(this)
+                )
+            );
+        }
+        return domainSeparator;
     }
 
     function factory() public view override(BaseExchange, IBaseExchange) returns (address) {
