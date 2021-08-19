@@ -29,9 +29,9 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
             _safeMint(_owner, tokenIds[i]);
         }
 
-        setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
         _royaltyFee = type(uint8).max;
-        if (royaltyFee != 0) setRoyaltyFee(royaltyFee);
+        if (royaltyFee != 0) _setRoyaltyFee(royaltyFee);
     }
 
     function initialize(
@@ -44,13 +44,15 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
     ) external override initializer {
         __BaseNFTExchange_init();
         initialize(_name, _symbol, _owner);
+        _MAX_ROYALTY_FEE = ITokenFactory(_factory).MAX_ROYALTY_FEE();
 
         _parkTokenIds(toTokenId);
 
         emit ParkTokenIds(toTokenId);
 
-        setRoyaltyFeeRecipient(royaltyFeeRecipient);
-        setRoyaltyFee(royaltyFee);
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
+        _royaltyFee = type(uint8).max;
+        if (royaltyFee != 0) _setRoyaltyFee(royaltyFee);
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -94,6 +96,14 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
     }
 
     function setRoyaltyFeeRecipient(address royaltyFeeRecipient) public override onlyOwner {
+        _setRoyaltyFeeRecipient(royaltyFeeRecipient);
+    }
+
+    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+        _setRoyaltyFee(royaltyFee);
+    }
+
+    function _setRoyaltyFeeRecipient(address royaltyFeeRecipient) internal {
         require(royaltyFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _royaltyFeeRecipient = royaltyFeeRecipient;
@@ -101,7 +111,7 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
         emit SetRoyaltyFeeRecipient(royaltyFeeRecipient);
     }
 
-    function setRoyaltyFee(uint8 royaltyFee) public override onlyOwner {
+    function _setRoyaltyFee(uint8 royaltyFee) internal {
         if (_royaltyFee == type(uint8).max) {
             require(royaltyFee <= _MAX_ROYALTY_FEE, "SHOYU: INVALID_FEE");
         } else {
