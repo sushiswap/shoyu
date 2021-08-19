@@ -95,6 +95,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.3",
+    "readline-sync": "^1.4.10",
     "rimraf": "^3.0.2",
     "solidity-coverage": "^0.7.0",
     "ts-generator": "^0.1.0",
