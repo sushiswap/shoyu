@@ -10,7 +10,6 @@ import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseExchange.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
-import "./libraries/Orders.sol";
 
 contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceToken {
     using SafeERC20 for IERC20;
