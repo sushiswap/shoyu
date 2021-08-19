@@ -9,6 +9,7 @@ import "../interfaces/IERC1271.sol";
 import "../interfaces/ITokenFactory.sol";
 import "../base/ERC721Initializable.sol";
 import "../base/OwnableInitializable.sol";
+import "../libraries/Signature.sol";
 
 abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBaseNFT721 {
     // keccak256("Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)");
@@ -155,29 +156,13 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     ) external override {
         require(block.timestamp <= deadline, "SHOYU: EXPIRED");
 
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    _DOMAIN_SEPARATOR,
-                    keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonces[tokenId], deadline))
-                )
-            );
-        nonces[tokenId] += 1;
-
         address owner = ownerOf(tokenId);
+        require(owner != address(0), "SHOYU: INVALID_TOKENID");
         require(spender != owner, "SHOYU: NOT_NECESSARY");
 
-        if (Address.isContract(owner)) {
-            require(
-                IERC1271(owner).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            address recoveredAddress = ecrecover(digest, v, r, s);
-            require(recoveredAddress != address(0), "SHOYU: INVALID_SIGNATURE");
-            require(recoveredAddress == owner, "SHOYU: UNAUTHORIZED");
-        }
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonces[tokenId], deadline));
+        Signature._verify(hash, owner, v, r, s, _DOMAIN_SEPARATOR);
+        nonces[tokenId] += 1;
 
         _approve(spender, tokenId);
     }
@@ -191,27 +176,11 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         bytes32 s
     ) external override {
         require(block.timestamp <= deadline, "SHOYU: EXPIRED");
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    _DOMAIN_SEPARATOR,
-                    keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner], deadline))
-                )
-            );
+        bytes32 hash = keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner], deadline));
+        Signature._verify(hash, owner, v, r, s, _DOMAIN_SEPARATOR);
         noncesForAll[owner] += 1;
-
-        if (Address.isContract(owner)) {
-            require(
-                IERC1271(owner).isValidSignature(digest, abi.encodePacked(r, s, v)) == 0x1626ba7e,
-                "SHOYU: UNAUTHORIZED"
-            );
-        } else {
-            address recoveredAddress = ecrecover(digest, v, r, s);
-            require(recoveredAddress != address(0), "SHOYU: INVALID_SIGNATURE");
-            require(recoveredAddress == owner, "SHOYU: UNAUTHORIZED");
-        }
 
         _setApprovalForAll(owner, spender, true);
     }
