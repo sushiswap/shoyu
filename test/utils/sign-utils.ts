@@ -1,11 +1,10 @@
 import { ethers } from "ethers";
-import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes, hexlify } from "ethers/lib/utils";
+import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes, _TypedDataEncoder } from "ethers/lib/utils";
 import { getChainId, RSV, signData } from "./rpc";
-import { ecsign } from "ethereumjs-util";
+// import { ecsign } from "ethereumjs-util";
 
-export const sign = (digest: any, privateKey: any): RSV => {
-    const {v: v0,r: r0,s: s0} = ecsign(Buffer.from(digest.slice(2), "hex"), Buffer.from(privateKey.slice(2), "hex"));
-    return {v: v0, r: hexlify(r0), s: hexlify(s0)};
+export const sign = (digest: any, signer: ethers.Wallet): RSV => {
+    return {...signer._signingKey().signDigest(digest)};
 };
 
 export const convertToHash = (text: string) => {
@@ -161,22 +160,7 @@ export const signBid = async (
 
 export const domainSeparator = async (provider: any, name: string, contractAddress: string): Promise<string> => {
     const domain = await getDomain(provider, name, contractAddress);
-    return getDomainSeparator(domain);
-};
-
-const getDomainSeparator = (domain: Domain): string => {
-    return keccak256(
-        defaultAbiCoder.encode(
-            ["bytes32", "bytes32", "bytes32", "uint256", "address"],
-            [
-                convertToHash("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                convertToHash(domain.name),
-                convertToHash(domain.version),
-                domain.chainId,
-                domain.verifyingContract,
-            ]
-        )
-    );
+    return _TypedDataEncoder.hashDomain(domain);
 };
 
 export const getMint721Digest = async (

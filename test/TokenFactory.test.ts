@@ -10,12 +10,12 @@ import {
     ERC20Mock,
 } from "../typechain";
 
-import { domainSeparator, getMint1155Digest, getMint721Digest, sign } from "./utils/sign-utils";
-import { ethers, getNamedAccounts } from "hardhat";
+import { getMint1155Digest, getMint721Digest, sign } from "./utils/sign-utils";
+import { ethers } from "hardhat";
 import { expect, assert } from "chai";
 import { ContractReceipt } from "@ethersproject/contracts";
 
-const { BigNumber, utils, constants, Contract } = ethers;
+const { constants } = ethers;
 const { AddressZero } = constants;
 
 ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR); // turn off warnings
@@ -335,7 +335,7 @@ describe("TokenFactory", () => {
             factory.address,
             0
         );
-        const { v: v0, r: r0, s: s0 } = sign(digest721_0, signer.privateKey);
+        const { v: v0, r: r0, s: s0 } = sign(digest721_0, signer);
 
         await expect(factory.connect(bob).mint721(nft721_0.address, bob.address, 1, [], v0, r0, s0)).to.be.revertedWith(
             "SHOYU: UNAUTHORIZED"
@@ -354,10 +354,10 @@ describe("TokenFactory", () => {
             factory.address,
             1
         );
-        const { v: v1, r: r1, s: s1 } = sign(digest721_1, signer.privateKey);
+        const { v: v1, r: r1, s: s1 } = sign(digest721_1, signer);
 
         const fakeSigner = ethers.Wallet.createRandom();
-        const { v: fv1, r: fr1, s: fs1 } = sign(digest721_1, fakeSigner.privateKey);
+        const { v: fv1, r: fr1, s: fs1 } = sign(digest721_1, fakeSigner);
 
         await expect(
             factory.connect(bob).mint721(nft721_1.address, alice.address, 3, [], fv1, fr1, fs1)
@@ -373,8 +373,8 @@ describe("TokenFactory", () => {
             factory.address,
             2
         );
-        const { v: v2, r: r2, s: s2 } = sign(digest721_2, signer.privateKey);
-        const { v: fv2, r: fr2, s: fs2 } = sign(digest721_2, fakeSigner.privateKey);
+        const { v: v2, r: r2, s: s2 } = sign(digest721_2, signer);
+        const { v: fv2, r: fr2, s: fs2 } = sign(digest721_2, fakeSigner);
 
         await expect(
             factory
@@ -409,7 +409,7 @@ describe("TokenFactory", () => {
             factory.address,
             0
         );
-        const { v: v0, r: r0, s: s0 } = sign(digest1155_0, signer.privateKey);
+        const { v: v0, r: r0, s: s0 } = sign(digest1155_0, signer);
 
         await expect(
             factory.connect(bob).mint1155(nft1155_0.address, alice.address, 12, 3450, [], v0, r0, s0)
@@ -432,10 +432,10 @@ describe("TokenFactory", () => {
             factory.address,
             1
         );
-        const { v: v1, r: r1, s: s1 } = sign(digest1155_1, signer.privateKey);
+        const { v: v1, r: r1, s: s1 } = sign(digest1155_1, signer);
 
         const fakeSigner = ethers.Wallet.createRandom();
-        const { v: fv1, r: fr1, s: fs1 } = sign(digest1155_1, fakeSigner.privateKey);
+        const { v: fv1, r: fr1, s: fs1 } = sign(digest1155_1, fakeSigner);
 
         await expect(
             factory.connect(bob).mint1155(nft1155_1.address, carol.address, 11, 1, [], fv1, fr1, fs1)
@@ -452,8 +452,8 @@ describe("TokenFactory", () => {
             factory.address,
             2
         );
-        const { v: v2, r: r2, s: s2 } = sign(digest1155_2, signer.privateKey);
-        const { v: fv2, r: fr2, s: fs2 } = sign(digest1155_2, fakeSigner.privateKey);
+        const { v: v2, r: r2, s: s2 } = sign(digest1155_2, signer);
+        const { v: fv2, r: fr2, s: fs2 } = sign(digest1155_2, fakeSigner);
 
         await expect(
             factory
