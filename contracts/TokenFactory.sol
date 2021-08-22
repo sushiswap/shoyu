@@ -181,7 +181,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         emit UpgradeERC1155Exchange(exchange);
     }
 
-    function deployNFT721(
+    function deployNFT721AndMintBatch(
         address owner,
         string calldata name,
         string calldata symbol,
@@ -206,10 +206,10 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit DeployNFT721(nft, owner, name, symbol, tokenIds, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721AndMintBatch(nft, owner, name, symbol, tokenIds, royaltyFeeRecipient, royaltyFee);
     }
 
-    function deployNFT721(
+    function deployNFT721AndPark(
         address owner,
         string calldata name,
         string calldata symbol,
@@ -234,7 +234,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit DeployNFT721(nft, owner, name, symbol, toTokenId, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT721AndPark(nft, owner, name, symbol, toTokenId, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT721(address query) external view override returns (bool result) {
@@ -246,7 +246,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         return false;
     }
 
-    function deployNFT1155(
+    function deployNFT1155AndMintBatch(
         address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
@@ -267,7 +267,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             )
         );
 
-        emit DeployNFT1155(nft, owner, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
+        emit DeployNFT1155AndMintBatch(nft, owner, tokenIds, amounts, royaltyFeeRecipient, royaltyFee);
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
@@ -305,64 +305,35 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         return false;
     }
 
-    function mint721(
+    function mintBatch721(
         address nft,
         address to,
-        uint256 tokenId,
-        bytes memory data,
+        uint256[] calldata tokenIds,
+        bytes calldata data,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public override {
+    ) external override {
         address owner = IBaseNFT721(nft).owner();
-        bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenId, data, nonces721[owner]++));
+        bytes32 hash = keccak256(abi.encode(NFT721_TYPEHASH, nft, to, tokenIds, data, nonces721[owner]++));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-        IBaseNFT721(nft).mint(to, tokenId, data);
+        IBaseNFT721(nft).mintBatch(to, tokenIds, data);
     }
 
-    function mint1155(
+    function mintBatch1155(
         address nft,
         address to,
-        uint256 tokenId,
-        uint256 amount,
-        bytes memory data,
+        uint256[] calldata tokenIds,
+        uint256[] calldata amounts,
+        bytes calldata data,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public override {
+    ) external override {
         address owner = IBaseNFT1155(nft).owner();
-        bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenId, amount, data, nonces1155[owner]++));
+        bytes32 hash = keccak256(abi.encode(NFT1155_TYPEHASH, nft, to, tokenIds, amounts, data, nonces1155[owner]++));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-        IBaseNFT1155(nft).mint(to, tokenId, amount, data);
-    }
-
-    function mintWithTags721(
-        address nft,
-        address to,
-        uint256 tokenId,
-        bytes memory data,
-        string[] memory tags,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external override {
-        mint721(nft, to, tokenId, data, v, r, s);
-        _setTags(nft, tokenId, tags);
-    }
-
-    function mintWithTags1155(
-        address nft,
-        address to,
-        uint256 tokenId,
-        uint256 amount,
-        bytes memory data,
-        string[] memory tags,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external override {
-        mint1155(nft, to, tokenId, amount, data, v, r, s);
-        _setTags(nft, tokenId, tags);
+        IBaseNFT1155(nft).mintBatch(to, tokenIds, amounts, data);
     }
 
     function setTags721(
