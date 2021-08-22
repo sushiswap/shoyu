@@ -2,11 +2,13 @@
 
 pragma solidity =0.8.3;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
 import "./interfaces/IPaymentSplitter.sol";
 import "./libraries/TokenHelper.sol";
 
 // Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/finance/PaymentSplitter.sol
-contract PaymentSplitter is IPaymentSplitter {
+contract PaymentSplitter is Initializable, IPaymentSplitter {
     using TokenHelper for address;
 
     string public override title;
@@ -40,13 +42,13 @@ contract PaymentSplitter is IPaymentSplitter {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    constructor(
-        string memory _title,
-        address[] memory _payees,
-        uint256[] memory _shares
-    ) payable {
-        require(_payees.length == _shares.length, "PaymentSplitter: payees and shares length mismatch");
-        require(_payees.length > 0, "PaymentSplitter: no payees");
+    function initialize(
+        string calldata _title,
+        address[] calldata _payees,
+        uint256[] calldata _shares
+    ) external override initializer {
+        require(_payees.length == _shares.length, "SHOYU: LENGTHS_NOT_EQUAL");
+        require(_payees.length > 0, "SHOYU: LENGTH_TOO_SHORT");
 
         title = _title;
 
