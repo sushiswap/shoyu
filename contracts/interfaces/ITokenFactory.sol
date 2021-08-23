@@ -47,15 +47,15 @@ interface ITokenFactory {
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
-    function NFT721_TYPEHASH() external view returns (bytes32);
+    function PARK_TOKEN_IDS_721() external view returns (bytes32);
 
-    function NFT1155_TYPEHASH() external view returns (bytes32);
+    function MINT_BATCH_721_TYPEHASH() external view returns (bytes32);
+
+    function MINT_BATCH_1155_TYPEHASH() external view returns (bytes32);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function nonces721(address account) external view returns (uint256);
-
-    function nonces1155(address account) external view returns (uint256);
+    function nonces(address account) external view returns (uint256);
 
     function baseURI721() external view returns (string memory);
 
@@ -135,6 +135,14 @@ interface ITokenFactory {
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);
+
+    function parkTokenIds721(
+        address nft,
+        uint256 toTokenId,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 
     function mintBatch721(
         address nft,
