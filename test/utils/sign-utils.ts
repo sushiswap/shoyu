@@ -198,11 +198,11 @@ export const getMint1155Digest = async (
     return digest;
 };
 
-const getHash = (types: string[], values: any[]): string => {
+export const getHash = (types: string[], values: any[]): string => {
     return keccak256(defaultAbiCoder.encode(types, values));
 };
 
-const getDigest = async (provider: any, name: string, contractAddress: string, hash: string): Promise<string> => {
+export const getDigest = async (provider: any, name: string, contractAddress: string, hash: string): Promise<string> => {
     return keccak256(
         solidityPack(
             ["bytes1", "bytes1", "bytes32", "bytes32"],
