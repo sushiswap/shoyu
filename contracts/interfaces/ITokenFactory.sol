@@ -41,13 +41,12 @@ interface ITokenFactory {
         string symbol,
         address indexed dividendToken
     );
-    event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
-    function PARK_TOKEN_IDS_721() external view returns (bytes32);
+    function PARK_TOKEN_IDS_721_TYPEHASH() external view returns (bytes32);
 
     function MINT_BATCH_721_TYPEHASH() external view returns (bytes32);
 
