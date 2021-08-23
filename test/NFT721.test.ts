@@ -51,7 +51,7 @@ async function getNFT721(factory: TokenFactory): Promise<NFT721V0> {
     return (await NFT721Contract.attach(events[0].args[0])) as NFT721V0;
 }
 
-describe("NFT721", () => {
+describe("NFT part of NFT721", () => {
     beforeEach(async () => {
         await ethers.provider.send("hardhat_reset", []);
     });
@@ -99,7 +99,7 @@ describe("NFT721", () => {
         expect((await nft721_0.royaltyInfo(0, 12345))[1]).to.be.equal(Math.floor((12345 * 13) / 1000));
 
         for (let i = 0; i < 10; i++) {
-            expect(await nft721_0.parked(i)).to.be.false;
+            assert.isFalse(await nft721_0.parked(i));
         }
     });
 
@@ -146,12 +146,12 @@ describe("NFT721", () => {
         expect((await nft721_0.royaltyInfo(0, 12345))[1]).to.be.equal(Math.floor((12345 * 13) / 1000));
 
         for (let i = 0; i <= 6; i++) {
-            expect(await nft721_0.parked(i)).to.be.true;
+            assert.isTrue(await nft721_0.parked(i));
         }
-        expect(await nft721_0.parked(7)).to.be.false;
-        expect(await nft721_0.parked(8)).to.be.false;
-        expect(await nft721_0.parked(9)).to.be.false;
-        expect(await nft721_0.parked(10)).to.be.false;
+        assert.isFalse(await nft721_0.parked(7));
+        assert.isFalse(await nft721_0.parked(8));
+        assert.isFalse(await nft721_0.parked(9));
+        assert.isFalse(await nft721_0.parked(10));
     });
 
     it("should be that permit/permitAll fuctions work well", async () => {
@@ -246,5 +246,125 @@ describe("NFT721", () => {
         await expect(nft721_0.permit(bob.address, 2, deadline, fv2, fr2, fs2)).to.be.revertedWith(
             "SHOYU: UNAUTHORIZED"
         ); //fake signer
+
+        const permitAllDigest0 = await getDigest(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            getHash(
+                ["bytes32", "address", "address", "uint256", "uint256"],
+                [await nft721_0.PERMIT_ALL_TYPEHASH(), artist.address, carol.address, 0, deadline]
+            )
+        );
+        const { v: v2, r: r2, s: s2 } = sign(permitAllDigest0, artist);
+
+        expect(await nft721_0.isApprovedForAll(artist.address, carol.address)).to.be.false;
+
+        await expect(nft721_0.permitAll(artist.address, alice.address, deadline, v2, r2, s2)).to.be.revertedWith(
+            "SHOYU: UNAUTHORIZED"
+        );
+        await nft721_0.permitAll(artist.address, carol.address, deadline, v2, r2, s2);
+
+        expect(await nft721_0.isApprovedForAll(artist.address, carol.address)).to.be.true;
     });
+
+    it("should be that owner can only decrease royalty fee", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 20);
+        const nft721_0 = await getNFT721(factory);
+
+        await expect(nft721_0.setRoyaltyFee(10)).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(alice).setRoyaltyFee(30)).to.be.revertedWith("SHOYU: INVALID_FEE");
+        await nft721_0.connect(alice).setRoyaltyFee(3);
+        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(3);
+        await nft721_0.connect(alice).setRoyaltyFee(0);
+        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(0);
+        await expect(nft721_0.connect(alice).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
+
+        await factory.deployNFT721AndMintBatch(bob.address, "Name", "Symbol", [9, 11], royaltyVault.address, 0);
+        const nft721_1 = await getNFT721(factory);
+        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(255);
+        await expect(nft721_1.connect(bob).setRoyaltyFee(251)).to.be.revertedWith("SHOYU: INVALID_FEE");
+        await nft721_1.connect(bob).setRoyaltyFee(93);
+        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(93);
+        await expect(nft721_1.connect(bob).setRoyaltyFee(111)).to.be.revertedWith("SHOYU: INVALID_FEE");
+        await nft721_1.connect(bob).setRoyaltyFee(0);
+        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(0);
+        await expect(nft721_1.connect(bob).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
+    });
+
+    it.only("should be that URI functions work well", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        async function URI721(nft: NFT721V0, tokenId: number, _baseURI?: string): Promise<string> {
+            if (_baseURI === undefined) {
+                const baseURI = await factory.baseURI721();
+                const addy = nft.address.toLowerCase();
+                return toUtf8String(
+                    solidityPack(
+                        ["string", "string", "string", "string", "string"],
+                        [baseURI, addy, "/", tokenId.toString(), ".json"]
+                    )
+                );
+            } else {
+                return toUtf8String(
+                    solidityPack(["string", "string", "string"], [_baseURI, tokenId.toString(), ".json"])
+                );
+            }
+        }
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 10, royaltyVault.address, 10);
+        const nft721_0 = await getNFT721(factory);
+
+        await expect(nft721_0.connect(bob).setTokenURI(0, "https://foo.bar/0.json")).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft721_0.connect(alice).setTokenURI(0, "https://foo.bar/0.json");
+        await nft721_0.connect(alice).setTokenURI(1, "https://foo.bar/1.json");
+
+        expect(await nft721_0.tokenURI(0)).to.be.equal("https://foo.bar/0.json");
+        expect(await nft721_0.tokenURI(1)).to.be.equal("https://foo.bar/1.json");
+        
+        expect(await nft721_0.tokenURI(2)).to.be.equal(await URI721(nft721_0, 2));
+        expect(await nft721_0.tokenURI(4)).to.be.equal(await URI721(nft721_0, 4));
+        expect(await nft721_0.tokenURI(7)).to.be.equal(await URI721(nft721_0, 7));
+        expect(await nft721_0.tokenURI(2)).to.be.not.equal(await URI721(nft721_0, 2, "https://foo.bar/"));
+        expect(await nft721_0.tokenURI(4)).to.be.not.equal(await URI721(nft721_0, 4, "https://foo.bar/"));
+        expect(await nft721_0.tokenURI(7)).to.be.not.equal(await URI721(nft721_0, 7, "https://foo.bar/"));
+
+        await expect(nft721_0.connect(bob).setBaseURI("https://foo.bar/")).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft721_0.connect(alice).setBaseURI("https://foo.bar/");
+
+        expect(await nft721_0.tokenURI(2)).to.be.equal(await URI721(nft721_0, 2, "https://foo.bar/"));
+        expect(await nft721_0.tokenURI(4)).to.be.equal(await URI721(nft721_0, 4, "https://foo.bar/"));
+        expect(await nft721_0.tokenURI(7)).to.be.equal(await URI721(nft721_0, 7, "https://foo.bar/"));
+        expect(await nft721_0.tokenURI(2)).to.be.not.equal(await URI721(nft721_0, 2));
+        expect(await nft721_0.tokenURI(4)).to.be.not.equal(await URI721(nft721_0, 4));
+        expect(await nft721_0.tokenURI(7)).to.be.not.equal(await URI721(nft721_0, 7));
+    });
+    ////////////////////////////
+    // it("should be that default values are set correctly with parking deploy", async () => {
+    //     const { factory, nft721, alice, royaltyVault } = await setupTest();
+
+    //     await factory.setDeployerWhitelisted(AddressZero, true);
+    //     await factory.upgradeNFT721(nft721.address);
+
+    //     await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
+    //     const nft721_0 = await getNFT721(factory);
+    // });
+    ////////////////////////////
+    // it("should be that default values are set correctly with parking deploy", async () => {
+    //     const { factory, nft721, alice, royaltyVault } = await setupTest();
+
+    //     await factory.setDeployerWhitelisted(AddressZero, true);
+    //     await factory.upgradeNFT721(nft721.address);
+
+    //     await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
+    //     const nft721_0 = await getNFT721(factory);
+    // });
 });
