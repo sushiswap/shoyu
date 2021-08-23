@@ -47,7 +47,7 @@ interface ITokenFactory {
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
-    function PARK_TOKEN_IDS_721() external view returns (bytes32);
+    function PARK_TOKEN_IDS_721_TYPEHASH() external view returns (bytes32);
 
     function MINT_BATCH_721_TYPEHASH() external view returns (bytes32);
 

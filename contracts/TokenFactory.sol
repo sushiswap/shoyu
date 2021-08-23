@@ -14,7 +14,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
     // keccak256("ParkTokenIds721(address nft,uint256 toTokenId,uint256 nonce)");
-    bytes32 public constant override PARK_TOKEN_IDS_721 =
+    bytes32 public constant override PARK_TOKEN_IDS_721_TYPEHASH =
         0x3fddacac0a7d8b05f741f01ff6becadd9986be8631a2af41a675f365dd74090d;
     // keccak256("MintBatch721(address nft,address to,uint256[] tokenIds,bytes data,uint256 nonce)");
     bytes32 public constant override MINT_BATCH_721_TYPEHASH =
@@ -315,7 +315,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         bytes32 s
     ) external override {
         address owner = IBaseNFT721(nft).owner();
-        bytes32 hash = keccak256(abi.encode(PARK_TOKEN_IDS_721, nft, toTokenId, nonces[owner]++));
+        bytes32 hash = keccak256(abi.encode(PARK_TOKEN_IDS_721_TYPEHASH, nft, toTokenId, nonces[owner]++));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT721(nft).parkTokenIds(toTokenId);
     }
