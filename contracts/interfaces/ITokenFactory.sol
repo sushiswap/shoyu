@@ -39,7 +39,8 @@ interface ITokenFactory {
         address indexed owner,
         string name,
         string symbol,
-        address indexed dividendToken
+        address indexed dividendToken,
+        uint256 initialSupply
     );
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
@@ -130,7 +131,8 @@ interface ITokenFactory {
         address owner,
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        uint256 initialSupply
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);

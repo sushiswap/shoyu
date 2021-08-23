@@ -283,17 +283,25 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address owner,
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        uint256 initialSupply
     ) external override onlyDeployer returns (address proxy) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
         bytes memory initData =
-            abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
+            abi.encodeWithSignature(
+                "initialize(address,string,string,address,uint256)",
+                owner,
+                name,
+                symbol,
+                dividendToken,
+                initialSupply
+            );
         proxy = _createProxy(_targetsSocialToken[_targetsSocialToken.length - 1], initData);
 
-        emit DeploySocialToken(proxy, owner, name, symbol, dividendToken);
+        emit DeploySocialToken(proxy, owner, name, symbol, dividendToken, initialSupply);
     }
 
     function isSocialToken(address query) external view override returns (bool result) {

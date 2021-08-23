@@ -13,7 +13,8 @@ interface ISocialToken is IDividendPayingERC20, IBaseExchange, IOwnable {
         address owner,
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        uint256 initialSupply
     ) external;
 
     function mint(address account, uint256 value) external;

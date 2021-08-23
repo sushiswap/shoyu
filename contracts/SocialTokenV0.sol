@@ -16,11 +16,13 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
         address _owner,
         string memory _name,
         string memory _symbol,
-        address _dividendToken
+        address _dividendToken,
+        uint256 initialSupply
     ) external override initializer {
         __Ownable_init(_owner);
         __DividendPayingERC20_init(_name, _symbol, _dividendToken);
         _factory = msg.sender;
+        _mint(_owner, initialSupply);
 
         _CACHED_CHAIN_ID = block.chainid;
         _DOMAIN_SEPARATOR = keccak256(
