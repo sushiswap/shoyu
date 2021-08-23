@@ -164,16 +164,4 @@ interface ITokenFactory {
         bytes32 r,
         bytes32 s
     ) external;
-
-    function setTags721(
-        address nft,
-        uint256 tokenId,
-        string[] calldata tags
-    ) external;
-
-    function setTags1155(
-        address nft,
-        uint256 tokenId,
-        string[] calldata tags
-    ) external;
 }

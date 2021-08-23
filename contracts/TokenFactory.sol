@@ -351,34 +351,4 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT1155(nft).mintBatch(to, tokenIds, amounts, data);
     }
-
-    function setTags721(
-        address nft,
-        uint256 tokenId,
-        string[] memory tags
-    ) external override {
-        require(IBaseNFT721(nft).ownerOf(tokenId) == msg.sender, "SHOYU: FORBIDDEN");
-        _setTags(nft, tokenId, tags);
-    }
-
-    function setTags1155(
-        address nft,
-        uint256 tokenId,
-        string[] memory tags
-    ) external override {
-        require(IBaseNFT1155(nft).balanceOf(msg.sender, tokenId) > 0, "SHOYU: FORBIDDEN");
-        _setTags(nft, tokenId, tags);
-    }
-
-    function _setTags(
-        address nft,
-        uint256 tokenId,
-        string[] memory tags
-    ) internal {
-        uint256 nonce = tagNonces[nft][tokenId]++;
-
-        for (uint256 i; i < tags.length; i++) {
-            emit Tag(nft, tokenId, tags[i], nonce);
-        }
-    }
 }
