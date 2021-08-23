@@ -41,7 +41,6 @@ interface ITokenFactory {
         string symbol,
         address indexed dividendToken
     );
-    event Tag(address indexed nft, uint256 indexed tokenId, string indexed tag, uint256 tagNonce);
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
 

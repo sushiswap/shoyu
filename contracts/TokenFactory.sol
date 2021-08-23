@@ -45,8 +45,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     mapping(address => bool) public override isDeployerWhitelisted;
     mapping(address => bool) public override isStrategyWhitelisted;
 
-    mapping(address => mapping(uint256 => uint256)) public tagNonces;
-
     modifier onlyDeployer {
         require(isDeployerWhitelisted[address(0)] || isDeployerWhitelisted[msg.sender], "SHOYU: FORBIDDEN");
         _;
