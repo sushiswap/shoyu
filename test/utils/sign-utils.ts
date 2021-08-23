@@ -11,10 +11,13 @@ export const convertToHash = (text: string) => {
     return keccak256(toUtf8Bytes(text));
 };
 
-export const NFT721_TYPEHASH = convertToHash("NFT721(address nft,address to,uint256 tokenId,bytes data,uint256 nonce)");
+export const PARK_TOKEN_IDS_721_TYPEHASH = convertToHash("ParkTokenIds721(address nft,uint256 toTokenId,uint256 nonce)");
 
-export const NFT1155_TYPEHASH = convertToHash(
-    "NFT1155(address nft,address to,uint256 tokenId,uint256 amount,bytes data,uint256 nonce)"
+export const MINT_BATCH_721_TYPEHASH = convertToHash(
+    "MintBatch721(address nft,address to,uint256[] tokenIds,bytes data,uint256 nonce)"
+);
+export const MINT_BATCH_1155_TYPEHASH = convertToHash(
+    "MintBatch1155(address nft,address to,uint256[] tokenIds,uint256[] amounts,bytes data,uint256 nonce)"
 );
 
 interface Domain {
@@ -167,14 +170,29 @@ export const getMint721Digest = async (
     provider: any,
     token: string,
     recipient: string,
-    tokenId: number,
+    tokenIds: number[],
     data: Bytes,
     factoryAddress: string,
     nonce: number
 ): Promise<string> => {
     const hash = getHash(
-        ["bytes32", "address", "address", "uint256", "bytes", "uint256"],
-        [NFT721_TYPEHASH, token, recipient, tokenId, data, nonce]
+        ["bytes32", "address", "address", "uint256[]", "bytes", "uint256"],
+        [MINT_BATCH_721_TYPEHASH, token, recipient, tokenIds, data, nonce]
+    );
+    const digest = await getDigest(provider, "TokenFactory", factoryAddress, hash);
+    return digest;
+};
+
+export const getPark721Digest = async (
+    provider: any,
+    token: string,
+    toTokenId: number,
+    factoryAddress: string,
+    nonce: number
+): Promise<string> => {
+    const hash = getHash(
+        ["bytes32", "address", "uint256", "uint256"],
+        [PARK_TOKEN_IDS_721_TYPEHASH, token, toTokenId, nonce]
     );
     const digest = await getDigest(provider, "TokenFactory", factoryAddress, hash);
     return digest;
@@ -184,15 +202,15 @@ export const getMint1155Digest = async (
     provider: any,
     token: string,
     recipient: string,
-    tokenId: number,
-    amount: number,
+    tokenIds: number[],
+    amounts: number[],
     data: Bytes,
     factoryAddress: string,
     nonce: number
 ): Promise<string> => {
     const hash = getHash(
-        ["bytes32", "address", "address", "uint256", "uint256", "bytes", "uint256"],
-        [NFT1155_TYPEHASH, token, recipient, tokenId, amount, data, nonce]
+        ["bytes32", "address", "address", "uint256[]", "uint256[]", "bytes", "uint256"],
+        [MINT_BATCH_1155_TYPEHASH, token, recipient, tokenIds, amounts, data, nonce]
     );
     const digest = await getDigest(provider, "TokenFactory", factoryAddress, hash);
     return digest;
