@@ -69,7 +69,9 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
         _transfer(from, to, amount);
     }
 
-    function mint(address account, uint256 value) external override onlyOwner {
+    function mint(address account, uint256 value) external override {
+        require(owner() == msg.sender || _factory == msg.sender, "SHOYU: FORBIDDEN");
+
         _mint(account, value);
     }
 

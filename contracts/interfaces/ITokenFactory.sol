@@ -53,6 +53,8 @@ interface ITokenFactory {
 
     function MINT_BATCH_1155_TYPEHASH() external view returns (bytes32);
 
+    function MINT_SOCIAL_TOKEN_TYPEHASH() external view returns (bytes32);
+
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
     function nonces(address account) external view returns (uint256);
@@ -161,6 +163,15 @@ interface ITokenFactory {
         uint256[] calldata tokenIds,
         uint256[] calldata amounts,
         bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
+    function mintSocialToken(
+        address token,
+        address to,
+        uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s
