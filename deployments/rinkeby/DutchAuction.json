@@ -1,0 +1,118 @@
+{
+  "address": "0x46d56903c75e9f7ac370F76415Eedc02BFA71cc4",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "canBid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "params",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bidPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "canExecute",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x89ea19f9514f2094e573e7b59ce02747e05c27f3ff3655ab444e366371e87637",
+  "receipt": {
+    "to": null,
+    "from": "0x80417137E490A5091dCAB34E85C457BB97c93161",
+    "contractAddress": "0x46d56903c75e9f7ac370F76415Eedc02BFA71cc4",
+    "transactionIndex": 18,
+    "gasUsed": "271461",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x0041447b1babbfe641336a038b1044ca2bf85dddea5a60c27aadcc8244bca1dc",
+    "transactionHash": "0x89ea19f9514f2094e573e7b59ce02747e05c27f3ff3655ab444e366371e87637",
+    "logs": [],
+    "blockNumber": 9143877,
+    "cumulativeGasUsed": "6434076",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "409914cef0eb1a17c21b9b3d747a0637",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.3+commit.8d00100c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"canBid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bidPrice\",\"type\":\"uint256\"}],\"name\":\"canExecute\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/strategies/DutchAuction.sol\":\"DutchAuction\"},\"evmVersion\":\"istanbul\",\"libraries\":{\":__CACHE_BREAKER__\":\"0x00000000d41867734bbee4c6863d9255b2b06ac1\"},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/interfaces/IStrategy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity >=0.5.0;\\n\\nimport \\\"../libraries/Orders.sol\\\";\\n\\ninterface IStrategy {\\n    function canExecute(\\n        uint256 deadline,\\n        bytes memory params,\\n        address bidder,\\n        uint256 bidPrice\\n    ) external view returns (bool);\\n\\n    function canBid(\\n        uint256 deadline,\\n        bytes memory params,\\n        address bidder,\\n        uint256 bidPrice,\\n        uint256 bestBidPrice,\\n        uint256 bestBidBlock\\n    ) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x0c379707f5d112df6ac23a176e2d77b127b756c0a765f2eb3f10f6ab7c30212f\",\"license\":\"MIT\"},\"contracts/libraries/Orders.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.3;\\n\\nlibrary Orders {\\n    // keccak256(\\\"Ask(address signer,address token,uint256 tokenId,uint256 amount,address strategy,address currency,address recipient,uint256 deadline,bytes params)\\\")\\n    bytes32 internal constant ASK_TYPEHASH = 0x17fdf8831f8bd77353b30f42ba9bc64e7144545a42a890389f298feeb45dec88;\\n    // keccak256(\\\"Bid(bytes32 askHash,address signer,uint256 amount,uint256 price,address recipient,address referrer)\\\")\\n    bytes32 internal constant BID_TYPEHASH = 0xb98e1dc48988064e6dfb813618609d7da80a8841e5f277039788ac4b50d497b2;\\n\\n    struct Ask {\\n        address signer;\\n        address token;\\n        uint256 tokenId;\\n        uint256 amount;\\n        address strategy;\\n        address currency;\\n        address recipient;\\n        uint256 deadline;\\n        bytes params;\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    struct Bid {\\n        bytes32 askHash;\\n        address signer;\\n        uint256 amount;\\n        uint256 price;\\n        address recipient;\\n        address referrer;\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    function hash(Ask memory ask) internal pure returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    ASK_TYPEHASH,\\n                    ask.signer,\\n                    ask.token,\\n                    ask.tokenId,\\n                    ask.amount,\\n                    ask.strategy,\\n                    ask.currency,\\n                    ask.recipient,\\n                    ask.deadline,\\n                    keccak256(ask.params)\\n                )\\n            );\\n    }\\n\\n    function hash(Bid memory bid) internal pure returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(BID_TYPEHASH, bid.askHash, bid.signer, bid.amount, bid.price, bid.recipient, bid.referrer)\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0xa35b519fac6ea626cc3b133907138ed75f3389c0a1bb4f771cfd5ec820caca23\",\"license\":\"MIT\"},\"contracts/strategies/DutchAuction.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.3;\\n\\nimport \\\"../interfaces/IStrategy.sol\\\";\\n\\ncontract DutchAuction is IStrategy {\\n    function canExecute(\\n        uint256 deadline,\\n        bytes memory params,\\n        address,\\n        uint256 bidPrice\\n    ) external view override returns (bool) {\\n        (uint256 startPrice, uint256 endPrice, uint256 startBlock) = abi.decode(params, (uint256, uint256, uint256));\\n        require(startPrice > endPrice, \\\"SHOYU: INVALID_PRICE_RANGE\\\");\\n        require(startBlock < deadline, \\\"SHOYU: INVALID_START_BLOCK\\\");\\n\\n        uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startBlock);\\n        uint256 currentPrice = startPrice - ((block.number - startBlock) * tickPerBlock);\\n\\n        return block.number <= deadline && bidPrice >= currentPrice;\\n    }\\n\\n    function canBid(\\n        uint256,\\n        bytes memory,\\n        address,\\n        uint256,\\n        uint256,\\n        uint256\\n    ) external pure override returns (bool) {\\n        return false;\\n    }\\n}\\n\",\"keccak256\":\"0xb4b40dc93e16bdbf0e72b8435904636192bf884e19fd8158be93bb79dfaae31d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506103f3806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80636281869a1461003b578063e01be26314610069575b600080fd5b61005561004936600461029d565b60009695505050505050565b604051901515815260200160405180910390f35b610055610077366004610240565b60008060008086806020019051810190610091919061030e565b9250925092508183116100eb5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f50524943455f52414e474500000000000060448201526064015b60405180910390fd5b87811061013a5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f424c4f434b00000000000060448201526064016100e2565b6000610146828a61037a565b610150848661037a565b61015a919061033b565b9050600081610169844361037a565b610173919061035b565b61017d908661037a565b905089431115801561018f5750808710155b9a9950505050505050505050565b80356001600160a01b03811681146101b457600080fd5b919050565b600082601f8301126101c9578081fd5b813567ffffffffffffffff808211156101e4576101e46103a7565b604051601f8301601f19908116603f0116810190828211818310171561020c5761020c6103a7565b81604052838152866020858801011115610224578485fd5b8360208701602083013792830160200193909352509392505050565b60008060008060808587031215610255578384fd5b84359350602085013567ffffffffffffffff811115610272578384fd5b61027e878288016101b9565b93505061028d6040860161019d565b9396929550929360600135925050565b60008060008060008060c087890312156102b5578182fd5b86359550602087013567ffffffffffffffff8111156102d2578283fd5b6102de89828a016101b9565b9550506102ed6040880161019d565b9350606087013592506080870135915060a087013590509295509295509295565b600080600060608486031215610322578283fd5b8351925060208401519150604084015190509250925092565b60008261035657634e487b7160e01b81526012600452602481fd5b500490565b600081600019048311821515161561037557610375610391565b500290565b60008282101561038c5761038c610391565b500390565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea26469706673582212204fd548d53bc2c426e3172d1612e893008d6fc2252d976ede0eea9c072ed703e264736f6c63430008030033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80636281869a1461003b578063e01be26314610069575b600080fd5b61005561004936600461029d565b60009695505050505050565b604051901515815260200160405180910390f35b610055610077366004610240565b60008060008086806020019051810190610091919061030e565b9250925092508183116100eb5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f50524943455f52414e474500000000000060448201526064015b60405180910390fd5b87811061013a5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f424c4f434b00000000000060448201526064016100e2565b6000610146828a61037a565b610150848661037a565b61015a919061033b565b9050600081610169844361037a565b610173919061035b565b61017d908661037a565b905089431115801561018f5750808710155b9a9950505050505050505050565b80356001600160a01b03811681146101b457600080fd5b919050565b600082601f8301126101c9578081fd5b813567ffffffffffffffff808211156101e4576101e46103a7565b604051601f8301601f19908116603f0116810190828211818310171561020c5761020c6103a7565b81604052838152866020858801011115610224578485fd5b8360208701602083013792830160200193909352509392505050565b60008060008060808587031215610255578384fd5b84359350602085013567ffffffffffffffff811115610272578384fd5b61027e878288016101b9565b93505061028d6040860161019d565b9396929550929360600135925050565b60008060008060008060c087890312156102b5578182fd5b86359550602087013567ffffffffffffffff8111156102d2578283fd5b6102de89828a016101b9565b9550506102ed6040880161019d565b9350606087013592506080870135915060a087013590509295509295509295565b600080600060608486031215610322578283fd5b8351925060208401519150604084015190509250925092565b60008261035657634e487b7160e01b81526012600452602481fd5b500490565b600081600019048311821515161561037557610375610391565b500290565b60008282101561038c5761038c610391565b500390565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea26469706673582212204fd548d53bc2c426e3172d1612e893008d6fc2252d976ede0eea9c072ed703e264736f6c63430008030033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

@@ -8,7 +8,7 @@ interface ITokenFactory {
     event UpgradeSocialToken(address newTarget);
     event UpgradeERC721Exchange(address exchange);
     event UpgradeERC1155Exchange(address exchange);
-    event DeployNFT721(
+    event DeployNFT721AndMintBatch(
         address indexed proxy,
         address indexed owner,
         string name,
@@ -17,7 +17,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event DeployNFT721(
+    event DeployNFT721AndPark(
         address indexed proxy,
         address indexed owner,
         string name,
@@ -26,7 +26,7 @@ interface ITokenFactory {
         address royaltyFeeRecipient,
         uint8 royaltyFee
     );
-    event DeployNFT1155(
+    event DeployNFT1155AndMintBatch(
         address indexed proxy,
         address indexed owner,
         uint256[] tokenIds,
@@ -47,15 +47,15 @@ interface ITokenFactory {
 
     function MAX_OPERATIONAL_FEE() external view returns (uint8);
 
-    function NFT721_TYPEHASH() external view returns (bytes32);
+    function PARK_TOKEN_IDS_721() external view returns (bytes32);
 
-    function NFT1155_TYPEHASH() external view returns (bytes32);
+    function MINT_BATCH_721_TYPEHASH() external view returns (bytes32);
+
+    function MINT_BATCH_1155_TYPEHASH() external view returns (bytes32);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
-    function nonces721(address account) external view returns (uint256);
-
-    function nonces1155(address account) external view returns (uint256);
+    function nonces(address account) external view returns (uint256);
 
     function baseURI721() external view returns (string memory);
 
@@ -97,7 +97,7 @@ interface ITokenFactory {
 
     function upgradeERC1155Exchange(address exchange) external;
 
-    function deployNFT721(
+    function deployNFT721AndMintBatch(
         address owner,
         string calldata name,
         string calldata symbol,
@@ -106,7 +106,7 @@ interface ITokenFactory {
         uint8 royaltyFee
     ) external returns (address nft);
 
-    function deployNFT721(
+    function deployNFT721AndPark(
         address owner,
         string calldata name,
         string calldata symbol,
@@ -117,7 +117,7 @@ interface ITokenFactory {
 
     function isNFT721(address query) external view returns (bool result);
 
-    function deployNFT1155(
+    function deployNFT1155AndMintBatch(
         address owner,
         uint256[] memory tokenIds,
         uint256[] memory amounts,
@@ -136,59 +136,32 @@ interface ITokenFactory {
 
     function isSocialToken(address query) external view returns (bool result);
 
-    function mint721(
+    function parkTokenIds721(
+        address nft,
+        uint256 toTokenId,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
+    function mintBatch721(
         address nft,
         address to,
-        uint256 tokenId,
+        uint256[] calldata tokenIds,
         bytes calldata data,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) external;
 
-    function mint1155(
+    function mintBatch1155(
         address nft,
         address to,
-        uint256 tokenId,
-        uint256 amount,
+        uint256[] calldata tokenIds,
+        uint256[] calldata amounts,
         bytes calldata data,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
-
-    function mintWithTags721(
-        address nft,
-        address to,
-        uint256 tokenId,
-        bytes calldata data,
-        string[] calldata tags,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external;
-
-    function mintWithTags1155(
-        address nft,
-        address to,
-        uint256 tokenId,
-        uint256 amount,
-        bytes calldata data,
-        string[] calldata tags,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external;
-
-    function setTags721(
-        address nft,
-        uint256 tokenId,
-        string[] calldata tags
-    ) external;
-
-    function setTags1155(
-        address nft,
-        uint256 tokenId,
-        string[] calldata tags
     ) external;
 }
