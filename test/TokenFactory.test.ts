@@ -10,7 +10,13 @@ import {
     ERC20Mock,
 } from "../typechain";
 
-import { getMint1155Digest, getMint721Digest, getPark721Digest, sign } from "./utils/sign-utils";
+import {
+    getMint1155Digest,
+    getMint721Digest,
+    getPark721Digest,
+    getMintSocialTokenDigest,
+    sign,
+} from "./utils/sign-utils";
 import { ethers } from "hardhat";
 import { expect, assert } from "chai";
 
@@ -161,21 +167,21 @@ describe("TokenFactory", () => {
             .reverted;
         await expect(factory.connect(carol).deployNFT1155AndMintBatch(alice.address, [0, 2], [11, 33], bob.address, 10))
             .to.be.reverted;
-        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100)).to.be.reverted;
 
         await factory.upgradeNFT721(nft721.address);
         await factory.connect(alice).deployNFT721AndMintBatch(alice.address, "N", "S", [0, 2], bob.address, 10);
         await factory.connect(bob).deployNFT721AndPark(carol.address, "N", "S", 10, alice.address, 10);
         await expect(factory.connect(carol).deployNFT1155AndMintBatch(alice.address, [0, 2], [11, 33], bob.address, 10))
             .to.be.reverted;
-        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100)).to.be.reverted;
 
         await factory.upgradeNFT1155(nft1155.address);
         await factory.connect(carol).deployNFT1155AndMintBatch(alice.address, [0, 2], [11, 33], bob.address, 10);
-        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address)).to.be.reverted;
+        await expect(factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100)).to.be.reverted;
 
         await factory.upgradeSocialToken(socialToken.address);
-        await factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address);
+        await factory.deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100);
     });
 
     it("should be that only accounts in DeployerWhitelist can deploy proxies if isDeployerWhitelisted(address(0)) is false", async () => {
@@ -287,7 +293,7 @@ describe("TokenFactory", () => {
         await factory.connect(bob).parkTokenIds721(nft721_1.address, 60, v3, r3, s3);
     });
 
-    it.only("should be that someone who has NFT1155 contract owner's signature can call mint1155 functions", async () => {
+    it("should be that someone who has NFT1155 contract owner's signature can call mint1155 functions", async () => {
         const { factory, alice, bob, carol, nft1155 } = await setupTest();
 
         const signer = ethers.Wallet.createRandom();
@@ -341,6 +347,61 @@ describe("TokenFactory", () => {
             factory.connect(bob).mintBatch1155(nft1155_1.address, carol.address, [11, 21], [1, 9], [], fv1, fr1, fs1)
         ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
         await factory.connect(bob).mintBatch1155(nft1155_1.address, carol.address, [11, 21], [1, 9], [], v1, r1, s1);
+    });
+
+    it("should be that someone who has SocialToken contract owner's signature can call mintSocialToken functions", async () => {
+        const { factory, alice, bob, carol, socialToken, erc20Mock } = await setupTest();
+
+        const signer = ethers.Wallet.createRandom();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+
+        await factory.upgradeSocialToken(socialToken.address);
+        await factory.connect(alice).deploySocialToken(signer.address, "N", "S", erc20Mock.address, 100);
+        const socialToken_0 = await getSocialToken(factory);
+        await factory.connect(bob).deploySocialToken(signer.address, "N", "S", erc20Mock.address, 0);
+        const socialToken_1 = await getSocialToken(factory);
+
+        expect(await socialToken_0.totalSupply()).to.be.equal(100);
+        expect(await socialToken_1.totalSupply()).to.be.equal(0);
+
+        const digestST_0 = await getMintSocialTokenDigest(
+            ethers.provider,
+            socialToken_0.address,
+            alice.address,
+            300,
+            factory.address,
+            0
+        );
+        const { v: v0, r: r0, s: s0 } = sign(digestST_0, signer);
+        await expect(
+            factory.connect(bob).mintSocialToken(socialToken_0.address, alice.address, 3000, v0, r0, s0)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await expect(
+            factory.connect(alice).mintSocialToken(socialToken_0.address, bob.address, 300, v0, r0, s0)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await factory.connect(alice).mintSocialToken(socialToken_0.address, alice.address, 300, v0, r0, s0);
+
+        const digestST_1 = await getMintSocialTokenDigest(
+            ethers.provider,
+            socialToken_1.address,
+            carol.address,
+            500,
+            factory.address,
+            1
+        );
+        const { v: v1, r: r1, s: s1 } = sign(digestST_1, signer);
+
+        const fakeSigner = ethers.Wallet.createRandom();
+        const { v: fv1, r: fr1, s: fs1 } = sign(digestST_1, fakeSigner);
+
+        await expect(
+            factory.connect(bob).mintSocialToken(socialToken_1.address, carol.address, 500, fv1, fr1, fs1)
+        ).to.be.revertedWith("SHOYU: UNAUTHORIZED");
+        await factory.connect(bob).mintSocialToken(socialToken_1.address, carol.address, 500, v1, r1, s1);
+
+        expect(await socialToken_0.totalSupply()).to.be.equal(400);
+        expect(await socialToken_1.totalSupply()).to.be.equal(500);
     });
 
     it("should be fail when users try to deploy NFT721 with invalid parameters", async () => {
@@ -423,26 +484,25 @@ describe("TokenFactory", () => {
     });
 
     it("should be fail when users try to deploy SocialToken with invalid parameters", async () => {
-        const { factory, alice, bob, carol, socialToken, erc20Mock } = await setupTest();
+        const { factory, alice, socialToken, erc20Mock } = await setupTest();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeSocialToken(socialToken.address);
 
         await expect(
-            factory.connect(alice).deploySocialToken(alice.address, "", "S", erc20Mock.address)
+            factory.connect(alice).deploySocialToken(alice.address, "", "S", erc20Mock.address, 100)
         ).to.be.revertedWith("SHOYU: INVALID_NAME");
 
         await expect(
-            factory.connect(alice).deploySocialToken(alice.address, "N", "", erc20Mock.address)
+            factory.connect(alice).deploySocialToken(alice.address, "N", "", erc20Mock.address, 100)
         ).to.be.revertedWith("SHOYU: INVALID_SYMBOL");
 
         await expect(
-            factory.connect(alice).deploySocialToken(AddressZero, "N", "S", erc20Mock.address)
+            factory.connect(alice).deploySocialToken(AddressZero, "N", "S", erc20Mock.address, 100)
         ).to.be.revertedWith("SHOYU: INVALID_ADDRESS");
 
-        await expect(
-            factory.connect(alice).deployNFT1155AndMintBatch(bob.address, [2, 4, 6], [33, 55], bob.address, 10)
-        ).to.be.revertedWith("SHOYU: LENGTHS_NOT_EQUAL");
+        await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address, 0);
+        await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100);
     });
 
     it("should work well checking isNFT721/1155/SocialToken functions", async () => {
@@ -459,7 +519,7 @@ describe("TokenFactory", () => {
         await factory.connect(alice).deployNFT1155AndMintBatch(alice.address, [0, 2], [11, 33], bob.address, 10);
         const nft1155_0 = await getNFT1155(factory);
 
-        await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address);
+        await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100);
         const socialT_0 = await getSocialToken(factory);
 
         const NFT721Contract = await ethers.getContractFactory("NFT721V0");
@@ -481,7 +541,7 @@ describe("TokenFactory", () => {
         await factory.connect(bob).deployNFT1155AndMintBatch(alice.address, [11, 25], [1, 2], alice.address, 5);
         const nft1155_1 = await getNFT1155(factory);
 
-        await factory.connect(bob).deploySocialToken(bob.address, "N", "S", erc20Mock.address);
+        await factory.connect(bob).deploySocialToken(bob.address, "N", "S", erc20Mock.address, 100);
         const socialT_1 = await getSocialToken(factory);
 
         assert.isTrue(await factory.isNFT721(nft721_0.address));

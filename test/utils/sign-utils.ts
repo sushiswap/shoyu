@@ -20,6 +20,10 @@ export const MINT_BATCH_1155_TYPEHASH = convertToHash(
     "MintBatch1155(address nft,address to,uint256[] tokenIds,uint256[] amounts,bytes data,uint256 nonce)"
 );
 
+export const MINT_SOCIAL_TOKEN_TYPEHASH = convertToHash(
+    "MintSocialToken(address token,address to,uint256 amount,uint256 nonce)"
+);
+
 interface Domain {
     name: string;
     version: string;
@@ -211,6 +215,22 @@ export const getMint1155Digest = async (
     const hash = getHash(
         ["bytes32", "address", "address", "uint256[]", "uint256[]", "bytes", "uint256"],
         [MINT_BATCH_1155_TYPEHASH, token, recipient, tokenIds, amounts, data, nonce]
+    );
+    const digest = await getDigest(provider, "TokenFactory", factoryAddress, hash);
+    return digest;
+};
+
+export const getMintSocialTokenDigest = async (
+    provider: any,
+    token: string,
+    recipient: string,
+    amount: number,
+    factoryAddress: string,
+    nonce: number
+): Promise<string> => {
+    const hash = getHash(
+        ["bytes32", "address", "address", "uint256", "uint256"],
+        [MINT_SOCIAL_TOKEN_TYPEHASH, token, recipient, amount, nonce]
     );
     const digest = await getDigest(provider, "TokenFactory", factoryAddress, hash);
     return digest;
