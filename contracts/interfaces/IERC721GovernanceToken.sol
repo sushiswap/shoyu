@@ -3,8 +3,10 @@
 pragma solidity >=0.5.0;
 
 import "./IERC20Snapshot.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "./IERC1271.sol";
 
-interface IERC721GovernanceToken is IERC20Snapshot {
+interface IERC721GovernanceToken is IERC20Snapshot, IERC721Receiver, IERC1271 {
     event SubmitSellProposal(uint256 id, uint256 snapshotId, address indexed from, uint256 power);
     event ConfirmSellProposal(uint256 id, address indexed from, uint256 power);
     event RevokeSellProposal(uint256 id, address indexed from, uint256 power);
@@ -33,6 +35,7 @@ interface IERC721GovernanceToken is IERC20Snapshot {
         view
         returns (
             bool executed,
+            address exchange,
             address strategy,
             address currency,
             uint256 deadline,

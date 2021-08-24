@@ -4,6 +4,8 @@ pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./interfaces/IERC721GovernanceToken.sol";
 import "./interfaces/ITokenFactory.sol";
@@ -11,12 +13,13 @@ import "./interfaces/IBaseExchange.sol";
 import "./interfaces/IOrderBook.sol";
 import "./base/ERC20SnapshotInitializable.sol";
 
-contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceToken {
+contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceToken, ERC721Holder {
     using SafeERC20 for IERC20;
     using Orders for Orders.Ask;
 
     struct SellProposal {
         bool executed;
+        address exchange;
         address strategy;
         address currency;
         uint256 deadline;
@@ -34,6 +37,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
     uint8 public override minimumQuorum; // out of 100
 
     SellProposal[] public override proposals;
+    mapping(bytes32 => uint256) internal _proposalHash;
     mapping(uint256 => uint256) public override totalPowerOf;
     mapping(uint256 => mapping(address => uint256)) public override powerOf;
 
@@ -70,9 +74,8 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         SellProposal storage proposal = proposals[id];
 
         if (!_sold[id]) {
-            address exchange = ITokenFactory(factory).isNFT721(nft) ? nft : ITokenFactory(factory).erc721Exchange();
             bytes32 hash = _hashOrder(proposal);
-            require(IBaseExchange(exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
+            require(IBaseExchange(proposal.exchange).amountFilled(hash) > 0, "SHOYU: NOT_SOLD");
 
             _sold[id] = true;
         }
@@ -122,9 +125,14 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         uint256 id = proposals.length;
         uint256 snapshotId = _snapshot();
 
-        proposals.push(SellProposal(false, strategy, currency, deadline, params, expiration, snapshotId));
+        address exchange = ITokenFactory(factory).isNFT721(nft) ? nft : ITokenFactory(factory).erc721Exchange();
+
+        proposals.push(SellProposal(false, exchange, strategy, currency, deadline, params, expiration, snapshotId));
         totalPowerOf[id] = power;
         powerOf[id][msg.sender] = power;
+
+        if (id > 0) _proposalHash[_hashOrder(proposals[id])] = id;
+        else _proposalHash[_hashOrder(proposals[id])] = type(uint256).max;
 
         emit SubmitSellProposal(id, snapshotId, msg.sender, power);
     }
@@ -171,6 +179,7 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         require(block.number <= proposal.expiration, "SHOYU: EXPIRED");
         require(totalPowerOf[id] > _minPower(), "SHOYU: NOT_SUBMITTED");
 
+        IERC721(nft).approve(proposal.exchange, tokenId);
         _executeSellProposal(proposal);
 
         emit ExecuteSellProposal(id);
@@ -195,5 +204,14 @@ contract ERC721GovernanceToken is ERC20SnapshotInitializable, IERC721GovernanceT
         returns (bytes32) {
             proposal.executed = true;
         } catch {}
+    }
+
+    function isValidSignature(bytes32 hash, bytes memory) external view override returns (bytes4) {
+        uint256 _proposalId = _proposalHash[hash];
+        uint256 proposalId = _proposalId;
+        if (proposalId == type(uint256).max) proposalId = 0;
+        SellProposal storage proposal = proposals[proposalId];
+        if (msg.sender == proposal.exchange && _proposalId > 0) return 0x1626ba7e;
+        else return 0xffffffff;
     }
 }
