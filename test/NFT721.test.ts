@@ -297,7 +297,7 @@ describe("NFT part of NFT721", () => {
         await expect(nft721_1.connect(bob).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
     });
 
-    it.only("should be that URI functions work well", async () => {
+    it("should be that URI functions work well", async () => {
         const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
@@ -347,8 +347,35 @@ describe("NFT part of NFT721", () => {
         expect(await nft721_0.tokenURI(4)).to.be.not.equal(await URI721(nft721_0, 4));
         expect(await nft721_0.tokenURI(7)).to.be.not.equal(await URI721(nft721_0, 7));
     });
-    ////////////////////////////
-    // it("should be that default values are set correctly with parking deploy", async () => {
+
+    it("should be that parkTokenIds func work well", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 50);
+        const nft721_0 = await getNFT721(factory);
+
+        await expect(nft721_0.connect(bob).parkTokenIds(100)).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(alice).parkTokenIds(30)).to.be.revertedWith("SHOYU: INVALID_TO_TOKEN_ID");
+        await expect(nft721_0.connect(alice).parkTokenIds(50)).to.be.revertedWith("SHOYU: INVALID_TO_TOKEN_ID");
+        await nft721_0.connect(alice).parkTokenIds(51);
+        await nft721_0.connect(alice).parkTokenIds(100);
+    });
+
+    it.only("should be that mint/mintBatch function well correctly with parking deploy", async () => {
+        const signers = await ethers.getSigners();
+        const [deployer, alice, bob, carol, royaltyVault] = signers;
+    
+        const NFT721Contract = await ethers.getContractFactory("NFT721V0");
+        const nft721 = (await NFT721Contract.deploy()) as NFT721V0;
+    
+        const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
+        const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
+    });
+
+    // it.only("should be that mint/mintBatch function well correctly with parking deploy", async () => {
     //     const { factory, nft721, alice, royaltyVault } = await setupTest();
 
     //     await factory.setDeployerWhitelisted(AddressZero, true);
@@ -356,6 +383,7 @@ describe("NFT part of NFT721", () => {
 
     //     await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
     //     const nft721_0 = await getNFT721(factory);
+
     // });
     ////////////////////////////
     // it("should be that default values are set correctly with parking deploy", async () => {
