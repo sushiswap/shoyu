@@ -32,10 +32,10 @@ abstract contract ReentrancyGuardInitializable is Initializable {
     // amount. Since refunds are capped to a percentage of the total
     // transaction's gas, it is best to keep them low in cases like this one, to
     // increase the likelihood of the full refund coming into effect.
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
+    bool private constant _NOT_ENTERED = false;
+    bool private constant _ENTERED = true;
 
-    uint256 private _status;
+    bool private _status;
 
     function __ReentrancyGuard_init() internal initializer {
         __ReentrancyGuard_init_unchained();
