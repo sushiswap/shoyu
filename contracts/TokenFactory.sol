@@ -109,12 +109,12 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         return (_operationalFeeRecipient, _operationalFee);
     }
 
-    // This function should be called by a multi-sig `owner`, not an EOA
+    // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI721(string memory uri) external override onlyOwner {
         baseURI721 = uri;
     }
 
-    // This function should be called by a multi-sig `owner`, not an EOA
+    // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI1155(string memory uri) external override onlyOwner {
         baseURI1155 = uri;
     }
