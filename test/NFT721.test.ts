@@ -354,7 +354,7 @@ describe("NFT part of NFT721", () => {
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT721(nft721.address);
 
-        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 50);
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 50, royaltyVault.address, 10);
         const nft721_0 = await getNFT721(factory);
 
         await expect(nft721_0.connect(bob).parkTokenIds(100)).to.be.revertedWith("SHOYU: FORBIDDEN");
@@ -364,7 +364,7 @@ describe("NFT part of NFT721", () => {
         await nft721_0.connect(alice).parkTokenIds(100);
     });
 
-    it.only("should be that mint/mintBatch function well correctly with parking deploy", async () => {
+    it("should be that mint/mintBatch function well correctly with parking deploy", async () => {
         const signers = await ethers.getSigners();
         const [deployer, alice, bob, carol, royaltyVault] = signers;
     
