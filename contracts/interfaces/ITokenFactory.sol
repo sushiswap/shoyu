@@ -39,7 +39,8 @@ interface ITokenFactory {
         address indexed owner,
         string name,
         string symbol,
-        address indexed dividendToken
+        address indexed dividendToken,
+        uint256 initialSupply
     );
 
     function MAX_ROYALTY_FEE() external view returns (uint8);
@@ -51,6 +52,8 @@ interface ITokenFactory {
     function MINT_BATCH_721_TYPEHASH() external view returns (bytes32);
 
     function MINT_BATCH_1155_TYPEHASH() external view returns (bytes32);
+
+    function MINT_SOCIAL_TOKEN_TYPEHASH() external view returns (bytes32);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
@@ -130,7 +133,8 @@ interface ITokenFactory {
         address owner,
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        uint256 initialSupply
     ) external returns (address proxy);
 
     function isSocialToken(address query) external view returns (bool result);
@@ -159,6 +163,15 @@ interface ITokenFactory {
         uint256[] calldata tokenIds,
         uint256[] calldata amounts,
         bytes calldata data,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+
+    function mintSocialToken(
+        address token,
+        address to,
+        uint256 amount,
         uint8 v,
         bytes32 r,
         bytes32 s
