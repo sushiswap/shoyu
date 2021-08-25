@@ -5,7 +5,7 @@ pragma solidity >=0.5.0;
 import "../libraries/Orders.sol";
 
 interface IStrategy {
-    function canExecute(
+    function canClaim(
         uint256 deadline,
         bytes memory params,
         address bidder,

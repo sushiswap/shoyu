@@ -5,7 +5,7 @@ pragma solidity =0.8.3;
 import "../interfaces/IStrategy.sol";
 
 contract FixedPriceSale is IStrategy {
-    function canExecute(
+    function canClaim(
         uint256 deadline,
         bytes memory params,
         address,

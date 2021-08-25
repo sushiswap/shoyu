@@ -26,7 +26,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
-    mapping(bytes32 => bool) public override isCancelled;
+    mapping(bytes32 => bool) public override isCancelledOrClaimed;
     mapping(bytes32 => uint256) public override amountFilled;
 
     function __BaseNFTExchange_init() internal initializer {
@@ -59,7 +59,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         bytes32 hash = order.hash();
         require(bestBid[hash].bidder == address(0), "SHOYU: BID_EXISTS");
 
-        isCancelled[hash] = true;
+        isCancelledOrClaimed[hash] = true;
 
         emit Cancel(hash);
     }
@@ -115,7 +115,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         _validate(askOrder, askHash);
         Signature.verify(askHash, askOrder.signer, askOrder.v, askOrder.r, askOrder.s, DOMAIN_SEPARATOR());
 
-        if (IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
+        if (IStrategy(askOrder.strategy).canClaim(askOrder.deadline, askOrder.params, bidder, bidPrice)) {
             amountFilled[askHash] = _amountFilled + bidAmount;
 
             address recipient = askOrder.recipient;
@@ -128,7 +128,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             if (bidRecipient == address(0)) bidRecipient = bidder;
             _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, bidAmount);
 
-            emit Execute(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
+            emit Claim(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
             return true;
         } else {
             BestBid storage best = bestBid[askHash];
@@ -165,13 +165,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         BestBid memory best = bestBid[askHash];
         require(
-            IStrategy(askOrder.strategy).canExecute(askOrder.deadline, askOrder.params, best.bidder, best.price),
+            IStrategy(askOrder.strategy).canClaim(askOrder.deadline, askOrder.params, best.bidder, best.price),
             "SHOYU: FAILURE"
         );
 
         address recipient = askOrder.recipient;
         if (recipient == address(0)) recipient = askOrder.signer;
 
+        isCancelledOrClaimed[askHash] = true;
         if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
             amountFilled[askHash] = amountFilled[askHash] + best.amount;
 
@@ -181,16 +182,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
             delete bestBid[askHash];
 
-            emit Execute(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
+            emit Claim(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
         } else {
-            isCancelled[askHash] = true;
-
             emit Cancel(askHash);
         }
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
-        require(!isCancelled[askHash], "SHOYU: CANCELLED");
+        require(!isCancelledOrClaimed[askHash], "SHOYU: CANCELLED");
 
         require(askOrder.signer != address(0), "SHOYU: INVALID_MAKER");
         require(askOrder.token != address(0), "SHOYU: INVALID_NFT");

@@ -5,7 +5,7 @@ pragma solidity =0.8.3;
 import "../interfaces/IStrategy.sol";
 
 contract EnglishAuction is IStrategy {
-    function canExecute(
+    function canClaim(
         uint256 deadline,
         bytes memory,
         address,

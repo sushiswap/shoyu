@@ -6,7 +6,7 @@ import "../libraries/Orders.sol";
 
 interface IBaseExchange {
     event Cancel(bytes32 indexed hash);
-    event Execute(
+    event Claim(
         bytes32 indexed hash,
         address bidder,
         uint256 amount,
@@ -36,7 +36,7 @@ interface IBaseExchange {
             uint256 blockNumber
         );
 
-    function isCancelled(bytes32 hash) external view returns (bool);
+    function isCancelledOrClaimed(bytes32 hash) external view returns (bool);
 
     function amountFilled(bytes32 hash) external view returns (uint256);
 
