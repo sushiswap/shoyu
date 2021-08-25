@@ -15,6 +15,10 @@ interface IExchangeProxy {
         address referrer
     );
 
+    function isClaimerWhitelisted(address strategy) external view returns (bool);
+
+    function setClaimerWhitelisted(address claimer, bool whitelisted) external;
+
     function claim(
         address exchange,
         Orders.Ask memory askOrder,
