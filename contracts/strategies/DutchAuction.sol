@@ -9,7 +9,9 @@ contract DutchAuction is IStrategy {
         uint256 deadline,
         bytes memory params,
         address,
-        uint256 bidPrice
+        uint256 bidPrice,
+        uint256,
+        uint256
     ) external view override returns (bool) {
         (uint256 startPrice, uint256 endPrice, uint256 startBlock) = abi.decode(params, (uint256, uint256, uint256));
         require(startPrice > endPrice, "SHOYU: INVALID_PRICE_RANGE");

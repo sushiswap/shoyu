@@ -9,7 +9,9 @@ contract DesignatedSale is IStrategy {
         uint256,
         bytes memory params,
         address bidder,
-        uint256 bidPrice
+        uint256 bidPrice,
+        uint256,
+        uint256
     ) external pure override returns (bool) {
         (uint256 minPrice, address designee) = abi.decode(params, (uint256, address));
         require(designee != address(0), "SHOYU: INVALID_DESIGNEE");

@@ -9,7 +9,9 @@ contract FixedPriceSale is IStrategy {
         uint256 deadline,
         bytes memory params,
         address,
-        uint256 bidPrice
+        uint256 bidPrice,
+        uint256,
+        uint256
     ) external view override returns (bool) {
         uint256 price = abi.decode(params, (uint256));
         require(price > 0, "SHOYU: INVALID_PRICE");

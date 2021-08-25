@@ -9,7 +9,9 @@ interface IStrategy {
         uint256 deadline,
         bytes memory params,
         address bidder,
-        uint256 bidPrice
+        uint256 bidPrice,
+        uint256 bestBidPrice,
+        uint256 bestBidBlock
     ) external view returns (bool);
 
     function canBid(

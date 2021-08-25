@@ -9,9 +9,11 @@ contract EnglishAuction is IStrategy {
         uint256 deadline,
         bytes memory,
         address,
-        uint256
+        uint256,
+        uint256,
+        uint256 bestBidBlock
     ) external view override returns (bool) {
-        return deadline < block.number;
+        return bestBidBlock > 0 && deadline < block.number;
     }
 
     function canBid(
