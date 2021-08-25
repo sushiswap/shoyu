@@ -109,7 +109,6 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     ) internal returns (bool executed) {
         require(canTrade(askOrder.token), "SHOYU: INVALID_EXCHANGE");
         require(bidAmount > 0, "SHOYU: INVALID_AMOUNT");
-        require(block.number <= askOrder.deadline, "SHOYU: EXPIRED");
         uint256 _amountFilled = amountFilled[askHash];
         require(_amountFilled + bidAmount <= askOrder.amount, "SHOYU: SOLD_OUT");
 
