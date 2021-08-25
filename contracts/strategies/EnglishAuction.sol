@@ -5,13 +5,16 @@ pragma solidity =0.8.3;
 import "../interfaces/IStrategy.sol";
 
 contract EnglishAuction is IStrategy {
-    function canExecute(
+    function canClaim(
         uint256 deadline,
         bytes memory,
-        address,
+        address bidder,
+        uint256 bidPrice,
+        address bestBidder,
+        uint256 bestBidPrice,
         uint256
     ) external view override returns (bool) {
-        return deadline < block.number;
+        return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.number;
     }
 
     function canBid(
@@ -19,6 +22,7 @@ contract EnglishAuction is IStrategy {
         bytes memory params,
         address,
         uint256 bidPrice,
+        address,
         uint256 bestBidPrice,
         uint256
     ) external view override returns (bool) {
