@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { solidityPack, toUtf8String } from "ethers/lib/utils";
 
 const { constants } = ethers;
-const { AddressZero } = constants;
+const { AddressZero, HashZero } = constants;
 
 ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR); // turn off warnings
 
@@ -323,13 +323,15 @@ describe("NFT part of NFT721", () => {
         await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 10, royaltyVault.address, 10);
         const nft721_0 = await getNFT721(factory);
 
-        await expect(nft721_0.connect(bob).setTokenURI(0, "https://foo.bar/0.json")).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).setTokenURI(0, "https://foo.bar/0.json")).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
         await nft721_0.connect(alice).setTokenURI(0, "https://foo.bar/0.json");
         await nft721_0.connect(alice).setTokenURI(1, "https://foo.bar/1.json");
 
         expect(await nft721_0.tokenURI(0)).to.be.equal("https://foo.bar/0.json");
         expect(await nft721_0.tokenURI(1)).to.be.equal("https://foo.bar/1.json");
-        
+
         expect(await nft721_0.tokenURI(2)).to.be.equal(await URI721(nft721_0, 2));
         expect(await nft721_0.tokenURI(4)).to.be.equal(await URI721(nft721_0, 4));
         expect(await nft721_0.tokenURI(7)).to.be.equal(await URI721(nft721_0, 7));
@@ -364,35 +366,114 @@ describe("NFT part of NFT721", () => {
         await nft721_0.connect(alice).parkTokenIds(100);
     });
 
-    it("should be that mint/mintBatch function well correctly with parking deploy", async () => {
-        const signers = await ethers.getSigners();
-        const [deployer, alice, bob, carol, royaltyVault] = signers;
-    
-        const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-        const nft721 = (await NFT721Contract.deploy()) as NFT721V0;
-    
-        const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
-        const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
+    it("should be that mint/mintBatch functions work well", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndMintBatch(bob.address, "Name", "Symbol", [0, 2, 4], royaltyVault.address, 10);
+        const nft721_0 = await getNFT721(factory);
+
+        await expect(nft721_0.mint(alice.address, 1, [])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).mint(alice.address, 0, [])).to.be.revertedWith("SHOYU: ALREADY_MINTED");
+        await expect(nft721_0.connect(bob).mint(AddressZero, 1, [])).to.be.revertedWith("SHOYU: INVALID_TO");
+        await expect(nft721_0.connect(bob).mint(factory.address, 1, [])).to.be.revertedWith("SHOYU: INVALID_RECEIVER");
+
+        await nft721_0.connect(bob).mint(alice.address, 1, []); //0,1,2,4 are minted
+
+        await expect(nft721_0.mintBatch(alice.address, [3, 5], [])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).mintBatch(alice.address, [3, 4], [])).to.be.revertedWith(
+            "SHOYU: ALREADY_MINTED"
+        );
+        await expect(nft721_0.connect(bob).mintBatch(AddressZero, [3, 5], [])).to.be.revertedWith("SHOYU: INVALID_TO");
+        await expect(nft721_0.connect(bob).mintBatch(factory.address, [3, 5], [])).to.be.revertedWith(
+            "SHOYU: INVALID_RECEIVER"
+        );
+
+        await nft721_0.connect(bob).mint(alice.address, [3, 5], []); //0,1,2,3,4,5 are minted
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 50, royaltyVault.address, 10);
+        const nft721_1 = await getNFT721(factory); //nothing is minted. 0-49 are parked
+
+        await expect(nft721_1.mint(bob.address, 1, [])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_1.connect(alice).mint(AddressZero, 1, [])).to.be.revertedWith("SHOYU: INVALID_TO");
+        await expect(nft721_1.connect(alice).mint(factory.address, 1, [])).to.be.revertedWith(
+            "SHOYU: INVALID_RECEIVER"
+        );
+
+        await nft721_1.connect(alice).mint(bob.address, 1, []);
+        await nft721_1.connect(alice).mint(bob.address, 50, []); //1,50 are minted. 0-49 are parked
+
+        await expect(nft721_1.mintBatch(bob.address, [3, 5, 7], [])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_1.connect(alice).mintBatch(bob.address, [1, 5, 7], [])).to.be.revertedWith(
+            "SHOYU: ALREADY_MINTED"
+        );
+        await expect(nft721_1.connect(alice).mintBatch(AddressZero, [3, 5, 7], [])).to.be.revertedWith(
+            "SHOYU: INVALID_TO"
+        );
+        await expect(nft721_1.connect(alice).mintBatch(factory.address, [3, 5, 7], [])).to.be.revertedWith(
+            "SHOYU: INVALID_RECEIVER"
+        );
+
+        await nft721_1.connect(alice).mint(bob.address, [3, 5, 7], []); //1,3,5,7,50 are minted. 0-49 are parked
+        await nft721_1.connect(alice).mint(bob.address, [40, 55], []); //1,3,5,7,40,50,55 are minted. 0-49 are parked
+        await nft721_1.connect(alice).mint(bob.address, [80, 100], []); //1,3,5,7,40,50,55,80,100 are minted. 0-49 are parked
     });
 
-    // it.only("should be that mint/mintBatch function well correctly with parking deploy", async () => {
-    //     const { factory, nft721, alice, royaltyVault } = await setupTest();
+    it("should be that burn/burnBatch functions work well", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
 
-    //     await factory.setDeployerWhitelisted(AddressZero, true);
-    //     await factory.upgradeNFT721(nft721.address);
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
 
-    //     await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
-    //     const nft721_0 = await getNFT721(factory);
+        await factory.deployNFT721AndMintBatch(
+            bob.address,
+            "Name",
+            "Symbol",
+            [0, 2, 4, 6, 8, 10],
+            royaltyVault.address,
+            10
+        );
+        const nft721_0 = await getNFT721(factory);
+        await nft721_0.connect(bob).transferFrom(bob.address, alice.address, 6);
+        await nft721_0.connect(bob).transferFrom(bob.address, alice.address, 8);
+        await nft721_0.connect(bob).transferFrom(bob.address, alice.address, 10);
+        //bob : owner & 0,2,4 _  alice : notOwner & 6,8,10
 
-    // });
-    ////////////////////////////
-    // it("should be that default values are set correctly with parking deploy", async () => {
-    //     const { factory, nft721, alice, royaltyVault } = await setupTest();
+        await expect(nft721_0.connect(bob).burn(6, 0, HashZero)).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(alice).burn(4, 0, HashZero)).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft721_0.connect(bob).burn(0, 0, HashZero); //0 is burned
 
-    //     await factory.setDeployerWhitelisted(AddressZero, true);
-    //     await factory.upgradeNFT721(nft721.address);
+        await expect(nft721_0.connect(bob).burn(0, 0, HashZero)).to.be.revertedWith("SHOYU: FORBIDDEN");
 
-    //     await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
-    //     const nft721_0 = await getNFT721(factory);
-    // });
+        await nft721_0.connect(alice).burn(6, 0, HashZero); //0,6 is burned
+
+        //bob : owner & 2,4 _  alice : notOwner & 8,10
+        await expect(nft721_0.connect(bob).burnBatch([2, 3])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).burnBatch([2, 8])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).burnBatch([3, 8])).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).burnBatch([8, 10])).to.be.revertedWith("SHOYU: FORBIDDEN");
+
+        await nft721_0.connect(alice).burnBatch([8, 10]);
+        await nft721_0.connect(bob).burnBatch([2]);
+    });
+});
+
+describe.only("Exchange part of NFT721", () => {
+    beforeEach(async () => {
+        await ethers.provider.send("hardhat_reset", []);
+    });
+    {
+        // const {deployer,protocolVault,operationalVault,factory,nft721,alice,bob,carol,royaltyVault,erc721Mock} = await setupTest();
+    }
+    it("should be ____", async () => {
+        const { factory, nft721, alice, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
+        const nft721_0 = await getNFT721(factory);
+    });
 });
