@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/IExchangeProxy.sol";
 import "./interfaces/IBaseExchange.sol";
+import "./libraries/Signature.sol";
 
 contract ExchangeProxy is Ownable, IExchangeProxy {
     using Orders for Orders.Ask;
@@ -35,6 +36,19 @@ contract ExchangeProxy is Ownable, IExchangeProxy {
         Orders.Ask memory askOrder,
         Orders.Bid memory bidOrder
     ) external override onlyClaimer {
+        bytes32 askHash = askOrder.hash();
+        require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
+        require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
+        require(bidOrder.recipient != address(0), "SHOYU: INVALID_RECIPIENT");
+        Signature.verify(
+            bidOrder.hash(),
+            bidOrder.signer,
+            bidOrder.v,
+            bidOrder.r,
+            bidOrder.s,
+            IBaseExchange(exchange).DOMAIN_SEPARATOR()
+        );
+
         IERC20(askOrder.currency).transferFrom(bidOrder.signer, address(this), bidOrder.amount * bidOrder.price);
         IBaseExchange(exchange).bid(askOrder, bidOrder.amount, bidOrder.price, bidOrder.recipient, bidOrder.referrer);
 
