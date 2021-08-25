@@ -10,6 +10,7 @@ interface IStrategy {
         bytes memory params,
         address bidder,
         uint256 bidPrice,
+        address bestBidder,
         uint256 bestBidPrice,
         uint256 bestBidBlock
     ) external view returns (bool);
@@ -19,6 +20,7 @@ interface IStrategy {
         bytes memory params,
         address bidder,
         uint256 bidPrice,
+        address bestBidder,
         uint256 bestBidPrice,
         uint256 bestBidBlock
     ) external view returns (bool);

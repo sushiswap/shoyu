@@ -122,6 +122,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 askOrder.params,
                 bidder,
                 bidPrice,
+                best.bidder,
                 best.price,
                 best.blockNumber
             )
@@ -147,6 +148,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                     askOrder.params,
                     bidder,
                     bidPrice,
+                    best.bidder,
                     best.price,
                     best.blockNumber
                 )
@@ -179,6 +181,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 askOrder.params,
                 best.bidder,
                 best.price,
+                best.bidder,
                 best.price,
                 best.blockNumber
             ),

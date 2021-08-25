@@ -8,12 +8,13 @@ contract EnglishAuction is IStrategy {
     function canClaim(
         uint256 deadline,
         bytes memory,
-        address,
-        uint256,
-        uint256,
-        uint256 bestBidBlock
+        address bidder,
+        uint256 bidPrice,
+        address bestBidder,
+        uint256 bestBidPrice,
+        uint256
     ) external view override returns (bool) {
-        return bestBidBlock > 0 && deadline < block.number;
+        return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.number;
     }
 
     function canBid(
@@ -21,6 +22,7 @@ contract EnglishAuction is IStrategy {
         bytes memory params,
         address,
         uint256 bidPrice,
+        address,
         uint256 bestBidPrice,
         uint256
     ) external view override returns (bool) {

@@ -10,6 +10,7 @@ contract DutchAuction is IStrategy {
         bytes memory params,
         address,
         uint256 bidPrice,
+        address,
         uint256,
         uint256
     ) external view override returns (bool) {
@@ -28,6 +29,7 @@ contract DutchAuction is IStrategy {
         bytes memory,
         address,
         uint256,
+        address,
         uint256,
         uint256
     ) external pure override returns (bool) {
