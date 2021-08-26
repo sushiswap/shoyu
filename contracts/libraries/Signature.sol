@@ -23,13 +23,13 @@ library Signature {
         // these malleable signatures as well.
         require(
             uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
-            "ECDSA: invalid signature 's' value"
+            "SHOYU: INVALID_SIGNATURE_S_VALUE"
         );
-        require(v == 27 || v == 28, "ECDSA: invalid signature 'v' value");
+        require(v == 27 || v == 28, "SHOYU: INVALID_SIGNATURE_V_VALUE");
 
         // If the signature is valid (and not malleable), return the signer address
         address signer = ecrecover(hash, v, r, s);
-        require(signer != address(0), "ECDSA: invalid signature");
+        require(signer != address(0), "SHOYU: INVALID_SIGNATURE");
 
         return signer;
     }
