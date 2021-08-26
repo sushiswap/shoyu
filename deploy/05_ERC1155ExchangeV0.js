@@ -8,5 +8,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         args: [factory.address],
         log: true,
     });
-    await execute("TokenFactory", { from: deployer, log: true }, "upgradeERC1155Exchange", exchange.address);
+    if (exchange.newlyDeployed) {
+        await execute("TokenFactory", { from: deployer, log: true }, "upgradeERC1155Exchange", exchange.address);
+    }
 };
