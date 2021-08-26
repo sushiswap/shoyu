@@ -208,7 +208,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
-        require(!isCancelledOrClaimed[askHash], "SHOYU: CANCELLED");
+        require(!isCancelledOrClaimed[askHash], "SHOYU: CANCELLED_OR_CLAIMED");
 
         require(askOrder.signer != address(0), "SHOYU: INVALID_MAKER");
         require(askOrder.token != address(0), "SHOYU: INVALID_NFT");

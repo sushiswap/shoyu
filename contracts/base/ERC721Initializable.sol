@@ -153,7 +153,7 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
         uint256 tokenId
     ) public virtual override {
         //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: transfer caller is not owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId), "SHOYU: NOT_APPROVED_NOR_OWNER");
 
         _transfer(from, to, tokenId);
     }
@@ -350,8 +350,8 @@ contract ERC721Initializable is Initializable, ERC165, IERC721, IERC721Metadata 
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(ERC721Initializable.ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
-        require(to != address(0), "ERC721: transfer to the zero address");
+        require(ERC721Initializable.ownerOf(tokenId) == from, "SHOYU: TRANSFER_FORBIDDEN");
+        require(to != address(0), "SHOYU: INVALID_RECIPIENT");
 
         _beforeTokenTransfer(from, to, tokenId);
 
