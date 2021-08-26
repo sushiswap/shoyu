@@ -1,12 +1,13 @@
 import "dotenv/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "@typechain/hardhat";
 import "hardhat-abi-exporter";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "hardhat-spdx-license-identifier";
-import "hardhat-typechain";
 import "hardhat-watcher";
 import "solidity-coverage";
 import "@tenderly/hardhat-tenderly";
@@ -189,6 +190,10 @@ const config: HardhatUserConfig = {
   tenderly: {
     project: process.env.TENDERLY_PROJECT,
     username: process.env.TENDERLY_USERNAME,
+  },
+  typechain: {
+    outDir: "typechain",
+    target: "ethers-v5",
   },
   watcher: {
     compile: {
