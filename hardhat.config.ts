@@ -52,14 +52,17 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
     },
-    alice: {
+    admin: {
       default: 1,
     },
-    bob: {
+    alice: {
       default: 2,
     },
-    carol: {
+    bob: {
       default: 3,
+    },
+    carol: {
+      default: 4,
     },
   },
   networks: {

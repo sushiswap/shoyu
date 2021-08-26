@@ -17,7 +17,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             ethers.constants.AddressZero,
             "",
             "",
-            ethers.constants.AddressZero
+            ethers.constants.AddressZero,
+            0
         );
     }
 };
