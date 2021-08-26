@@ -2,7 +2,9 @@ import "dotenv/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "@typechain/hardhat";
 import "hardhat-abi-exporter";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
@@ -52,14 +54,17 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
     },
-    alice: {
+    admin: {
       default: 1,
     },
-    bob: {
+    alice: {
       default: 2,
     },
-    carol: {
+    bob: {
       default: 3,
+    },
+    carol: {
+      default: 4,
     },
   },
   networks: {
@@ -190,6 +195,10 @@ const config: HardhatUserConfig = {
   tenderly: {
     project: process.env.TENDERLY_PROJECT || "",
     username: process.env.TENDERLY_USERNAME || "",
+  },
+  typechain: {
+    outDir: "typechain",
+    target: "ethers-v5",
   },
   watcher: {
     compile: {
