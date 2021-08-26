@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ITokenFactory.sol";
 import "./interfaces/IBaseNFT721.sol";
 import "./interfaces/IBaseNFT1155.sol";
+import "./interfaces/ISocialToken.sol";
 import "./base/ProxyFactory.sol";
 import "./libraries/Signature.sol";
 
@@ -14,7 +15,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%
     uint8 public constant override MAX_OPERATIONAL_FEE = 50; // 5%
     // keccak256("ParkTokenIds721(address nft,uint256 toTokenId,uint256 nonce)");
-    bytes32 public constant override PARK_TOKEN_IDS_721 =
+    bytes32 public constant override PARK_TOKEN_IDS_721_TYPEHASH =
         0x3fddacac0a7d8b05f741f01ff6becadd9986be8631a2af41a675f365dd74090d;
     // keccak256("MintBatch721(address nft,address to,uint256[] tokenIds,bytes data,uint256 nonce)");
     bytes32 public constant override MINT_BATCH_721_TYPEHASH =
@@ -22,6 +23,9 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     // keccak256("MintBatch1155(address nft,address to,uint256[] tokenIds,uint256[] amounts,bytes data,uint256 nonce)");
     bytes32 public constant override MINT_BATCH_1155_TYPEHASH =
         0xb47ce0f6456fcc2f16b7d6e7b0255eb73822b401248e672a4543c2b3d7183043;
+    // keccak256("MintSocialToken(address token,address to,uint256 amount,uint256 nonce)");
+    bytes32 public constant override MINT_SOCIAL_TOKEN_TYPEHASH =
+        0x8f4bf92e5271f5ec2f59dc3fc74368af0064fb84b40a3de9150dd26c08cda104;
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     uint256 internal immutable _CACHED_CHAIN_ID;
 
@@ -44,8 +48,6 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     // any account can deploy proxies if isDeployerWhitelisted[0x0000000000000000000000000000000000000000] == true
     mapping(address => bool) public override isDeployerWhitelisted;
     mapping(address => bool) public override isStrategyWhitelisted;
-
-    mapping(address => mapping(uint256 => uint256)) public tagNonces;
 
     modifier onlyDeployer {
         require(isDeployerWhitelisted[address(0)] || isDeployerWhitelisted[msg.sender], "SHOYU: FORBIDDEN");
@@ -107,10 +109,12 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         return (_operationalFeeRecipient, _operationalFee);
     }
 
+    // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI721(string memory uri) external override onlyOwner {
         baseURI721 = uri;
     }
 
+    // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI1155(string memory uri) external override onlyOwner {
         baseURI1155 = uri;
     }
@@ -240,6 +244,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT721(address query) external view override returns (bool result) {
+        if(query == address(0)) return false;
         for (uint256 i = _targets721.length; i >= 1; i--) {
             if (_isProxy(_targets721[i - 1], query)) {
                 return true;
@@ -273,6 +278,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
+        if(query == address(0)) return false;
         for (uint256 i = _targets1155.length; i >= 1; i--) {
             if (_isProxy(_targets1155[i - 1], query)) {
                 return true;
@@ -285,20 +291,29 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         address owner,
         string memory name,
         string memory symbol,
-        address dividendToken
+        address dividendToken,
+        uint256 initialSupply
     ) external override onlyDeployer returns (address proxy) {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
 
         bytes memory initData =
-            abi.encodeWithSignature("initialize(address,string,string,address)", owner, name, symbol, dividendToken);
+            abi.encodeWithSignature(
+                "initialize(address,string,string,address,uint256)",
+                owner,
+                name,
+                symbol,
+                dividendToken,
+                initialSupply
+            );
         proxy = _createProxy(_targetsSocialToken[_targetsSocialToken.length - 1], initData);
 
-        emit DeploySocialToken(proxy, owner, name, symbol, dividendToken);
+        emit DeploySocialToken(proxy, owner, name, symbol, dividendToken, initialSupply);
     }
 
     function isSocialToken(address query) external view override returns (bool result) {
+        if(query == address(0)) return false;
         for (uint256 i = _targetsSocialToken.length; i >= 1; i--) {
             if (_isProxy(_targetsSocialToken[i - 1], query)) {
                 return true;
@@ -315,7 +330,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         bytes32 s
     ) external override {
         address owner = IBaseNFT721(nft).owner();
-        bytes32 hash = keccak256(abi.encode(PARK_TOKEN_IDS_721, nft, toTokenId, nonces[owner]++));
+        bytes32 hash = keccak256(abi.encode(PARK_TOKEN_IDS_721_TYPEHASH, nft, toTokenId, nonces[owner]++));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT721(nft).parkTokenIds(toTokenId);
     }
@@ -350,5 +365,19 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
             keccak256(abi.encode(MINT_BATCH_1155_TYPEHASH, nft, to, tokenIds, amounts, data, nonces[owner]++));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
         IBaseNFT1155(nft).mintBatch(to, tokenIds, amounts, data);
+    }
+
+    function mintSocialToken(
+        address token,
+        address to,
+        uint256 amount,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external override {
+        address owner = ISocialToken(token).owner();
+        bytes32 hash = keccak256(abi.encode(MINT_SOCIAL_TOKEN_TYPEHASH, token, to, amount, nonces[owner]++));
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
+        ISocialToken(token).mint(to, amount);
     }
 }
