@@ -1,7 +1,8 @@
-import { TokenFactory, NFT721V0, ERC721Mock } from "../typechain";
+import { TokenFactory, NFT721V0, ERC721Mock, EnglishAuction, DutchAuction, FixedPriceSale, DesignatedSale, ERC20Mock } from "../typechain";
 
-import { sign, convertToHash, domainSeparator, getDigest, getHash } from "./utils/sign-utils";
+import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
 import { ethers } from "hardhat";
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import { expect, assert } from "chai";
 import { solidityPack, toUtf8String } from "ethers/lib/utils";
 
@@ -30,6 +31,9 @@ const setupTest = async () => {
     const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
     const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
 
+    const ERC20MockContract = await ethers.getContractFactory("ERC20Mock");
+    const erc20Mock = (await ERC20MockContract.deploy()) as ERC20Mock;
+
     return {
         deployer,
         protocolVault,
@@ -41,6 +45,7 @@ const setupTest = async () => {
         carol,
         royaltyVault,
         erc721Mock,
+        erc20Mock,
     };
 };
 
@@ -464,16 +469,64 @@ describe.only("Exchange part of NFT721", () => {
     beforeEach(async () => {
         await ethers.provider.send("hardhat_reset", []);
     });
-    {
-        // const {deployer,protocolVault,operationalVault,factory,nft721,alice,bob,carol,royaltyVault,erc721Mock} = await setupTest();
+    function getWallets() {
+        const alice = ethers.Wallet.createRandom();
+        const bob = ethers.Wallet.createRandom();
+        const carol = ethers.Wallet.createRandom();
+        const dan = ethers.Wallet.createRandom();
+        return { alice, bob, carol, dan };
     }
-    it("should be ____", async () => {
-        const { factory, nft721, alice, royaltyVault } = await setupTest();
+    // const {deployer,protocolVault,operationalVault,factory,nft721,alice,bob,carol,royaltyVault,erc721Mock,erc20Mock} = await setupTest();
+    it("should be ____signing_test___", async () => {
+        const { factory, nft721, royaltyVault, erc20Mock } = await setupTest();
+
+        const { alice, bob, carol } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT721(nft721.address);
 
-        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 7, royaltyVault.address, 13);
+        await factory.deployNFT721AndMintBatch(alice.address, "Name", "Symbol", [0, 1, 2], royaltyVault.address, 13);
         const nft721_0 = await getNFT721(factory);
+
+        const EnglishAuction = await ethers.getContractFactory("EnglishAuction");
+        const ea = (await EnglishAuction.deploy()) as EnglishAuction;
+
+        await factory.setStrategyWhitelisted(ea.address, true);
+        const currentBlock = ethers.provider.blockNumber;
+
+        expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
+        const askOrder = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            0,
+            1,
+            ea.address,
+            erc20Mock.address,
+            AddressZero,
+            currentBlock,
+            "0x"
+        );
+        console.log(await nft721_0.isCancelledOrClaimed(askOrder.hash));
+
+        await nft721_0.claim({
+            signer: alice.address,
+            token: nft721_0.address,
+            tokenId: 0,
+            amount: 1,
+            strategy: ea.address,
+            currency: erc20Mock.address,
+            recipient: AddressZero,
+            deadline: currentBlock,
+            params: "0x",
+            v: askOrder.sig.v,
+            r: askOrder.sig.r,
+            s: askOrder.sig.s,
+        });
+
+        // console.log(alice.address);
+        console.log(await nft721_0.isCancelledOrClaimed(askOrder.hash));
     });
 });
