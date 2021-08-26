@@ -187,6 +187,7 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
     ) external override {
         require(block.timestamp <= deadline, "SHOYU: EXPIRED");
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
+        require(spender != owner, "SHOYU: NOT_NECESSARY");
 
         bytes32 hash = keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner], deadline));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
