@@ -724,52 +724,220 @@ describe.only("Exchange part of NFT721", () => {
         ).to.be.revertedWith("SHOYU: BID_EXISTS");
     });
 
-    it("should be that the auction will be canceled if tranfering fees and funds is failed during a claiming process", async () => {
-        const { factory, nft721, royaltyVault, erc20Mock, englishAuction } = await setupTest();
+    // it("should be that the auction will be canceled if tranfering fees and funds is failed during a claiming process", async () => {
+    //     const { factory, nft721, royaltyVault, erc20Mock, englishAuction } = await setupTest();
 
-        const { alice, bob, carol } = getWallets();
+    //     const { alice, bob, carol, dan } = getWallets();
 
-        await factory.setDeployerWhitelisted(AddressZero, true);
-        await factory.upgradeNFT721(nft721.address);
+    //     await factory.setDeployerWhitelisted(AddressZero, true);
+    //     await factory.upgradeNFT721(nft721.address);
 
-        await factory.deployNFT721AndMintBatch(alice.address, "Name", "Symbol", [0, 1, 2], royaltyVault.address, 10);
-        const nft721_0 = await getNFT721(factory);
+    //     await factory.deployNFT721AndMintBatch(alice.address, "Name", "Symbol", [0, 1, 2], royaltyVault.address, 10);
+    //     const nft721_0 = await getNFT721(factory);
+    //     await factory.setStrategyWhitelisted(englishAuction.address, true);
 
-        await factory.setStrategyWhitelisted(englishAuction.address, true);
-        const currentBlock = await getBlock();
-        const deadline0 = currentBlock + 100;
-        expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
-        const askOrder0 = await signAsk(
-            ethers.provider,
-            "Name",
-            nft721_0.address,
-            alice,
-            nft721_0.address,
-            0,
-            1,
-            englishAuction.address,
-            erc20Mock.address,
-            AddressZero,
-            deadline0,
-            "0x"
-        );
-        const askOrder1 = await signAsk(
-            ethers.provider,
-            "Name",
-            nft721_0.address,
-            bob,
-            nft721_0.address,
-            1,
-            1,
-            englishAuction.address,
-            erc20Mock.address,
-            AddressZero,
-            deadline0,
-            "0x"
-        );
+    //     await erc20Mock.mint(bob.address, 10000);
+    //     await erc20Mock.mint(carol.address, 10000);
+    //     await erc20Mock.mint(dan.address, 10000);
 
+    //     await erc20Mock.connect(bob).approve(nft721_0.address, 10000);
+    //     await erc20Mock.connect(carol).approve(nft721_0.address, 10000);
+    //     // await erc20Mock.connect(dan).approve(nft721_0.address, 10000);
 
-    });
+    //     const currentBlock = await getBlock();
+    //     const deadline = currentBlock + 100;
+
+    //     const askOrder0 = await signAsk(
+    //         ethers.provider,
+    //         "Name",
+    //         nft721_0.address,
+    //         alice,
+    //         nft721_0.address,
+    //         0,
+    //         1,
+    //         englishAuction.address,
+    //         erc20Mock.address,
+    //         AddressZero,
+    //         deadline,
+    //         defaultAbiCoder.encode(["uint256"], [50])
+    //     );
+    //     const askOrder1 = await signAsk(
+    //         ethers.provider,
+    //         "Name",
+    //         nft721_0.address,
+    //         alice,
+    //         nft721_0.address,
+    //         1,
+    //         1,
+    //         englishAuction.address,
+    //         erc20Mock.address,
+    //         AddressZero,
+    //         deadline,
+    //         defaultAbiCoder.encode(["uint256"], [50])
+    //     );
+    //     const askOrder2 = await signAsk(
+    //         ethers.provider,
+    //         "Name",
+    //         nft721_0.address,
+    //         alice,
+    //         nft721_0.address,
+    //         2,
+    //         1,
+    //         englishAuction.address,
+    //         erc20Mock.address,
+    //         AddressZero,
+    //         deadline,
+    //         defaultAbiCoder.encode(["uint256"], [50])
+    //     );
+
+    //     await expect(
+    //         nft721_0
+    //             .connect(bob)
+    //             [
+    //                 "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+    //             ](
+    //                 {
+    //                     signer: alice.address,
+    //                     token: nft721_0.address,
+    //                     tokenId: 0,
+    //                     amount: 1,
+    //                     strategy: englishAuction.address,
+    //                     currency: erc20Mock.address,
+    //                     recipient: AddressZero,
+    //                     deadline: deadline,
+    //                     params: defaultAbiCoder.encode(["uint256"], [50]),
+    //                     v: askOrder0.sig.v,
+    //                     r: askOrder0.sig.r,
+    //                     s: askOrder0.sig.s,
+    //                 },
+    //                 1,
+    //                 100,
+    //                 AddressZero,
+    //                 AddressZero
+    //             )
+    //     )
+    //         .to.emit(nft721_0, "Bid")
+    //         .withArgs(askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero);
+
+    //     await expect(
+    //         nft721_0
+    //             .connect(carol)
+    //             [
+    //                 "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+    //             ](
+    //                 {
+    //                     signer: alice.address,
+    //                     token: nft721_0.address,
+    //                     tokenId: 1,
+    //                     amount: 1,
+    //                     strategy: englishAuction.address,
+    //                     currency: erc20Mock.address,
+    //                     recipient: AddressZero,
+    //                     deadline: deadline,
+    //                     params: defaultAbiCoder.encode(["uint256"], [50]),
+    //                     v: askOrder1.sig.v,
+    //                     r: askOrder1.sig.r,
+    //                     s: askOrder1.sig.s,
+    //                 },
+    //                 1,
+    //                 100,
+    //                 AddressZero,
+    //                 AddressZero
+    //             )
+    //     )
+    //         .to.emit(nft721_0, "Bid")
+    //         .withArgs(askOrder1.hash, carol.address, 1, 100, AddressZero, AddressZero);
+
+    //     await expect(
+    //         nft721_0
+    //             .connect(dan)
+    //             [
+    //                 "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+    //             ](
+    //                 {
+    //                     signer: alice.address,
+    //                     token: nft721_0.address,
+    //                     tokenId: 2,
+    //                     amount: 1,
+    //                     strategy: englishAuction.address,
+    //                     currency: erc20Mock.address,
+    //                     recipient: AddressZero,
+    //                     deadline: deadline,
+    //                     params: defaultAbiCoder.encode(["uint256"], [50]),
+    //                     v: askOrder2.sig.v,
+    //                     r: askOrder2.sig.r,
+    //                     s: askOrder2.sig.s,
+    //                 },
+    //                 1,
+    //                 100,
+    //                 AddressZero,
+    //                 AddressZero
+    //             )
+    //     )
+    //         .to.emit(nft721_0, "Bid")
+    //         .withArgs(askOrder2.hash, dan.address, 1, 100, AddressZero, AddressZero);
+
+    //     await mine(100);
+
+    //     //senario1_bob used too much tokens before tokens are claimed, so that he doesn't have enough tokens
+    //     await erc20Mock.connect(bob).transfer(factory.address, 9999);
+    //     await expect(
+    //         nft721_0.claim({
+    //             signer: alice.address,
+    //             token: nft721_0.address,
+    //             tokenId: 0,
+    //             amount: 1,
+    //             strategy: englishAuction.address,
+    //             currency: erc20Mock.address,
+    //             recipient: AddressZero,
+    //             deadline: deadline,
+    //             params: defaultAbiCoder.encode(["uint256"], [50]),
+    //             v: askOrder0.sig.v,
+    //             r: askOrder0.sig.r,
+    //             s: askOrder0.sig.s,
+    //         })
+    //     ).to.emit(nft721_0, "Cancel");
+    //     assert.isTrue(await nft721_0.isCancelledOrClaimed(askOrder0.hash));
+
+    //     //senario2_alice already sent the nft token to another before tokens are claimed
+    //     await nft721_0.connect(alice).transferFrom(alice.address, dan.address, 1);
+    //     await expect(
+    //         nft721_0.claim({
+    //             signer: alice.address,
+    //             token: nft721_0.address,
+    //             tokenId: 1,
+    //             amount: 1,
+    //             strategy: englishAuction.address,
+    //             currency: erc20Mock.address,
+    //             recipient: AddressZero,
+    //             deadline: deadline,
+    //             params: defaultAbiCoder.encode(["uint256"], [50]),
+    //             v: askOrder1.sig.v,
+    //             r: askOrder1.sig.r,
+    //             s: askOrder1.sig.s,
+    //         })
+    //     ).to.emit(nft721_0, "Cancel");
+    //     assert.isTrue(await nft721_0.isCancelledOrClaimed(askOrder1.hash));
+
+    //     //senario3_dan didn't approve tokens to the exchange before tokens are claimed
+    //     await expect(
+    //         nft721_0.claim({
+    //             signer: alice.address,
+    //             token: nft721_0.address,
+    //             tokenId: 2,
+    //             amount: 1,
+    //             strategy: englishAuction.address,
+    //             currency: erc20Mock.address,
+    //             recipient: AddressZero,
+    //             deadline: deadline,
+    //             params: defaultAbiCoder.encode(["uint256"], [50]),
+    //             v: askOrder2.sig.v,
+    //             r: askOrder2.sig.r,
+    //             s: askOrder2.sig.s,
+    //         })
+    //     ).to.emit(nft721_0, "Cancel");
+    //     assert.isTrue(await nft721_0.isCancelledOrClaimed(askOrder2.hash));
+    // });
 
     it("should be that the claim function can be called by anyone", async () => {
         const { factory, nft721, royaltyVault, erc20Mock, englishAuction } = await setupTest();
@@ -1165,7 +1333,7 @@ describe.only("Exchange part of NFT721", () => {
         expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
     });
 
-    it("should be that fees are transfered properly", async () => {
+    it.only("should be that fees are transfered properly", async () => {
         const {
             factory,
             operationalVault,
