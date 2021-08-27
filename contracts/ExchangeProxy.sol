@@ -49,7 +49,10 @@ contract ExchangeProxy is Ownable, IExchangeProxy {
             IBaseExchange(exchange).DOMAIN_SEPARATOR()
         );
 
-        IERC20(askOrder.currency).transferFrom(bidOrder.signer, address(this), bidOrder.amount * bidOrder.price);
+        uint256 totalPrice = bidOrder.amount * bidOrder.price;
+
+        IERC20(askOrder.currency).transferFrom(bidOrder.signer, address(this), totalPrice);
+        IERC20(askOrder.currency).approve(exchange, totalPrice);
         IBaseExchange(exchange).bid(askOrder, bidOrder.amount, bidOrder.price, bidOrder.recipient, bidOrder.referrer);
 
         emit Claim(
