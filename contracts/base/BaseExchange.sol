@@ -192,19 +192,19 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         if (recipient == address(0)) recipient = askOrder.signer;
 
         isCancelledOrClaimed[askHash] = true;
-        if (_transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount)) {
-            amountFilled[askHash] = amountFilled[askHash] + best.amount;
+        require(
+            _transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount),
+            "SHOYU: FAILED_TO_TRANSFER_FUNDS"
+        );
+        amountFilled[askHash] = amountFilled[askHash] + best.amount;
 
-            address bidRecipient = best.recipient;
-            if (bidRecipient == address(0)) bidRecipient = best.bidder;
-            _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, best.amount);
+        address bidRecipient = best.recipient;
+        if (bidRecipient == address(0)) bidRecipient = best.bidder;
+        _transfer(askOrder.token, askOrder.signer, bidRecipient, askOrder.tokenId, best.amount);
 
-            delete bestBid[askHash];
+        delete bestBid[askHash];
 
-            emit Claim(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
-        } else {
-            emit Cancel(askHash);
-        }
+        emit Claim(askHash, best.bidder, best.amount, best.price, bidRecipient, best.referrer);
     }
 
     function _validate(Orders.Ask memory askOrder, bytes32 askHash) internal view {
