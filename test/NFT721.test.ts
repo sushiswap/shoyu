@@ -517,8 +517,35 @@ describe.only("Exchange part of NFT721", () => {
             "test test test test test test test test test test test junk",
             "m/44'/60'/0'/0/7"
         ).connect(ethers.provider);
+        const erin = Wallet.fromMnemonic(
+            "test test test test test test test test test test test junk",
+            "m/44'/60'/0'/0/8"
+        ).connect(ethers.provider);
+        const frank = Wallet.fromMnemonic(
+            "test test test test test test test test test test test junk",
+            "m/44'/60'/0'/0/9"
+        ).connect(ethers.provider);
 
-        return { alice, bob, carol, dan };
+        return { alice, bob, carol, dan, erin, frank };
+    }
+    function fees(price: BigNumberish, protocol: number, operator: number, royalty: number): BigNumberish[] {
+        assert.isBelow(protocol, 255);
+        assert.isBelow(operator, 255);
+        assert.isBelow(royalty, 255);
+
+        const fee: BigNumberish[] = [];
+
+        const p = BigNumber.from(price).mul(protocol).div(1000);
+        const o = BigNumber.from(price).mul(operator).div(1000);
+        const r = BigNumber.from(price).sub(p.add(o)).mul(royalty).div(1000);
+        const seller = BigNumber.from(price).sub(p.add(o).add(r));
+
+        fee.push(p);
+        fee.push(o);
+        fee.push(r);
+        fee.push(seller);
+
+        return fee;
     }
     // const {deployer,protocolVault,operationalVault,factory,nft721,royaltyVault,erc721Mock,erc20Mock,englishAuction,dutchAuction,fixedPriceSale,designatedSale,exchangeProxy} = await setupTest();
 
@@ -903,6 +930,7 @@ describe.only("Exchange part of NFT721", () => {
                 s: askOrder2.sig.s,
             })
         ).to.emit(nft721_0, "Claim");
+        expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(AddressZero);
         expect(await nft721_0.ownerOf(2)).to.be.equal(dan.address);
         expect(await erc20Mock.balanceOf(dan.address)).to.be.equal(9200);
     });
@@ -1088,6 +1116,239 @@ describe.only("Exchange part of NFT721", () => {
         ).to.emit(nft721_0, "Cancel");
         assert.isTrue(await nft721_0.isCancelledOrClaimed(askOrder0.hash));
         expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
+    });
+
+    it.only("should be that fees are transfered properly", async () => {
+        const {
+            factory,
+            operationalVault,
+            protocolVault,
+            nft721,
+            royaltyVault,
+            erc20Mock,
+            englishAuction,
+            fixedPriceSale,
+            designatedSale,
+            exchangeProxy,
+        } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank } = getWallets();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndMintBatch(alice.address, "Name", "Symbol", [0, 1, 2, 3], royaltyVault.address, 10);
+        const nft721_0 = await getNFT721(factory);
+
+        await factory.setStrategyWhitelisted(englishAuction.address, true);
+        await factory.setStrategyWhitelisted(fixedPriceSale.address, true);
+        await factory.setStrategyWhitelisted(designatedSale.address, true);
+        const currentBlock = await getBlock();
+        const deadline = currentBlock + 100;
+
+        await erc20Mock.mint(bob.address, 10000000);
+        await erc20Mock.mint(carol.address, 10000000);
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.mint(erin.address, 10000000);
+        await erc20Mock.connect(bob).approve(nft721_0.address, 10000000);
+        await erc20Mock.connect(carol).approve(nft721_0.address, 10000000);
+        await erc20Mock.connect(dan).approve(nft721_0.address, 10000000);
+        await erc20Mock.connect(erin).approve(nft721_0.address, 10000000);
+
+        //protocol 25 operator 5 royalty 10
+        const askOrder0 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            0,
+            1,
+            englishAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [50])
+        );
+        const askOrder1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            1,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [12345])
+        );
+        const askOrder2 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            2,
+            1,
+            designatedSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address])
+        );
+        const askOrder3 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            3,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [15000])
+        );
+
+        await expect(
+            nft721_0
+                .connect(bob)
+                [
+                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+                ](
+                    {
+                        signer: alice.address,
+                        token: nft721_0.address,
+                        tokenId: 0,
+                        amount: 1,
+                        strategy: englishAuction.address,
+                        currency: erc20Mock.address,
+                        recipient: AddressZero,
+                        deadline: deadline,
+                        params: defaultAbiCoder.encode(["uint256"], [50]),
+                        v: askOrder0.sig.v,
+                        r: askOrder0.sig.r,
+                        s: askOrder0.sig.s,
+                    },
+                    1,
+                    100,
+                    AddressZero,
+                    AddressZero
+                )
+        )
+            .to.emit(nft721_0, "Bid")
+            .withArgs(askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero);
+
+        const fees0 = fees(12345, 25, 5, 10);
+        await expect(() =>
+            nft721_0
+                .connect(carol)
+                [
+                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+                ](
+                    {
+                        signer: alice.address,
+                        token: nft721_0.address,
+                        tokenId: 1,
+                        amount: 1,
+                        strategy: fixedPriceSale.address,
+                        currency: erc20Mock.address,
+                        recipient: AddressZero,
+                        deadline: deadline,
+                        params: defaultAbiCoder.encode(["uint256"], [12345]),
+                        v: askOrder1.sig.v,
+                        r: askOrder1.sig.r,
+                        s: askOrder1.sig.s,
+                    },
+                    1,
+                    12345,
+                    AddressZero,
+                    AddressZero
+                )
+        ).to.changeTokenBalances(
+            erc20Mock,
+            [carol, protocolVault, operationalVault, royaltyVault, alice],
+            [-12345, fees0[0], fees0[1], fees0[2], fees0[3]]
+        );
+
+        await erc20Mock.connect(dan).approve(exchangeProxy.address, 10000000);
+        await exchangeProxy.setClaimerWhitelisted(frank.address, true);
+        const bidOrder2 = await signBid(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            askOrder2.hash,
+            dan,
+            1,
+            31313,
+            dan.address,
+            AddressZero
+        );
+        const fees1 = fees(31313, 25, 5, 10);
+        await expect(() =>
+            exchangeProxy.connect(frank).claim(
+                nft721_0.address,
+                {
+                    signer: alice.address,
+                    token: nft721_0.address,
+                    tokenId: 2,
+                    amount: 1,
+                    strategy: designatedSale.address,
+                    currency: erc20Mock.address,
+                    recipient: AddressZero,
+                    deadline: deadline,
+                    params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
+                    v: askOrder2.sig.v,
+                    r: askOrder2.sig.r,
+                    s: askOrder2.sig.s,
+                },
+                {
+                    askHash: askOrder2.hash,
+                    signer: dan.address,
+                    amount: 1,
+                    price: 31313,
+                    recipient: dan.address,
+                    referrer: AddressZero,
+                    v: bidOrder2.sig.v,
+                    r: bidOrder2.sig.r,
+                    s: bidOrder2.sig.s,
+                }
+            )
+        ).to.changeTokenBalances(
+            erc20Mock,
+            [dan, protocolVault, operationalVault, royaltyVault, alice, frank, exchangeProxy],
+            [-31313, fees1[0], fees1[1], fees1[2], fees1[3], 0, 0]
+        );
+
+        //protocol 12345*25/1000 operator 12345*5/1000 royalty 12345*10/1000
+    });
+
+    it("should be that parked tokens are minted automatically when they are claimed", async () => {
+        const {
+            factory,
+            operationalVault,
+            protocolVault,
+            nft721,
+            royaltyVault,
+            erc20Mock,
+            englishAuction,
+        } = await setupTest();
+
+        const { alice, bob, carol, dan } = getWallets();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 50, royaltyVault.address, 10);
+        const nft721_0 = await getNFT721(factory);
+
+        await factory.setStrategyWhitelisted(englishAuction.address, true);
+        const currentBlock = await getBlock();
+
+        //protocol 25 operator 5 royalty 10
     });
 
     // it("should be ____signing_test___", async () => {
