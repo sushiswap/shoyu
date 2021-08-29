@@ -8,9 +8,10 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "./IOwnable.sol";
 
 interface IBaseNFT721 is IERC721, IERC721Metadata, IOwnable {
-    event Burn(uint256 indexed tokenId, uint256 indexed label, bytes32 data);
-
+    event SetTokenURI(uint256 indexed tokenId, string uri);
+    event SetBaseURI(string uri);
     event ParkTokenIds(uint256 toTokenId);
+    event Burn(uint256 indexed tokenId, uint256 indexed label, bytes32 data);
 
     function PERMIT_TYPEHASH() external view returns (bytes32);
 
