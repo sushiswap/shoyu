@@ -14,7 +14,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             "SocialTokenV0",
             { from: deployer, log: true },
             "initialize",
-            ethers.constants.AddressZero,
+            deployer,
             "",
             "",
             ethers.constants.AddressZero,
