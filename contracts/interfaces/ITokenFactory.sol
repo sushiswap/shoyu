@@ -3,6 +3,13 @@
 pragma solidity >=0.5.0;
 
 interface ITokenFactory {
+    event SetBaseURI721(string uri);
+    event SetBaseURI1155(string uri);
+    event SetProtocolFeeRecipient(address recipient);
+    event SetOperationalFee(uint8 fee);
+    event SetOperationalFeeRecipient(address recipient);
+    event SetDeployerWhitelisted(address deployer, bool whitelisted);
+    event SetStrategyWhitelisted(address strategy, bool whitelisted);
     event UpgradeNFT721(address newTarget);
     event UpgradeNFT1155(address newTarget);
     event UpgradeSocialToken(address newTarget);

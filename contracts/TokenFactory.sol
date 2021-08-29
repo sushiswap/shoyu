@@ -112,11 +112,15 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI721(string memory uri) external override onlyOwner {
         baseURI721 = uri;
+
+        emit SetBaseURI721(uri);
     }
 
     // This function should be called with a proper param by a multi-sig `owner`
     function setBaseURI1155(string memory uri) external override onlyOwner {
         baseURI1155 = uri;
+
+        emit SetBaseURI1155(uri);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
@@ -124,6 +128,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(protocolFeeRecipient != address(0), "SHOYU: INVALID_FEE_RECIPIENT");
 
         _protocolFeeRecipient = protocolFeeRecipient;
+
+        emit SetProtocolFeeRecipient(protocolFeeRecipient);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
@@ -131,6 +137,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(operationalFeeRecipient != address(0), "SHOYU: INVALID_RECIPIENT");
 
         _operationalFeeRecipient = operationalFeeRecipient;
+
+        emit SetOperationalFeeRecipient(operationalFeeRecipient);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
@@ -138,11 +146,15 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(operationalFee <= MAX_OPERATIONAL_FEE, "SHOYU: INVALID_FEE");
 
         _operationalFee = operationalFee;
+
+        emit SetOperationalFee(operationalFee);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
     function setDeployerWhitelisted(address deployer, bool whitelisted) external override onlyOwner {
         isDeployerWhitelisted[deployer] = whitelisted;
+
+        emit SetDeployerWhitelisted(deployer, whitelisted);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
@@ -150,6 +162,8 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(strategy != address(0), "SHOYU: INVALID_ADDRESS");
 
         isStrategyWhitelisted[strategy] = whitelisted;
+
+        emit SetStrategyWhitelisted(strategy, whitelisted);
     }
 
     // This function should be called by a multi-sig `owner`, not an EOA
@@ -244,7 +258,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT721(address query) external view override returns (bool result) {
-        if(query == address(0)) return false;
+        if (query == address(0)) return false;
         for (uint256 i = _targets721.length; i >= 1; i--) {
             if (_isProxy(_targets721[i - 1], query)) {
                 return true;
@@ -278,7 +292,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isNFT1155(address query) external view override returns (bool result) {
-        if(query == address(0)) return false;
+        if (query == address(0)) return false;
         for (uint256 i = _targets1155.length; i >= 1; i--) {
             if (_isProxy(_targets1155[i - 1], query)) {
                 return true;
@@ -313,7 +327,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     }
 
     function isSocialToken(address query) external view override returns (bool result) {
-        if(query == address(0)) return false;
+        if (query == address(0)) return false;
         for (uint256 i = _targetsSocialToken.length; i >= 1; i--) {
             if (_isProxy(_targetsSocialToken[i - 1], query)) {
                 return true;
