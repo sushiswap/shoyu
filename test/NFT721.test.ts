@@ -547,7 +547,6 @@ describe("Exchange part of NFT721", () => {
 
         return fee;
     }
-    // const {deployer,protocolVault,operationalVault,factory,nft721,royaltyVault,erc721Mock,erc20Mock,englishAuction,dutchAuction,fixedPriceSale,designatedSale,exchangeProxy} = await setupTest();
 
     it("should be that the cancel function works well", async () => {
         const { factory, nft721, royaltyVault, erc20Mock, englishAuction } = await setupTest();
@@ -2460,7 +2459,7 @@ describe("Exchange part of NFT721", () => {
         ).to.be.revertedWith("SHOYU: FAILURE");
     });
 
-    it.only("should be that bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) function works well", async () => {
+    it("should be that bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) function works well", async () => {
         const {
             factory,
             nft721,
@@ -2733,5 +2732,154 @@ describe("Exchange part of NFT721", () => {
         expect((await nft721_0.bestBid(askOrder0.hash))[4]).to.be.equal(AddressZero);
         expect((await nft721_0.bestBid(askOrder0.hash))[5]).to.be.equal(await ethers.provider.getBlockNumber());
     });
-    //different recepient test
+
+    it("should be that fees and nft go to receipients if they are set in orders", async () => {
+        const {
+            factory,
+            operationalVault,
+            protocolVault,
+            nft721,
+            royaltyVault,
+            erc20Mock,
+            englishAuction,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank } = getWallets();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndMintBatch(alice.address, "Name", "Symbol", [0, 1, 2, 3], royaltyVault.address, 10);
+        const nft721_0 = await getNFT721(factory);
+
+        await factory.setStrategyWhitelisted(englishAuction.address, true);
+        await factory.setStrategyWhitelisted(fixedPriceSale.address, true);
+        const currentBlock = await getBlock();
+        const deadline = currentBlock + 100;
+
+        await erc20Mock.mint(bob.address, 10000000);
+        await erc20Mock.mint(carol.address, 10000000);
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.connect(bob).approve(nft721_0.address, 10000000);
+        await erc20Mock.connect(carol).approve(nft721_0.address, 10000000);
+        await erc20Mock.connect(dan).approve(nft721_0.address, 10000000);
+
+        //protocol 25 operator 5 royalty 10
+        const askOrder0 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            0,
+            1,
+            englishAuction.address,
+            erc20Mock.address,
+            erin.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [50])
+        );
+        const askOrder1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            nft721_0.address,
+            1,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            frank.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [12345])
+        );
+
+        await expect(
+            nft721_0
+                .connect(bob)
+                [
+                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+                ](
+                    {
+                        signer: alice.address,
+                        token: nft721_0.address,
+                        tokenId: 0,
+                        amount: 1,
+                        strategy: englishAuction.address,
+                        currency: erc20Mock.address,
+                        recipient: erin.address,
+                        deadline: deadline,
+                        params: defaultAbiCoder.encode(["uint256"], [50]),
+                        v: askOrder0.sig.v,
+                        r: askOrder0.sig.r,
+                        s: askOrder0.sig.s,
+                    },
+                    1,
+                    100,
+                    dan.address,
+                    AddressZero
+                )
+        )
+            .to.emit(nft721_0, "Bid")
+            .withArgs(askOrder0.hash, bob.address, 1, 100, dan.address, AddressZero);
+        const fees0 = fees(12345, 25, 5, 10);
+
+        await expect(() =>
+            nft721_0
+                .connect(carol)
+                [
+                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+                ](
+                    {
+                        signer: alice.address,
+                        token: nft721_0.address,
+                        tokenId: 1,
+                        amount: 1,
+                        strategy: fixedPriceSale.address,
+                        currency: erc20Mock.address,
+                        recipient: frank.address,
+                        deadline: deadline,
+                        params: defaultAbiCoder.encode(["uint256"], [12345]),
+                        v: askOrder1.sig.v,
+                        r: askOrder1.sig.r,
+                        s: askOrder1.sig.s,
+                    },
+                    1,
+                    12345,
+                    bob.address,
+                    AddressZero
+                )
+        ).to.changeTokenBalances(
+            erc20Mock,
+            [carol, protocolVault, operationalVault, royaltyVault, frank, alice],
+            [-12345, fees0[0], fees0[1], fees0[2], fees0[3], 0]
+        );
+        expect(await nft721_0.ownerOf(1)).to.be.equal(bob.address);
+
+        await mine(100);
+
+        const fees1 = fees(100, 25, 5, 10);
+        await expect(() =>
+            nft721_0.claim({
+                signer: alice.address,
+                token: nft721_0.address,
+                tokenId: 0,
+                amount: 1,
+                strategy: englishAuction.address,
+                currency: erc20Mock.address,
+                recipient: erin.address,
+                deadline: deadline,
+                params: defaultAbiCoder.encode(["uint256"], [50]),
+                v: askOrder0.sig.v,
+                r: askOrder0.sig.r,
+                s: askOrder0.sig.s,
+            })
+        ).to.changeTokenBalances(
+            erc20Mock,
+            [bob, protocolVault, operationalVault, royaltyVault, erin, alice],
+            [-100, fees1[0], fees1[1], fees1[2], fees1[3], 0]
+        );
+        expect(await nft721_0.ownerOf(0)).to.be.equal(dan.address);
+    });
 });
