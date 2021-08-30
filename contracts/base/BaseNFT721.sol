@@ -99,10 +99,14 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
 
     function setTokenURI(uint256 id, string memory newURI) external override onlyOwner {
         _uris[id] = newURI;
+
+        emit SetTokenURI(id, newURI);
     }
 
     function setBaseURI(string memory uri) external override onlyOwner {
         __baseURI = uri;
+
+        emit SetBaseURI(uri);
     }
 
     function parkTokenIds(uint256 toTokenId) external override {

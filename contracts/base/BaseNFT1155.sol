@@ -91,10 +91,14 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
 
     function setURI(uint256 id, string memory newURI) external override onlyOwner {
         _uris[id] = newURI;
+
+        emit SetURI(id, newURI);
     }
 
     function setBaseURI(string memory baseURI) external override onlyOwner {
         _baseURI = baseURI;
+
+        emit SetBaseURI(baseURI);
     }
 
     function mint(
