@@ -1862,7 +1862,7 @@ describe("Exchange part of NFT721", () => {
         ).to.be.revertedWith("SHOYU: INVALID_EXCHANGE");
     });
 
-    it("should be that claimed orders can be used again even if it's back to an initial owner", async () => {
+    it("should be that claimed orders can't be used again even if it's back to the initial owner", async () => {
         const {
             factory,
             nft721,
