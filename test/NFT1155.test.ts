@@ -13,7 +13,7 @@ import {
 import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
 import { bid1, bid2 } from "./utils/bid_utils";
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike, Wallet } from "ethers";
+import { BigNumber, BigNumberish, BytesLike, Wallet, Contract } from "ethers";
 import { expect, assert } from "chai";
 import { solidityPack, toUtf8String, defaultAbiCoder } from "ethers/lib/utils";
 import { getBlock, mine } from "./utils/blocks";
@@ -139,7 +139,7 @@ describe("NFT part of NFT1155", () => {
         await factory.deployNFT1155AndMintBatch(artist.address, [0, 1, 2], [5, 6, 7], royaltyVault.address, 10);
         const nft1155_0 = await getNFT1155(factory);
 
-        const currentTime = Math.floor(+new Date() / 1000);
+        const currentTime = Math.floor(new Date().getTime() / 1000);
         let deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
@@ -364,7 +364,7 @@ describe("NFT part of NFT1155", () => {
     });
 });
 
-describe.only("Exchange part of NFT1155", () => {
+describe("Exchange part of NFT1155", () => {
     beforeEach(async () => {
         await ethers.provider.send("hardhat_reset", []);
     });
@@ -417,6 +417,14 @@ describe.only("Exchange part of NFT1155", () => {
     }
     function name(contract: NFT1155V0): string {
         return contract.address.toLowerCase();
+    }
+    async function checkEvent(contract: Contract, eventName: string, args: any[]) {
+        const events: any = await contract.queryFilter(contract.filters[eventName](), "latest");
+        const length = events[0].args.length;
+        expect(length).to.be.gt(0);
+        for (let i = 0; i < length; i++) {
+            assert.isTrue(args[i] == events[0].args[i]);
+        }
     }
 
     it("should be that the cancel function works well", async () => {
@@ -799,7 +807,7 @@ describe.only("Exchange part of NFT1155", () => {
         );
     });
 
-    it.only("should be that fullfilled orders can't be used again", async () => {
+    it("should be that unfullfilled orders can be bidded again but fulltilled orders can't be bidded again", async () => {
         const {
             factory,
             nft1155,
@@ -878,14 +886,12 @@ describe.only("Exchange part of NFT1155", () => {
             deadline,
             defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address])
         );
-console.log(askOrder1);
-        await expect(bid2(nft1155_0, carol, askOrder1.order, 9, 990, AddressZero))
-            .to.emit(nft1155_0, "Claim")
-            .withArgs(askOrder1.hash, carol.address, 9, 990, carol.address, AddressZero);
 
-        await expect(bid2(nft1155_0, dan, askOrder2.order, 9, 100, AddressZero))
-            .to.emit(nft1155_0, "Claim")
-            .withArgs(askOrder2.hash, dan.address, 9, 100, dan.address, AddressZero);
+        await bid2(nft1155_0, carol, askOrder1.order, 9, 990, AddressZero);
+        await checkEvent(nft1155_0, "Claim", [askOrder1.hash, carol.address, 9, 990, carol.address, AddressZero]);
+
+        await bid2(nft1155_0, dan, askOrder2.order, 9, 100, AddressZero);
+        await checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 9, 100, dan.address, AddressZero]);
 
         await erc20Mock.connect(dan).approve(exchangeProxy.address, 10000);
         await exchangeProxy.setClaimerWhitelisted(frank.address, true);
@@ -901,18 +907,18 @@ console.log(askOrder1);
             AddressZero
         );
         await exchangeProxy.connect(frank).claim(nft1155_0.address, askOrder3.order, bidOrder3.order);
+        await checkEvent(nft1155_0, "Claim", [askOrder3.hash, exchangeProxy.address, 9, 101, dan.address, AddressZero]);
 
         await expect(bid2(nft1155_0, carol, askOrder1.order, 9, 999, AddressZero)).to.be.revertedWith(
             "SHOYU: SOLD_OUT"
         );
         await expect(bid2(nft1155_0, dan, askOrder2.order, 9, 100, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
 
-        await expect(bid2(nft1155_0, carol, askOrder1.order, 1, 990, AddressZero))
-            .to.emit(nft1155_0, "Claim")
-            .withArgs(askOrder1.hash, carol.address, 1, 990, carol.address, AddressZero);
-        await expect(bid2(nft1155_0, dan, askOrder2.order, 1, 100, AddressZero))
-            .to.emit(nft1155_0, "Claim")
-            .withArgs(askOrder2.hash, dan.address, 1, 100, dan.address, AddressZero);
+        await bid2(nft1155_0, carol, askOrder1.order, 1, 990, AddressZero);
+        await checkEvent(nft1155_0, "Claim", [askOrder1.hash, carol.address, 1, 990, carol.address, AddressZero]);
+
+        await bid2(nft1155_0, dan, askOrder2.order, 1, 100, AddressZero);
+        await checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 1, 100, dan.address, AddressZero]);
 
         await expect(
             exchangeProxy.connect(frank).claim(nft1155_0.address, askOrder3.order, bidOrder3.order)
@@ -935,6 +941,7 @@ console.log(askOrder1);
             AddressZero
         );
         await exchangeProxy.connect(frank).claim(nft1155_0.address, askOrder3.order, bidOrder3_.order);
+        await checkEvent(nft1155_0, "Claim", [askOrder3.hash, exchangeProxy.address, 1, 131, dan.address, AddressZero]);
     });
 
     it("should be that BestBid is replaced if someone bid with higher price", async () => {

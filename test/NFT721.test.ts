@@ -201,7 +201,7 @@ describe("NFT part of NFT721", () => {
         await factory.deployNFT721AndMintBatch(artist.address, "Name", "Symbol", [0, 1, 2], royaltyVault.address, 10);
         const nft721_0 = await getNFT721(factory);
 
-        const currentTime = Math.floor(+new Date() / 1000);
+        const currentTime = Math.floor((new Date()).getTime() / 1000);
         let deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
