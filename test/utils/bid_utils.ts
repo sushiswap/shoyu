@@ -5,7 +5,7 @@ export async function bid1(exchange: Contract, txSigner: Wallet, askOrder: AskOr
     await exchange
         .connect(txSigner)
         [
-            "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
+            "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"
         ](askOrder, bidOrder);
 }
 
