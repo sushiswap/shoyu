@@ -3,10 +3,9 @@
 pragma solidity >=0.5.0;
 
 import "./IDividendPayingERC20.sol";
-import "./IBaseExchange.sol";
 import "./IOwnable.sol";
 
-interface ISocialToken is IDividendPayingERC20, IBaseExchange, IOwnable {
+interface ISocialToken is IDividendPayingERC20, IOwnable {
     event Burn(uint256 amount, uint256 indexed label, bytes32 data);
 
     function initialize(
@@ -16,6 +15,10 @@ interface ISocialToken is IDividendPayingERC20, IBaseExchange, IOwnable {
         address dividendToken,
         uint256 initialSupply
     ) external;
+
+    function DOMAIN_SEPARATOR() external view returns (bytes32);
+
+    function factory() external view returns (address);
 
     function mint(address account, uint256 value) external;
 

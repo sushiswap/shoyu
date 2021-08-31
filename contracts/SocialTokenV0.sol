@@ -3,11 +3,10 @@
 pragma solidity =0.8.3;
 
 import "./base/DividendPayingERC20.sol";
-import "./base/BaseExchange.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
 
-contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializable, ISocialToken {
+contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToken {
     bytes32 internal _DOMAIN_SEPARATOR;
     uint256 internal _CACHED_CHAIN_ID;
     address internal _factory;
@@ -37,7 +36,7 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
         );
     }
 
-    function DOMAIN_SEPARATOR() public view override(BaseExchange, IBaseExchange) returns (bytes32) {
+    function DOMAIN_SEPARATOR() public view override returns (bytes32) {
         bytes32 domainSeparator;
         if (_CACHED_CHAIN_ID == block.chainid) domainSeparator = _DOMAIN_SEPARATOR;
         else {
@@ -55,18 +54,8 @@ contract SocialTokenV0 is DividendPayingERC20, BaseExchange, OwnableInitializabl
         return domainSeparator;
     }
 
-    function factory() public view override(BaseExchange, IBaseExchange) returns (address) {
+    function factory() public view override returns (address) {
         return _factory;
-    }
-
-    function _transfer(
-        address,
-        address from,
-        address to,
-        uint256,
-        uint256 amount
-    ) internal override {
-        _transfer(from, to, amount);
     }
 
     function mint(address account, uint256 value) external override {
