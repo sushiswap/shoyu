@@ -150,10 +150,8 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
         require(spender != owner, "SHOYU: NOT_NECESSARY");
 
-        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner], deadline));
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, nonces[owner]++, deadline));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-
-        nonces[owner] += 1;
 
         _setApprovalForAll(owner, spender, true);
     }

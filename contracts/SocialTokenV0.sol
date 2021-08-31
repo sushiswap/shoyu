@@ -93,10 +93,8 @@ contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToke
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
         require(spender != owner, "SHOYU: NOT_NECESSARY");
 
-        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner], deadline));
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-
-        nonces[owner] += 1;
 
         _approve(owner, spender, value);
     }
