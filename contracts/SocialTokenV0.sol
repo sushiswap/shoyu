@@ -5,11 +5,17 @@ pragma solidity =0.8.3;
 import "./base/DividendPayingERC20.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
+import "./libraries/Signature.sol";
 
 contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToken {
+    // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 public constant override PERMIT_TYPEHASH =
+        0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     bytes32 internal _DOMAIN_SEPARATOR;
     uint256 internal _CACHED_CHAIN_ID;
     address internal _factory;
+
+    mapping(address => uint256) public override nonces;
 
     function initialize(
         address _owner,
@@ -72,5 +78,26 @@ contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToke
         _burn(msg.sender, value);
 
         emit Burn(value, label, data);
+    }
+
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external override {
+        require(block.timestamp <= deadline, "SHOYU: EXPIRED");
+        require(owner != address(0), "SHOYU: INVALID_ADDRESS");
+        require(spender != owner, "SHOYU: NOT_NECESSARY");
+
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner], deadline));
+        Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
+
+        nonces[owner] += 1;
+
+        _approve(owner, spender, value);
     }
 }
