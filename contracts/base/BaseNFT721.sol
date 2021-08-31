@@ -174,9 +174,8 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         require(owner != address(0), "SHOYU: INVALID_TOKENID");
         require(spender != owner, "SHOYU: NOT_NECESSARY");
 
-        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonces[tokenId], deadline));
+        bytes32 hash = keccak256(abi.encode(PERMIT_TYPEHASH, spender, tokenId, nonces[tokenId]++, deadline));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-        nonces[tokenId] += 1;
 
         _approve(spender, tokenId);
     }
@@ -193,9 +192,8 @@ abstract contract BaseNFT721 is ERC721Initializable, OwnableInitializable, IBase
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
         require(spender != owner, "SHOYU: NOT_NECESSARY");
 
-        bytes32 hash = keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner], deadline));
+        bytes32 hash = keccak256(abi.encode(PERMIT_ALL_TYPEHASH, owner, spender, noncesForAll[owner]++, deadline));
         Signature.verify(hash, owner, v, r, s, DOMAIN_SEPARATOR());
-        noncesForAll[owner] += 1;
 
         _setApprovalForAll(owner, spender, true);
     }
