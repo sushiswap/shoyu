@@ -3,6 +3,33 @@ import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes, _TypedDat
 import { getChainId, RSV, signData } from "./rpc";
 // import { ecsign } from "ethereumjs-util";
 
+export interface AskOrder {
+    signer: string;
+    token: string;
+    tokenId: BigNumberish;
+    amount: BigNumberish;
+    strategy: string;
+    currency: string;
+    recipient: string;
+    deadline: BigNumberish;
+    params: BytesLike;
+    v: BigNumberish;
+    r: BytesLike;
+    s: BytesLike;
+}
+
+export interface BidOrder {
+    askHash: BytesLike;
+    signer: string;
+    amount: BigNumberish;
+    price: BigNumberish;
+    recipient: string;
+    referrer: string;
+    v: BigNumberish;
+    r: BytesLike;
+    s: BytesLike;
+}
+
 export const sign = (digest: any, signer: ethers.Wallet): RSV => {
     return { ...signer._signingKey().signDigest(digest) };
 };
@@ -77,7 +104,21 @@ export const signAsk = async (
     );
     const digest = await getDigest(provider, exchangeName, exchangeAddress, hash);
     const sig = sign(digest, signer);
-    return { hash, digest, sig };
+    const order: AskOrder = {
+        signer: signer.address,
+        token,
+        tokenId,
+        amount,
+        strategy,
+        currency,
+        recipient,
+        deadline,
+        params,
+        v: sig.v,
+        r: sig.r,
+        s: sig.s,
+    };
+    return { hash, digest, sig, order };
 };
 
 export const signBid = async (
@@ -97,7 +138,18 @@ export const signBid = async (
     );
     const digest = await getDigest(provider, exchangeName, exchangeAddress, hash);
     const sig = sign(digest, signer);
-    return { hash, digest, sig };
+    const order: BidOrder = {
+        askHash,
+        signer: signer.address,
+        amount,
+        price,
+        recipient,
+        referrer,
+        v: sig.v,
+        r: sig.r,
+        s: sig.s,
+    };
+    return { hash, digest, sig, order };
 };
 
 export const domainSeparator = async (provider: any, name: string, contractAddress: string): Promise<string> => {
