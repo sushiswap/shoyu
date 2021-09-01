@@ -10,7 +10,6 @@ import "./interfaces/IBaseNFT1155.sol";
 import "./interfaces/ISocialToken.sol";
 import "./base/ProxyFactory.sol";
 import "./libraries/Signature.sol";
-import "hardhat/console.sol";
 
 contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
     uint8 public constant override MAX_ROYALTY_FEE = 250; // 25%

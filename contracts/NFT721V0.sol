@@ -6,7 +6,6 @@ import "./interfaces/INFT721.sol";
 import "./interfaces/IERC2981.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseExchange.sol";
-import "hardhat/console.sol";
 
 contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
     uint8 internal _MAX_ROYALTY_FEE;
