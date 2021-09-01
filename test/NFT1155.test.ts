@@ -420,10 +420,14 @@ describe("Exchange part of NFT1155", () => {
     }
     async function checkEvent(contract: Contract, eventName: string, args: any[]) {
         const events: any = await contract.queryFilter(contract.filters[eventName](), "latest");
-        const length = events[0].args.length;
-        expect(length).to.be.gt(0);
-        for (let i = 0; i < length; i++) {
-            assert.isTrue(args[i] == events[0].args[i]);
+        expect(events[0].event).to.be.equal(eventName);
+
+        if (args !== undefined) {
+            const length = events[0].args.length;
+            expect(length).to.be.gt(0);
+            for (let i = 0; i < length; i++) {
+                assert.isTrue(args[i] == events[0].args[i]);
+            }
         }
     }
 
@@ -473,69 +477,13 @@ describe("Exchange part of NFT1155", () => {
             "0x"
         );
 
-        await expect(
-            nft1155_0.connect(bob).cancel({
-                signer: alice.address,
-                token: nft1155_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: fixedPriceSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft1155_0.connect(bob).cancel(askOrder0.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
 
-        await expect(
-            nft1155_0.connect(alice).cancel({
-                signer: bob.address,
-                token: nft1155_0.address,
-                tokenId: 1,
-                amount: 1,
-                strategy: fixedPriceSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder1.sig.v,
-                r: askOrder1.sig.r,
-                s: askOrder1.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft1155_0.connect(alice).cancel(askOrder1.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
 
-        await nft1155_0.connect(alice).cancel({
-            signer: alice.address,
-            token: nft1155_0.address,
-            tokenId: 0,
-            amount: 1,
-            strategy: fixedPriceSale.address,
-            currency: erc20Mock.address,
-            recipient: AddressZero,
-            deadline: deadline0,
-            params: "0x",
-            v: askOrder0.sig.v,
-            r: askOrder0.sig.r,
-            s: askOrder0.sig.s,
-        });
+        await nft1155_0.connect(alice).cancel(askOrder0.order);
 
-        await nft1155_0.connect(bob).cancel({
-            signer: bob.address,
-            token: nft1155_0.address,
-            tokenId: 1,
-            amount: 1,
-            strategy: fixedPriceSale.address,
-            currency: erc20Mock.address,
-            recipient: AddressZero,
-            deadline: deadline0,
-            params: "0x",
-            v: askOrder1.sig.v,
-            r: askOrder1.sig.r,
-            s: askOrder1.sig.s,
-        });
+        await nft1155_0.connect(bob).cancel(askOrder1.order);
 
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -565,22 +513,7 @@ describe("Exchange part of NFT1155", () => {
         expect(await nft1155_0.amountFilled(askOrder3.hash)).to.be.equal(11);
         expect(await nft1155_0.balanceOf(alice.address, 2)).to.be.equal(19);
 
-        await expect(
-            nft1155_0.connect(alice).cancel({
-                signer: alice.address,
-                token: nft1155_0.address,
-                tokenId: 2,
-                amount: 30,
-                strategy: fixedPriceSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder3.sig.v,
-                r: askOrder3.sig.r,
-                s: askOrder3.sig.s,
-            })
-        ).to.emit(nft1155_0, "Cancel");
+        await expect(nft1155_0.connect(alice).cancel(askOrder3.order)).to.emit(nft1155_0, "Cancel");
     });
 
     it("should be that fees are transfered properly", async () => {

@@ -12,10 +12,11 @@ import {
 
 import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike, Wallet } from "ethers";
+import { BigNumber, BigNumberish, BytesLike, Wallet, Contract } from "ethers";
 import { expect, assert } from "chai";
 import { solidityPack, toUtf8String, defaultAbiCoder } from "ethers/lib/utils";
 import { getBlock, mine } from "./utils/blocks";
+import { bid1, bid2 } from "./utils/bid_utils";
 
 const { constants } = ethers;
 const { AddressZero, HashZero } = constants;
@@ -201,7 +202,7 @@ describe("NFT part of NFT721", () => {
         await factory.deployNFT721AndMintBatch(artist.address, "Name", "Symbol", [0, 1, 2], royaltyVault.address, 10);
         const nft721_0 = await getNFT721(factory);
 
-        const currentTime = Math.floor((new Date()).getTime() / 1000);
+        const currentTime = Math.floor(new Date().getTime() / 1000);
         let deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
@@ -547,6 +548,18 @@ describe("Exchange part of NFT721", () => {
 
         return fee;
     }
+    async function checkEvent(contract: Contract, eventName: string, args: any[]) {
+        const events: any = await contract.queryFilter(contract.filters[eventName](), "latest");
+        expect(events[0].event).to.be.equal(eventName);
+
+        if (args !== undefined) {
+            const length = events[0].args.length;
+            expect(length).to.be.gt(0);
+            for (let i = 0; i < length; i++) {
+                assert.isTrue(args[i] == events[0].args[i]);
+            }
+        }
+    }
 
     it("should be that the cancel function works well", async () => {
         const { factory, nft721, royaltyVault, erc20Mock, englishAuction } = await setupTest();
@@ -594,73 +607,13 @@ describe("Exchange part of NFT721", () => {
             "0x"
         );
 
-        await expect(
-            nft721_0.connect(bob).cancel({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(bob).cancel(askOrder0.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
 
-        await expect(
-            nft721_0.connect(alice).cancel({
-                signer: bob.address,
-                token: nft721_0.address,
-                tokenId: 1,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder1.sig.v,
-                r: askOrder1.sig.r,
-                s: askOrder1.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await expect(nft721_0.connect(alice).cancel(askOrder1.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
 
-        expect(
-            await nft721_0.connect(alice).cancel({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        );
+        expect(await nft721_0.connect(alice).cancel(askOrder0.order));
 
-        expect(
-            await nft721_0.connect(bob).cancel({
-                signer: bob.address,
-                token: nft721_0.address,
-                tokenId: 1,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: "0x",
-                v: askOrder1.sig.v,
-                r: askOrder1.sig.r,
-                s: askOrder1.sig.s,
-            })
-        );
+        expect(await nft721_0.connect(bob).cancel(askOrder1.order));
 
         const askOrder2 = await signAsk(
             ethers.provider,
@@ -678,49 +631,11 @@ describe("Exchange part of NFT721", () => {
         );
 
         expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(AddressZero);
-        await nft721_0
-            .connect(bob)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: carol.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline0,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                1,
-                100,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, bob, askOrder2.order, 1, 100, AddressZero);
 
         expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(bob.address);
 
-        await expect(
-            nft721_0.connect(carol).cancel({
-                signer: carol.address,
-                token: nft721_0.address,
-                tokenId: 2,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder2.sig.v,
-                r: askOrder2.sig.r,
-                s: askOrder2.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: BID_EXISTS");
+        await expect(nft721_0.connect(carol).cancel(askOrder2.order)).to.be.revertedWith("SHOYU: BID_EXISTS");
     });
 
     it("should be that the claim function can be called by anyone", async () => {
@@ -788,84 +703,15 @@ describe("Exchange part of NFT721", () => {
             defaultAbiCoder.encode(["uint256"], [50])
         );
 
-        await nft721_0
-            .connect(carol)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 0,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline0,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder0.sig.v,
-                    r: askOrder0.sig.r,
-                    s: askOrder0.sig.s,
-                },
-                1,
-                100,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, carol, askOrder0.order, 1, 100, AddressZero);
         expect((await nft721_0.bestBid(askOrder0.hash))[0]).to.be.equal(carol.address);
         expect((await nft721_0.bestBid(askOrder0.hash))[2]).to.be.equal(100);
 
-        await nft721_0
-            .connect(dan)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: bob.address,
-                    token: nft721_0.address,
-                    tokenId: 1,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline0,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder1.sig.v,
-                    r: askOrder1.sig.r,
-                    s: askOrder1.sig.s,
-                },
-                1,
-                300,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, dan, askOrder1.order, 1, 300, AddressZero);
         expect((await nft721_0.bestBid(askOrder1.hash))[0]).to.be.equal(dan.address);
         expect((await nft721_0.bestBid(askOrder1.hash))[2]).to.be.equal(300);
 
-        await nft721_0
-            .connect(dan)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline0,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                1,
-                500,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, dan, askOrder2.order, 1, 500, AddressZero);
         expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(dan.address);
         expect((await nft721_0.bestBid(askOrder2.hash))[2]).to.be.equal(500);
 
@@ -873,62 +719,17 @@ describe("Exchange part of NFT721", () => {
         assert.isTrue(deadline0 < (await getBlock()));
 
         //nft0 : seller-Alice / buyer-Carol. Dan can claim.
-        expect(
-            await nft721_0.connect(dan).claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.emit(nft721_0, "Claim");
+        expect(await nft721_0.connect(dan).claim(askOrder0.order)).to.emit(nft721_0, "Claim");
         expect(await nft721_0.ownerOf(0)).to.be.equal(carol.address);
         expect(await erc20Mock.balanceOf(carol.address)).to.be.equal(9900);
 
         //nft1 : seller-Bob / buyer-Dan.  Seller Bob can claim.
-        expect(
-            await nft721_0.connect(bob).claim({
-                signer: bob.address,
-                token: nft721_0.address,
-                tokenId: 1,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder1.sig.v,
-                r: askOrder1.sig.r,
-                s: askOrder1.sig.s,
-            })
-        ).to.emit(nft721_0, "Claim");
+        expect(await nft721_0.connect(bob).claim(askOrder1.order)).to.emit(nft721_0, "Claim");
         expect(await nft721_0.ownerOf(1)).to.be.equal(dan.address);
         expect(await erc20Mock.balanceOf(dan.address)).to.be.equal(9700);
 
         //nft2 : seller-Alice / buyer-Dan.  Buyer Dan can claim.
-        expect(
-            await nft721_0.connect(dan).claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 2,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder2.sig.v,
-                r: askOrder2.sig.r,
-                s: askOrder2.sig.s,
-            })
-        ).to.emit(nft721_0, "Claim");
+        expect(await nft721_0.connect(dan).claim(askOrder2.order)).to.emit(nft721_0, "Claim");
         expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(AddressZero);
         expect(await nft721_0.ownerOf(2)).to.be.equal(dan.address);
         expect(await erc20Mock.balanceOf(dan.address)).to.be.equal(9200);
@@ -1024,95 +825,20 @@ describe("Exchange part of NFT721", () => {
         expect((await nft721_0.bestBid(askOrder2.hash))[0]).to.be.equal(AddressZero);
         expect((await nft721_0.bestBid(askOrder3.hash))[0]).to.be.equal(AddressZero);
 
-        await expect(
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 3,
-                amount: 1,
-                strategy: designatedSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                v: askOrder3.sig.v,
-                r: askOrder3.sig.r,
-                s: askOrder3.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FAILURE");
+        await expect(nft721_0.claim(askOrder3.order)).to.be.revertedWith("SHOYU: FAILURE");
 
-        await expect(
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 2,
-                amount: 1,
-                strategy: fixedPriceSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [100]),
-                v: askOrder2.sig.v,
-                r: askOrder2.sig.r,
-                s: askOrder2.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FAILURE");
+        await expect(nft721_0.claim(askOrder2.order)).to.be.revertedWith("SHOYU: FAILURE");
 
-        await expect(
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 1,
-                amount: 1,
-                strategy: dutchAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                v: askOrder1.sig.v,
-                r: askOrder1.sig.r,
-                s: askOrder1.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FAILURE");
+        await expect(nft721_0.claim(askOrder1.order)).to.be.revertedWith("SHOYU: FAILURE");
 
-        await expect(
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FAILURE");
+        await expect(nft721_0.claim(askOrder0.order)).to.be.revertedWith("SHOYU: FAILURE");
         assert.isFalse(deadline0 < (await getBlock()));
         assert.isFalse(await nft721_0.isCancelledOrClaimed(askOrder0.hash));
         expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
 
         await mine(100);
         assert.isTrue(deadline0 < (await getBlock()));
-        await expect(
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline0,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.be.revertedWith("SHOYU: FAILED_TO_TRANSFER_FUNDS");
+        await expect(nft721_0.claim(askOrder0.order)).to.be.revertedWith("SHOYU: FAILED_TO_TRANSFER_FUNDS");
         assert.isFalse(await nft721_0.isCancelledOrClaimed(askOrder0.hash));
         expect(await nft721_0.ownerOf(0)).to.be.equal(alice.address);
     });
@@ -1212,62 +938,11 @@ describe("Exchange part of NFT721", () => {
             defaultAbiCoder.encode(["uint256"], [15000])
         );
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        )
-            .to.emit(nft721_0, "Bid")
-            .withArgs(askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero);
+        await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
+        await checkEvent(nft721_0, "Bid", [askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero]);
 
         const fees0 = fees(12345, 25, 5, 10);
-        await expect(() =>
-            nft721_0
-                .connect(carol)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 1,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [12345]),
-                        v: askOrder1.sig.v,
-                        r: askOrder1.sig.r,
-                        s: askOrder1.sig.s,
-                    },
-                    1,
-                    12345,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.changeTokenBalances(
+        await expect(() => bid2(nft721_0, carol, askOrder1.order, 1, 12345, AddressZero)).to.changeTokenBalances(
             erc20Mock,
             [carol, protocolVault, operationalVault, royaltyVault, alice],
             [-12345, fees0[0], fees0[1], fees0[2], fees0[3]]
@@ -1288,34 +963,7 @@ describe("Exchange part of NFT721", () => {
         );
         const fees1 = fees(31313, 25, 5, 10);
         await expect(() =>
-            exchangeProxy.connect(frank).claim(
-                nft721_0.address,
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: designatedSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                {
-                    askHash: askOrder2.hash,
-                    signer: dan.address,
-                    amount: 1,
-                    price: 31313,
-                    recipient: dan.address,
-                    referrer: AddressZero,
-                    v: bidOrder2.sig.v,
-                    r: bidOrder2.sig.r,
-                    s: bidOrder2.sig.s,
-                }
-            )
+            exchangeProxy.connect(frank).claim(nft721_0.address, askOrder2.order, bidOrder2.order)
         ).to.changeTokenBalances(
             erc20Mock,
             [dan, protocolVault, operationalVault, royaltyVault, alice, frank, exchangeProxy],
@@ -1330,32 +978,7 @@ describe("Exchange part of NFT721", () => {
 
         //erin 25/1000 frank 17/1000 carol 4/1000
         const fees2 = fees(15000, 25, 17, 4);
-        await expect(() =>
-            nft721_0
-                .connect(dan)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 3,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [15000]),
-                        v: askOrder3.sig.v,
-                        r: askOrder3.sig.r,
-                        s: askOrder3.sig.s,
-                    },
-                    1,
-                    15000,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.changeTokenBalances(
+        await expect(() => bid2(nft721_0, dan, askOrder3.order, 1, 15000, AddressZero)).to.changeTokenBalances(
             erc20Mock,
             [dan, erin, frank, carol, alice, protocolVault, operationalVault, royaltyVault],
             [-15000, fees2[0], fees2[1], fees2[2], fees2[3], 0, 0, 0]
@@ -1365,22 +988,7 @@ describe("Exchange part of NFT721", () => {
 
         const fees3 = fees(100, 25, 17, 4);
         assert.isTrue(deadline < (await getBlock()));
-        await expect(() =>
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.changeTokenBalances(
+        await expect(() => nft721_0.claim(askOrder0.order)).to.changeTokenBalances(
             erc20Mock,
             [bob, erin, frank, carol, alice, protocolVault, operationalVault, royaltyVault],
             [-100, fees3[0], fees3[1], fees3[2], fees3[3], 0, 0, 0]
@@ -1407,32 +1015,7 @@ describe("Exchange part of NFT721", () => {
         //erin 25/1000 frank 17/1000 royalty 0/1000
         const fees4 = fees(11000, 25, 17, 0);
         await erc20Mock.connect(dan).approve(nft721_1.address, 10000000);
-        await expect(() =>
-            nft721_1
-                .connect(dan)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_1.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline + 1000,
-                        params: defaultAbiCoder.encode(["uint256"], [11000]),
-                        v: askOrder4.sig.v,
-                        r: askOrder4.sig.r,
-                        s: askOrder4.sig.s,
-                    },
-                    1,
-                    11000,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.changeTokenBalances(
+        await expect(() => bid2(nft721_1, dan, askOrder4.order, 1, 11000, AddressZero)).to.changeTokenBalances(
             erc20Mock,
             [dan, erin, frank, carol, alice, protocolVault, operationalVault, royaltyVault],
             [-11000, fees4[0], fees4[1], fees4[2], fees4[3], 0, 0, 0]
@@ -1556,87 +1139,15 @@ describe("Exchange part of NFT721", () => {
         expect(await nft721_0.parked(3)).to.be.true;
         expect(await nft721_0.parked(10)).to.be.false;
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        )
-            .to.emit(nft721_0, "Bid")
-            .withArgs(askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero);
+        await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
+        await checkEvent(nft721_0, "Bid", [askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero]);
 
         expect(await nft721_0.ownerOf(1)).to.be.equal(AddressZero);
-        await nft721_0
-            .connect(carol)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 1,
-                    amount: 1,
-                    strategy: dutchAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                    v: askOrder1.sig.v,
-                    r: askOrder1.sig.r,
-                    s: askOrder1.sig.s,
-                },
-                1,
-                999,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, carol, askOrder1.order, 1, 999, AddressZero);
         expect(await nft721_0.ownerOf(1)).to.be.equal(carol.address);
 
         expect(await nft721_0.ownerOf(2)).to.be.equal(AddressZero);
-        await nft721_0
-            .connect(dan)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: fixedPriceSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256"], [100]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                1,
-                100,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, dan, askOrder2.order, 1, 100, AddressZero);
         expect(await nft721_0.ownerOf(2)).to.be.equal(dan.address);
 
         expect(await nft721_0.ownerOf(3)).to.be.equal(AddressZero);
@@ -1653,81 +1164,18 @@ describe("Exchange part of NFT721", () => {
             dan.address,
             AddressZero
         );
-        await exchangeProxy.connect(frank).claim(
-            nft721_0.address,
-            {
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 3,
-                amount: 1,
-                strategy: designatedSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                v: askOrder3.sig.v,
-                r: askOrder3.sig.r,
-                s: askOrder3.sig.s,
-            },
-            {
-                askHash: askOrder3.hash,
-                signer: dan.address,
-                amount: 1,
-                price: 101,
-                recipient: dan.address,
-                referrer: AddressZero,
-                v: bidOrder3.sig.v,
-                r: bidOrder3.sig.r,
-                s: bidOrder3.sig.s,
-            }
-        );
+        await exchangeProxy.connect(frank).claim(nft721_0.address, askOrder3.order, bidOrder3.order);
         expect(await nft721_0.ownerOf(3)).to.be.equal(dan.address);
 
         expect(await nft721_0.ownerOf(10)).to.be.equal(AddressZero);
         expect(await nft721_0.parked(10)).to.be.false;
-        await expect(
-            nft721_0
-                .connect(erin)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 10,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [100]),
-                        v: askOrder4.sig.v,
-                        r: askOrder4.sig.r,
-                        s: askOrder4.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: TRANSFER_FORBIDDEN");
+        await expect(bid2(nft721_0, erin, askOrder4.order, 1, 100, AddressZero)).to.be.revertedWith(
+            "SHOYU: TRANSFER_FORBIDDEN"
+        );
 
         await mine(100);
         expect(await nft721_0.ownerOf(0)).to.be.equal(AddressZero);
-        await nft721_0.claim({
-            signer: alice.address,
-            token: nft721_0.address,
-            tokenId: 0,
-            amount: 1,
-            strategy: englishAuction.address,
-            currency: erc20Mock.address,
-            recipient: AddressZero,
-            deadline: deadline,
-            params: defaultAbiCoder.encode(["uint256"], [50]),
-            v: askOrder0.sig.v,
-            r: askOrder0.sig.r,
-            s: askOrder0.sig.s,
-        });
+        await nft721_0.claim(askOrder0.order);
         expect(await nft721_0.ownerOf(0)).to.be.equal(bob.address);
 
         assert.isFalse(await nft721_0.parked(0));
@@ -1807,59 +1255,13 @@ describe("Exchange part of NFT721", () => {
         assert.isFalse(await nft721_0.canTrade(nft721_1.address));
         assert.isFalse(await nft721_0.canTrade(erc721Mock.address));
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_1.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [100]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: INVALID_EXCHANGE");
+        await expect(bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero)).to.be.revertedWith(
+            "SHOYU: INVALID_EXCHANGE"
+        );
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: erc721Mock.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [100]),
-                        v: askOrder1.sig.v,
-                        r: askOrder1.sig.r,
-                        s: askOrder1.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: INVALID_EXCHANGE");
+        await expect(bid2(nft721_0, bob, askOrder1.order, 1, 100, AddressZero)).to.be.revertedWith(
+            "SHOYU: INVALID_EXCHANGE"
+        );
     });
 
     it("should be that claimed orders can't be used again even if it's back to the initial owner", async () => {
@@ -1958,84 +1360,12 @@ describe("Exchange part of NFT721", () => {
             defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address])
         );
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        )
-            .to.emit(nft721_0, "Bid")
-            .withArgs(askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero);
+        await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
+        await checkEvent(nft721_0, "Bid", [askOrder0.hash, bob.address, 1, 100, AddressZero, AddressZero]);
 
-        await nft721_0
-            .connect(carol)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 1,
-                    amount: 1,
-                    strategy: dutchAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                    v: askOrder1.sig.v,
-                    r: askOrder1.sig.r,
-                    s: askOrder1.sig.s,
-                },
-                1,
-                999,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, carol, askOrder1.order, 1, 999, AddressZero);
 
-        await nft721_0
-            .connect(dan)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: fixedPriceSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256"], [100]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                1,
-                100,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, dan, askOrder2.order, 1, 100, AddressZero);
 
         await erc20Mock.connect(dan).approve(exchangeProxy.address, 10000);
         await exchangeProxy.setClaimerWhitelisted(frank.address, true);
@@ -2050,88 +1380,11 @@ describe("Exchange part of NFT721", () => {
             dan.address,
             AddressZero
         );
-        await exchangeProxy.connect(frank).claim(
-            nft721_0.address,
-            {
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 3,
-                amount: 1,
-                strategy: designatedSale.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                v: askOrder3.sig.v,
-                r: askOrder3.sig.r,
-                s: askOrder3.sig.s,
-            },
-            {
-                askHash: askOrder3.hash,
-                signer: dan.address,
-                amount: 1,
-                price: 101,
-                recipient: dan.address,
-                referrer: AddressZero,
-                v: bidOrder3.sig.v,
-                r: bidOrder3.sig.r,
-                s: bidOrder3.sig.s,
-            }
-        );
+        await exchangeProxy.connect(frank).claim(nft721_0.address, askOrder3.order, bidOrder3.order);
 
-        await expect(
-            nft721_0
-                .connect(carol)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 1,
-                        amount: 1,
-                        strategy: dutchAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                        v: askOrder1.sig.v,
-                        r: askOrder1.sig.r,
-                        s: askOrder1.sig.s,
-                    },
-                    1,
-                    999,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid2(nft721_0, carol, askOrder1.order, 1, 999, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
 
-        await expect(
-            nft721_0
-                .connect(dan)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 2,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [100]),
-                        v: askOrder2.sig.v,
-                        r: askOrder2.sig.r,
-                        s: askOrder2.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid2(nft721_0, dan, askOrder2.order, 1, 100, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
         const bidOrder3_ = await signBid(
             ethers.provider,
             "Name",
@@ -2144,196 +1397,29 @@ describe("Exchange part of NFT721", () => {
             AddressZero
         );
         await expect(
-            exchangeProxy.connect(frank).claim(
-                nft721_0.address,
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 3,
-                    amount: 1,
-                    strategy: designatedSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                    v: askOrder3.sig.v,
-                    r: askOrder3.sig.r,
-                    s: askOrder3.sig.s,
-                },
-                {
-                    askHash: askOrder3.hash,
-                    signer: dan.address,
-                    amount: 1,
-                    price: 101,
-                    recipient: dan.address,
-                    referrer: AddressZero,
-                    v: bidOrder3_.sig.v,
-                    r: bidOrder3_.sig.r,
-                    s: bidOrder3_.sig.s,
-                }
-            )
+            exchangeProxy.connect(frank).claim(nft721_0.address, askOrder3.order, bidOrder3_.order)
         ).to.be.revertedWith("SHOYU: SOLD_OUT");
 
         await nft721_0.connect(carol).transferFrom(carol.address, alice.address, 1);
         await nft721_0.connect(dan).transferFrom(dan.address, alice.address, 2);
         await nft721_0.connect(dan).transferFrom(dan.address, alice.address, 3);
 
-        await expect(
-            nft721_0
-                .connect(carol)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 1,
-                        amount: 1,
-                        strategy: dutchAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                        v: askOrder1.sig.v,
-                        r: askOrder1.sig.r,
-                        s: askOrder1.sig.s,
-                    },
-                    1,
-                    999,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid2(nft721_0, carol, askOrder1.order, 1, 999, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
+
+        await expect(bid2(nft721_0, dan, askOrder2.order, 1, 100, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
 
         await expect(
-            nft721_0
-                .connect(dan)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 2,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [100]),
-                        v: askOrder2.sig.v,
-                        r: askOrder2.sig.r,
-                        s: askOrder2.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
-
-        await expect(
-            exchangeProxy.connect(frank).claim(
-                nft721_0.address,
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 3,
-                    amount: 1,
-                    strategy: designatedSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "address"], [100, exchangeProxy.address]),
-                    v: askOrder3.sig.v,
-                    r: askOrder3.sig.r,
-                    s: askOrder3.sig.s,
-                },
-                {
-                    askHash: askOrder3.hash,
-                    signer: dan.address,
-                    amount: 1,
-                    price: 101,
-                    recipient: dan.address,
-                    referrer: AddressZero,
-                    v: bidOrder3_.sig.v,
-                    r: bidOrder3_.sig.r,
-                    s: bidOrder3_.sig.s,
-                }
-            )
+            exchangeProxy.connect(frank).claim(nft721_0.address, askOrder3.order, bidOrder3_.order)
         ).to.be.revertedWith("SHOYU: SOLD_OUT");
 
         await mine(100);
-        await nft721_0.claim({
-            signer: alice.address,
-            token: nft721_0.address,
-            tokenId: 0,
-            amount: 1,
-            strategy: englishAuction.address,
-            currency: erc20Mock.address,
-            recipient: AddressZero,
-            deadline: deadline,
-            params: defaultAbiCoder.encode(["uint256"], [50]),
-            v: askOrder0.sig.v,
-            r: askOrder0.sig.r,
-            s: askOrder0.sig.s,
-        });
+        await nft721_0.claim(askOrder0.order);
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
 
         await nft721_0.connect(bob).transferFrom(bob.address, alice.address, 0);
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero)).to.be.revertedWith("SHOYU: SOLD_OUT");
     });
 
     it("should be that BestBid is replaced if someone bid with higher price", async () => {
@@ -2367,30 +1453,7 @@ describe("Exchange part of NFT721", () => {
             defaultAbiCoder.encode(["uint256"], [50])
         );
 
-        await nft721_0
-            .connect(bob)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 0,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder0.sig.v,
-                    r: askOrder0.sig.r,
-                    s: askOrder0.sig.s,
-                },
-                1,
-                100,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
         expect((await nft721_0.bestBid(askOrder0.hash))[0]).to.be.equal(bob.address);
         expect((await nft721_0.bestBid(askOrder0.hash))[1]).to.be.equal(1);
         expect((await nft721_0.bestBid(askOrder0.hash))[2]).to.be.equal(100);
@@ -2399,30 +1462,7 @@ describe("Exchange part of NFT721", () => {
         expect((await nft721_0.bestBid(askOrder0.hash))[5]).to.be.equal(await ethers.provider.getBlockNumber());
 
         await mine(11);
-        await nft721_0
-            .connect(carol)
-            [
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 0,
-                    amount: 1,
-                    strategy: englishAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256"], [50]),
-                    v: askOrder0.sig.v,
-                    r: askOrder0.sig.r,
-                    s: askOrder0.sig.s,
-                },
-                1,
-                110,
-                AddressZero,
-                AddressZero
-            );
+        await bid2(nft721_0, carol, askOrder0.order, 1, 110, AddressZero);
         expect((await nft721_0.bestBid(askOrder0.hash))[0]).to.be.equal(carol.address);
         expect((await nft721_0.bestBid(askOrder0.hash))[1]).to.be.equal(1);
         expect((await nft721_0.bestBid(askOrder0.hash))[2]).to.be.equal(110);
@@ -2431,32 +1471,7 @@ describe("Exchange part of NFT721", () => {
         expect((await nft721_0.bestBid(askOrder0.hash))[5]).to.be.equal(await ethers.provider.getBlockNumber());
 
         await mine(11);
-        await expect(
-            nft721_0
-                .connect(dan)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: AddressZero,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    110,
-                    AddressZero,
-                    AddressZero
-                )
-        ).to.be.revertedWith("SHOYU: FAILURE");
+        await expect(bid2(nft721_0, dan, askOrder0.order, 1, 110, AddressZero)).to.be.revertedWith("SHOYU: FAILURE");
     });
 
     it("should be that bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) function works well", async () => {
@@ -2578,103 +1593,13 @@ describe("Exchange part of NFT721", () => {
             AddressZero
         );
 
-        await expect(
-            nft721_0[
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 1,
-                    amount: 1,
-                    strategy: dutchAuction.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentBlock]),
-                    v: askOrder1.sig.v,
-                    r: askOrder1.sig.r,
-                    s: askOrder1.sig.s,
-                },
-                {
-                    askHash: askOrder1.hash,
-                    signer: carol.address,
-                    amount: 1,
-                    price: 990,
-                    recipient: AddressZero,
-                    referrer: AddressZero,
-                    v: bidOrder1.sig.v,
-                    r: bidOrder1.sig.r,
-                    s: bidOrder1.sig.s,
-                }
-            )
-        )
-            .to.emit(nft721_0, "Claim")
-            .withArgs(askOrder1.hash, carol.address, 1, 990, carol.address, AddressZero);
+        await bid1(nft721_0, alice, askOrder1.order, bidOrder1.order);
+        await checkEvent(nft721_0, "Claim", [askOrder1.hash, carol.address, 1, 990, carol.address, AddressZero]);
 
-        await expect(
-            nft721_0[
-                "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"
-            ](
-                {
-                    signer: alice.address,
-                    token: nft721_0.address,
-                    tokenId: 2,
-                    amount: 1,
-                    strategy: fixedPriceSale.address,
-                    currency: erc20Mock.address,
-                    recipient: AddressZero,
-                    deadline: deadline,
-                    params: defaultAbiCoder.encode(["uint256"], [100]),
-                    v: askOrder2.sig.v,
-                    r: askOrder2.sig.r,
-                    s: askOrder2.sig.s,
-                },
-                {
-                    askHash: askOrder2.hash,
-                    signer: dan.address,
-                    amount: 1,
-                    price: 100,
-                    recipient: AddressZero,
-                    referrer: AddressZero,
-                    v: bidOrder2.sig.v,
-                    r: bidOrder2.sig.r,
-                    s: bidOrder2.sig.s,
-                }
-            )
-        )
-            .to.emit(nft721_0, "Claim")
-            .withArgs(askOrder2.hash, dan.address, 1, 100, dan.address, AddressZero);
+        await bid1(nft721_0, alice, askOrder2.order, bidOrder2.order);
+        await checkEvent(nft721_0, "Claim", [askOrder2.hash, dan.address, 1, 100, dan.address, AddressZero]);
 
-        await nft721_0[
-            "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"
-        ](
-            {
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            },
-            {
-                askHash: askOrder0.hash,
-                signer: bob.address,
-                amount: 1,
-                price: 101,
-                recipient: AddressZero,
-                referrer: AddressZero,
-                v: bidOrder0.sig.v,
-                r: bidOrder0.sig.r,
-                s: bidOrder0.sig.s,
-            }
-        );
+        await bid1(nft721_0, alice, askOrder0.order, bidOrder0.order);
         expect((await nft721_0.bestBid(askOrder0.hash))[0]).to.be.equal(bob.address);
         expect((await nft721_0.bestBid(askOrder0.hash))[1]).to.be.equal(1);
         expect((await nft721_0.bestBid(askOrder0.hash))[2]).to.be.equal(101);
@@ -2696,35 +1621,7 @@ describe("Exchange part of NFT721", () => {
             AddressZero
         );
 
-        await nft721_0[
-            "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"
-        ](
-            {
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: AddressZero,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            },
-            {
-                askHash: askOrder0.hash,
-                signer: carol.address,
-                amount: 1,
-                price: 111,
-                recipient: AddressZero,
-                referrer: AddressZero,
-                v: bidOrder0_.sig.v,
-                r: bidOrder0_.sig.r,
-                s: bidOrder0_.sig.s,
-            }
-        );
+        await bid1(nft721_0, alice, askOrder0.order, bidOrder0_.order);
         expect((await nft721_0.bestBid(askOrder0.hash))[0]).to.be.equal(carol.address);
         expect((await nft721_0.bestBid(askOrder0.hash))[1]).to.be.equal(1);
         expect((await nft721_0.bestBid(askOrder0.hash))[2]).to.be.equal(111);
@@ -2795,62 +1692,11 @@ describe("Exchange part of NFT721", () => {
             defaultAbiCoder.encode(["uint256"], [12345])
         );
 
-        await expect(
-            nft721_0
-                .connect(bob)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 0,
-                        amount: 1,
-                        strategy: englishAuction.address,
-                        currency: erc20Mock.address,
-                        recipient: erin.address,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [50]),
-                        v: askOrder0.sig.v,
-                        r: askOrder0.sig.r,
-                        s: askOrder0.sig.s,
-                    },
-                    1,
-                    100,
-                    dan.address,
-                    AddressZero
-                )
-        )
-            .to.emit(nft721_0, "Bid")
-            .withArgs(askOrder0.hash, bob.address, 1, 100, dan.address, AddressZero);
+        await bid2(nft721_0, bob, askOrder0.order, 1, 100, dan.address);
+        await checkEvent(nft721_0, "Bid", [askOrder0.hash, bob.address, 1, 100, dan.address, AddressZero]);
         const fees0 = fees(12345, 25, 5, 10);
 
-        await expect(() =>
-            nft721_0
-                .connect(carol)
-                [
-                    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"
-                ](
-                    {
-                        signer: alice.address,
-                        token: nft721_0.address,
-                        tokenId: 1,
-                        amount: 1,
-                        strategy: fixedPriceSale.address,
-                        currency: erc20Mock.address,
-                        recipient: frank.address,
-                        deadline: deadline,
-                        params: defaultAbiCoder.encode(["uint256"], [12345]),
-                        v: askOrder1.sig.v,
-                        r: askOrder1.sig.r,
-                        s: askOrder1.sig.s,
-                    },
-                    1,
-                    12345,
-                    bob.address,
-                    AddressZero
-                )
-        ).to.changeTokenBalances(
+        await expect(() => bid2(nft721_0, carol, askOrder1.order, 1, 12345, bob.address)).to.changeTokenBalances(
             erc20Mock,
             [carol, protocolVault, operationalVault, royaltyVault, frank, alice],
             [-12345, fees0[0], fees0[1], fees0[2], fees0[3], 0]
@@ -2860,22 +1706,7 @@ describe("Exchange part of NFT721", () => {
         await mine(100);
 
         const fees1 = fees(100, 25, 5, 10);
-        await expect(() =>
-            nft721_0.claim({
-                signer: alice.address,
-                token: nft721_0.address,
-                tokenId: 0,
-                amount: 1,
-                strategy: englishAuction.address,
-                currency: erc20Mock.address,
-                recipient: erin.address,
-                deadline: deadline,
-                params: defaultAbiCoder.encode(["uint256"], [50]),
-                v: askOrder0.sig.v,
-                r: askOrder0.sig.r,
-                s: askOrder0.sig.s,
-            })
-        ).to.changeTokenBalances(
+        await expect(() => nft721_0.claim(askOrder0.order)).to.changeTokenBalances(
             erc20Mock,
             [bob, protocolVault, operationalVault, royaltyVault, erin, alice],
             [-100, fees1[0], fees1[1], fees1[2], fees1[3], 0]
