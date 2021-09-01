@@ -1,8 +1,7 @@
 import { PaymentSplitterFactory, PaymentSplitter } from "../typechain";
 
-import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
 import { ethers } from "hardhat";
-import { expect, assert } from "chai";
+import { expect } from "chai";
 
 const { constants } = ethers;
 const { AddressZero } = constants;
@@ -33,7 +32,7 @@ describe("PaymentSplitterFactory", () => {
         await ethers.provider.send("hardhat_reset", []);
     });
 
-    it("should be that initial paremeters are set properly", async () => {
+    it("should be that deployPaymentSplitter function works well", async () => {
         const { alice, bob, carol, factory, PaymentSplitter } = await setupTest();
 
         await factory.deployPaymentSplitter(
@@ -54,5 +53,45 @@ describe("PaymentSplitterFactory", () => {
         expect(await splitter.shares(alice.address)).to.be.equal(10);
         expect(await splitter.shares(bob.address)).to.be.equal(50);
         expect(await splitter.shares(carol.address)).to.be.equal(20);
+
+        await expect(
+            factory.deployPaymentSplitter(
+                alice.address,
+                "TestSplitter",
+                [alice.address, bob.address, AddressZero],
+                [10, 50, 20]
+            )
+        ).to.be.revertedWith("SHOYU: CALL_FAILURE");
+
+        await expect(
+            factory.deployPaymentSplitter(
+                alice.address,
+                "TestSplitter",
+                [alice.address, bob.address, carol.address],
+                [10, 50, 0]
+            )
+        ).to.be.revertedWith("SHOYU: CALL_FAILURE");
+
+        await expect(
+            factory.deployPaymentSplitter(
+                alice.address,
+                "TestSplitter",
+                [alice.address, bob.address, bob.address],
+                [10, 50, 20]
+            )
+        ).to.be.revertedWith("SHOYU: CALL_FAILURE");
+
+        await expect(
+            factory.deployPaymentSplitter(
+                alice.address,
+                "TestSplitter",
+                [alice.address, bob.address, AddressZero],
+                [10, 50]
+            )
+        ).to.be.revertedWith("SHOYU: CALL_FAILURE");
+
+        await expect(factory.deployPaymentSplitter(alice.address, "TestSplitter", [], [])).to.be.revertedWith(
+            "SHOYU: CALL_FAILURE"
+        );
     });
 });
