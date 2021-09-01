@@ -25,7 +25,7 @@ contract PaymentSplitterFactory is ProxyFactory, IPaymentSplitterFactory {
             abi.encodeWithSignature("initialize(string,address[],uint256[])", title, payees, shares)
         );
 
-        emit DeployPaymentSplitter(owner, title, payees, shares);
+        emit DeployPaymentSplitter(owner, title, payees, shares, splitter);
     }
 
     function isPaymentSplitter(address query) external view override returns (bool result) {
