@@ -1,7 +1,6 @@
 import { ethers, BigNumberish, BytesLike } from "ethers";
 import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack, Bytes, _TypedDataEncoder } from "ethers/lib/utils";
 import { getChainId, RSV, signData } from "./rpc";
-// import { ecsign } from "ethereumjs-util";
 
 export interface AskOrder {
     signer: string;

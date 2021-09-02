@@ -311,6 +311,7 @@ contract TokenFactory is ProxyFactory, Ownable, ITokenFactory {
         require(bytes(name).length > 0, "SHOYU: INVALID_NAME");
         require(bytes(symbol).length > 0, "SHOYU: INVALID_SYMBOL");
         require(owner != address(0), "SHOYU: INVALID_ADDRESS");
+
         bytes memory initData =
             abi.encodeWithSignature(
                 "initialize(address,string,string,address,uint256)",

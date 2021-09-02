@@ -105,7 +105,6 @@
     "typescript": "^4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
-    "ethereumjs-util": "^7.0.10"
+    "@openzeppelin/contracts": "^4.1.0"
   }
 }
