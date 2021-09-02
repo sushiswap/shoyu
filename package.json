@@ -22,7 +22,7 @@
     "typechain"
   ],
   "scripts": {
-    "build": "rimraf abis typechain && hardhat compile",
+    "build": "rimraf abis artifacts cache coverage typechain && hardhat compile",
     "console": "hardhat console",
     "hardhat:deploy": "hardhat --network hardhat deploy",
     "mainnet:deploy": "hardhat --network mainnet deploy",
