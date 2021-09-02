@@ -11,6 +11,11 @@ contract PaymentSplitterFactory is ProxyFactory, IPaymentSplitterFactory {
 
     constructor() {
         PaymentSplitter target = new PaymentSplitter();
+        address[] memory payees = new address[](1);
+        payees[0] = msg.sender;
+        uint256[] memory shares = new uint256[](1);
+        shares[0] = 1;
+        target.initialize("", payees, shares);
         _target = address(target);
     }
 
