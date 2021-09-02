@@ -139,7 +139,7 @@ describe("NFT part of NFT1155", () => {
         await factory.deployNFT1155AndMintBatch(artist.address, [0, 1, 2], [5, 6, 7], royaltyVault.address, 10);
         const nft1155_0 = await getNFT1155(factory);
 
-        const currentTime = Math.floor(new Date().getTime() / 1000);
+        const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
         let deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
