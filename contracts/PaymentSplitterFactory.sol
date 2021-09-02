@@ -12,9 +12,9 @@ contract PaymentSplitterFactory is ProxyFactory, IPaymentSplitterFactory {
     constructor() {
         PaymentSplitter target = new PaymentSplitter();
         address[] memory payees = new address[](1);
-        payees[0] = address(0);
+        payees[0] = msg.sender;
         uint256[] memory shares = new uint256[](1);
-        shares[0] = uint256(0);
+        shares[0] = 1;
         target.initialize("", payees, shares);
         _target = address(target);
     }
@@ -30,7 +30,7 @@ contract PaymentSplitterFactory is ProxyFactory, IPaymentSplitterFactory {
             abi.encodeWithSignature("initialize(string,address[],uint256[])", title, payees, shares)
         );
 
-        emit DeployPaymentSplitter(owner, title, payees, shares);
+        emit DeployPaymentSplitter(owner, title, payees, shares, splitter);
     }
 
     function isPaymentSplitter(address query) external view override returns (bool result) {
