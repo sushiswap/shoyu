@@ -1,6 +1,6 @@
 name: Coveralls
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -35,9 +35,6 @@ jobs:
         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-yarn-
-
-    - name: Building
-      run: yarn build
 
     - name: Installing dependencies
       run: yarn install --frozen-lockfile

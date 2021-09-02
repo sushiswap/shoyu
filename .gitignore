@@ -6,9 +6,6 @@ cache/
 abis/
 artifacts/
 
-# Typechain
-typechain/
-
 # Env
 .env
 
