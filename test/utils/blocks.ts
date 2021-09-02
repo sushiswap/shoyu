@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { expect } from "chai";
 
 export const getBlock = async (): Promise<number> => {
@@ -10,4 +10,8 @@ export const mine = async (count = 1): Promise<void> => {
     for (let i = 0; i < count; i++) {
         await ethers.provider.send("evm_mine", []);
     }
+};
+
+export const autoMining = async (setting: boolean) => {
+    await network.provider.send("evm_setAutomine", [setting]);
 };

@@ -1,13 +1,13 @@
 import { TokenFactory, SocialTokenV0, ERC20Mock } from "../typechain";
 
-import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
+import { sign, convertToHash, domainSeparator, getDigest, getHash } from "./utils/sign-utils";
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, Wallet, Contract } from "ethers";
-import { expect, assert } from "chai";
-import { solidityPack, toUtf8String, defaultAbiCoder } from "ethers/lib/utils";
+import { BigNumberish, Wallet } from "ethers";
+import { expect } from "chai";
+import { mine, autoMining } from "./utils/blocks";
 
 const { constants } = ethers;
-const { AddressZero, HashZero } = constants;
+const { AddressZero } = constants;
 
 ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR); // turn off warnings
 
@@ -82,7 +82,7 @@ describe("SocialToken", () => {
         await factory.deploySocialToken(owner.address, "Name", "Symbol", erc20Mock.address, 10000);
         const socialToken = await getSocialToken(factory);
 
-        const currentTime = Math.floor(new Date().getTime() / 1000);
+        const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
         let deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
@@ -164,5 +164,331 @@ describe("SocialToken", () => {
 
         await socialToken.permit(owner.address, alice.address, 55, deadline, v1, r1, s1);
         expect(await socialToken.allowance(owner.address, alice.address)).to.be.equal(55);
+    });
+
+    it("should be that SocialToken holders receive their shares properly when the contract receives ERC20 Tokens", async () => {
+        const { factory, alice, bob, carol, erc20Mock } = await setupTest();
+
+        async function checkSocialTokenBalances(balances: BigNumberish[]) {
+            expect(await socialToken.balanceOf(alice.address)).to.be.equal(balances[0]);
+            expect(await socialToken.balanceOf(bob.address)).to.be.equal(balances[1]);
+            expect(await socialToken.balanceOf(carol.address)).to.be.equal(balances[2]);
+        }
+        async function checkDividendOfETH(balances: BigNumberish[]) {
+            expect(await erc20Mock.balanceOf(alice.address)).to.be.equal(balances[0]);
+            expect(await erc20Mock.balanceOf(bob.address)).to.be.equal(balances[1]);
+            expect(await erc20Mock.balanceOf(carol.address)).to.be.equal(balances[2]);
+        }
+
+        await factory.deploySocialToken(alice.address, "Name", "Symbol", erc20Mock.address, 10000);
+        const socialToken = await getSocialToken(factory);
+
+        //0
+        await autoMining(false);
+        await socialToken.connect(alice).transfer(bob.address, 1000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([9000, 1000, 0]);
+        await checkDividendOfETH([0, 0, 0]);
+
+        //1
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 10000);
+        await socialToken.sync();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([9000, 1000, 0]);
+        await checkDividendOfETH([0, 0, 0]);
+
+        //2
+        await autoMining(false);
+        await socialToken.connect(alice).transfer(carol.address, 4000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+        await checkDividendOfETH([0, 0, 0]);
+
+        //3
+        await autoMining(false);
+        await socialToken.connect(alice).withdrawDividend();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+        await checkDividendOfETH([9000, 0, 0]);
+
+        //4
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 30000);
+        await socialToken.sync();
+        await socialToken.connect(bob).withdrawDividend();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+        await checkDividendOfETH([9000, 4000, 0]);
+
+        //5
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 20000);
+        await socialToken.sync();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+        await checkDividendOfETH([9000, 4000, 0]);
+
+        //6
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 100000);
+        await socialToken.sync();
+        await socialToken.connect(bob).transfer(carol.address, 1000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 0, 5000]);
+        await checkDividendOfETH([9000, 4000, 0]);
+
+        //7
+        await autoMining(false);
+        await socialToken.connect(carol).transfer(bob.address, 4000);
+        await socialToken.connect(carol).withdrawDividend();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 4000, 1000]);
+        await checkDividendOfETH([9000, 4000, 60000]);
+
+        //8
+        await autoMining(false);
+        await socialToken.connect(alice).withdrawDividend();
+        await erc20Mock.mint(socialToken.address, 70000);
+        await socialToken.sync();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 4000, 1000]);
+        await checkDividendOfETH([84000, 4000, 60000]);
+
+        //9
+        await autoMining(false);
+        await socialToken.connect(carol).transfer(bob.address, 1000);
+        await erc20Mock.mint(socialToken.address, 40000);
+        await socialToken.sync();
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([5000, 5000, 0]);
+        await checkDividendOfETH([84000, 4000, 60000]);
+
+        //10
+        await autoMining(false);
+        await socialToken.connect(alice).withdrawDividend();
+        await socialToken.connect(alice).transfer(bob.address, 2000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([3000, 7000, 0]);
+        await checkDividendOfETH([139000, 4000, 60000]);
+
+        //11
+        await autoMining(false);
+        await socialToken.connect(bob).withdrawDividend();
+        await socialToken.connect(alice).transfer(carol.address, 2000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+        await checkDividendOfETH([139000, 64000, 60000]);
+
+        const dan = Wallet.createRandom();
+        const erin = Wallet.createRandom();
+
+        //12
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 10000);
+        await socialToken.sync();
+        await socialToken.connect(alice).mint(dan.address, 5000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+        await checkDividendOfETH([139000, 64000, 60000]);
+
+        expect(await socialToken.balanceOf(dan.address)).to.be.equal(5000);
+        expect(await erc20Mock.balanceOf(dan.address)).to.be.equal(0);
+        expect(await socialToken.withdrawableDividendOf(dan.address)).to.be.equal(0);
+
+        expect(await socialToken.balanceOf(erin.address)).to.be.equal(0);
+        expect(await erc20Mock.balanceOf(erin.address)).to.be.equal(0);
+        expect(await socialToken.withdrawableDividendOf(erin.address)).to.be.equal(0);
+
+        //13
+        await autoMining(false);
+        await erc20Mock.mint(socialToken.address, 10000);
+        await socialToken.sync();
+        await socialToken.connect(alice).mint(erin.address, 5000);
+        await mine();
+
+        await autoMining(true);
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+        await checkDividendOfETH([139000, 64000, 60000]);
+
+        expect(await socialToken.balanceOf(dan.address)).to.be.equal(5000);
+        expect(await erc20Mock.balanceOf(dan.address)).to.be.equal(0);
+        expect(await socialToken.withdrawableDividendOf(dan.address)).to.be.equal(3333);
+
+        expect(await socialToken.balanceOf(erin.address)).to.be.equal(5000);
+        expect(await erc20Mock.balanceOf(erin.address)).to.be.equal(0);
+        expect(await socialToken.withdrawableDividendOf(erin.address)).to.be.equal(0);
+
+        //extra test
+        await expect(socialToken.sync()).to.be.revertedWith("SHOYU: INSUFFICIENT_AMOUNT");
+        await expect(
+            alice.sendTransaction({
+                to: socialToken.address,
+                value: 1,
+            })
+        ).to.be.revertedWith("SHOYU: UNABLE_TO_RECEIVE_ETH");
+    });
+
+    it("should be that SocialToken holders receive their shares properly when the contract receives ETH", async () => {
+        const { factory, deployer, alice, bob, carol } = await setupTest();
+
+        async function checkSocialTokenBalances(balances: BigNumberish[]) {
+            expect(await socialToken.balanceOf(alice.address)).to.be.equal(balances[0]);
+            expect(await socialToken.balanceOf(bob.address)).to.be.equal(balances[1]);
+            expect(await socialToken.balanceOf(carol.address)).to.be.equal(balances[2]);
+        }
+
+        await factory.deploySocialToken(alice.address, "Name", "Symbol", AddressZero, 10000);
+        const socialToken = await getSocialToken(factory);
+
+        //0
+        await expect(() => socialToken.connect(alice).transfer(bob.address, 1000)).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 0, 0]
+        );
+
+        await checkSocialTokenBalances([9000, 1000, 0]);
+
+        //1
+        await deployer.sendTransaction({ to: socialToken.address, value: 10000 });
+
+        await checkSocialTokenBalances([9000, 1000, 0]);
+
+        //2
+        await expect(() => socialToken.connect(alice).transfer(carol.address, 4000)).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 0, 0]
+        );
+
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+
+        //3
+        await expect(() => socialToken.connect(alice).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [9000, 0, 0]
+        );
+
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+
+        //4
+        await deployer.sendTransaction({ to: socialToken.address, value: 30000 });
+        await expect(() => socialToken.connect(bob).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 4000, 0]
+        );
+
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+
+        //5
+        await deployer.sendTransaction({ to: socialToken.address, value: 20000 });
+
+        await checkSocialTokenBalances([5000, 1000, 4000]);
+
+        //6
+        await deployer.sendTransaction({ to: socialToken.address, value: 100000 });
+        await expect(() => socialToken.connect(bob).transfer(carol.address, 1000)).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 0, 0]
+        );
+
+        await checkSocialTokenBalances([5000, 0, 5000]);
+
+        //7
+        await socialToken.connect(carol).transfer(bob.address, 4000);
+        await expect(() => socialToken.connect(carol).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 0, 60000]
+        );
+
+        await checkSocialTokenBalances([5000, 4000, 1000]);
+
+        //8
+        await expect(() => socialToken.connect(alice).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [75000, 0, 0]
+        );
+        await deployer.sendTransaction({ to: socialToken.address, value: 70000 });
+
+        await checkSocialTokenBalances([5000, 4000, 1000]);
+
+        //9
+        await socialToken.connect(carol).transfer(bob.address, 1000);
+        await deployer.sendTransaction({ to: socialToken.address, value: 40000 });
+
+        await checkSocialTokenBalances([5000, 5000, 0]);
+
+        //10
+        await expect(() => socialToken.connect(alice).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [55000, 0, 0]
+        );
+        await socialToken.connect(alice).transfer(bob.address, 2000);
+
+        await checkSocialTokenBalances([3000, 7000, 0]);
+
+        //11
+        await expect(() => socialToken.connect(bob).withdrawDividend()).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 60000, 0]
+        );
+        await socialToken.connect(alice).transfer(carol.address, 2000);
+
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+
+        const dan = Wallet.createRandom();
+        const erin = Wallet.createRandom();
+
+        //12
+        await deployer.sendTransaction({ to: socialToken.address, value: 10000 });
+        await expect(() => socialToken.connect(alice).mint(dan.address, 5000)).to.changeEtherBalances(
+            [alice, bob, carol],
+            [0, 0, 0]
+        );
+
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+
+        expect(await socialToken.balanceOf(dan.address)).to.be.equal(5000);
+        expect(await socialToken.withdrawableDividendOf(dan.address)).to.be.equal(0);
+
+        expect(await socialToken.balanceOf(erin.address)).to.be.equal(0);
+        expect(await socialToken.withdrawableDividendOf(erin.address)).to.be.equal(0);
+
+        //13
+        await deployer.sendTransaction({ to: socialToken.address, value: 10000 });
+        await socialToken.connect(alice).mint(erin.address, 5000);
+
+        await checkSocialTokenBalances([1000, 7000, 2000]);
+
+        expect(await socialToken.balanceOf(dan.address)).to.be.equal(5000);
+        expect(await socialToken.withdrawableDividendOf(dan.address)).to.be.equal(3333);
+
+        expect(await socialToken.balanceOf(erin.address)).to.be.equal(5000);
+        expect(await socialToken.withdrawableDividendOf(erin.address)).to.be.equal(0);
     });
 });
