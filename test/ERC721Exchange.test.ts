@@ -9,7 +9,7 @@ import {
     DesignatedSale,
     ExchangeProxy,
     ERC721ExchangeV0,
-} from "../typechain";
+} from "./typechain";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
 import { bid1, bid2 } from "./utils/bid_utils";

@@ -1,4 +1,4 @@
-import { PaymentSplitterFactory, PaymentSplitter } from "../typechain";
+import { PaymentSplitterFactory, PaymentSplitter } from "./typechain";
 
 import { ethers } from "hardhat";
 import { expect } from "chai";

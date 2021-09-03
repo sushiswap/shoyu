@@ -1,4 +1,4 @@
-import { PaymentSplitterFactory, PaymentSplitter, ERC20Mock } from "../typechain";
+import { PaymentSplitterFactory, PaymentSplitter, ERC20Mock } from "./typechain";
 
 import { ethers } from "hardhat";
 import { expect } from "chai";
