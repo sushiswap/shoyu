@@ -2,7 +2,6 @@ import "dotenv/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
-import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-abi-exporter";
@@ -12,7 +11,6 @@ import "hardhat-spdx-license-identifier";
 import "hardhat-watcher";
 import "solidity-coverage";
 import "@tenderly/hardhat-tenderly";
-import "@typechain/hardhat";
 
 import { HardhatUserConfig, task } from "hardhat/config";
 
