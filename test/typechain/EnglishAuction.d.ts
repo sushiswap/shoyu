@@ -20,10 +20,15 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface EnglishAuctionInterface extends ethers.utils.Interface {
   functions: {
+    "c_0x7330e000(bytes32)": FunctionFragment;
     "canBid(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
     "canClaim(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "c_0x7330e000",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "canBid",
     values: [
@@ -49,6 +54,10 @@ interface EnglishAuctionInterface extends ethers.utils.Interface {
     ]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "c_0x7330e000",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "canBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canClaim", data: BytesLike): Result;
 
@@ -99,6 +108,11 @@ export class EnglishAuction extends BaseContract {
   interface: EnglishAuctionInterface;
 
   functions: {
+    c_0x7330e000(
+      c__0x7330e000: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     canBid(
       deadline: BigNumberish,
       params: BytesLike,
@@ -121,6 +135,11 @@ export class EnglishAuction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
+
+  c_0x7330e000(
+    c__0x7330e000: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   canBid(
     deadline: BigNumberish,
@@ -145,6 +164,11 @@ export class EnglishAuction extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
+    c_0x7330e000(
+      c__0x7330e000: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     canBid(
       deadline: BigNumberish,
       params: BytesLike,
@@ -171,6 +195,11 @@ export class EnglishAuction extends BaseContract {
   filters: {};
 
   estimateGas: {
+    c_0x7330e000(
+      c__0x7330e000: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     canBid(
       deadline: BigNumberish,
       params: BytesLike,
@@ -195,6 +224,11 @@ export class EnglishAuction extends BaseContract {
   };
 
   populateTransaction: {
+    c_0x7330e000(
+      c__0x7330e000: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     canBid(
       deadline: BigNumberish,
       params: BytesLike,

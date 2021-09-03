@@ -21,11 +21,16 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface OwnableInitializableInterface extends ethers.utils.Interface {
   functions: {
+    "c_0x55da0db1(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "c_0x55da0db1",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -36,6 +41,10 @@ interface OwnableInitializableInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "c_0x55da0db1",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -97,6 +106,11 @@ export class OwnableInitializable extends BaseContract {
   interface: OwnableInitializableInterface;
 
   functions: {
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
@@ -108,6 +122,11 @@ export class OwnableInitializable extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  c_0x55da0db1(
+    c__0x55da0db1: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -121,6 +140,11 @@ export class OwnableInitializable extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
@@ -142,6 +166,11 @@ export class OwnableInitializable extends BaseContract {
   };
 
   estimateGas: {
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
@@ -155,6 +184,11 @@ export class OwnableInitializable extends BaseContract {
   };
 
   populateTransaction: {
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(

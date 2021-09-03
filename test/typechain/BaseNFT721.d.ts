@@ -28,6 +28,9 @@ interface BaseNFT721Interface extends ethers.utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "burn(uint256,uint256,bytes32)": FunctionFragment;
     "burnBatch(uint256[])": FunctionFragment;
+    "c_0x55da0db1(bytes32)": FunctionFragment;
+    "c_0x766155cb(bytes32)": FunctionFragment;
+    "c_0xe8b1499b(bytes32)": FunctionFragment;
     "factory()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "initialize(string,string,address)": FunctionFragment;
@@ -79,6 +82,18 @@ interface BaseNFT721Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "burnBatch",
     values: [BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x55da0db1",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x766155cb",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xe8b1499b",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "factory", values?: undefined): string;
   encodeFunctionData(
@@ -189,6 +204,18 @@ interface BaseNFT721Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burnBatch", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x55da0db1",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x766155cb",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xe8b1499b",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -338,6 +365,21 @@ export class BaseNFT721 extends BaseContract {
       tokenIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0x766155cb(
+      c__0x766155cb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0xe8b1499b(
+      c__0xe8b1499b: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
     factory(overrides?: CallOverrides): Promise<[string]>;
 
@@ -503,6 +545,21 @@ export class BaseNFT721 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  c_0x55da0db1(
+    c__0x55da0db1: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0x766155cb(
+    c__0x766155cb: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0xe8b1499b(
+    c__0xe8b1499b: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   factory(overrides?: CallOverrides): Promise<string>;
 
   getApproved(
@@ -655,6 +712,21 @@ export class BaseNFT721 extends BaseContract {
 
     burnBatch(
       tokenIds: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x766155cb(
+      c__0x766155cb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0xe8b1499b(
+      c__0xe8b1499b: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -869,6 +941,21 @@ export class BaseNFT721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0x766155cb(
+      c__0x766155cb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0xe8b1499b(
+      c__0xe8b1499b: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     factory(overrides?: CallOverrides): Promise<BigNumber>;
 
     getApproved(
@@ -1037,6 +1124,21 @@ export class BaseNFT721 extends BaseContract {
     burnBatch(
       tokenIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0x766155cb(
+      c__0x766155cb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xe8b1499b(
+      c__0xe8b1499b: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     factory(overrides?: CallOverrides): Promise<PopulatedTransaction>;

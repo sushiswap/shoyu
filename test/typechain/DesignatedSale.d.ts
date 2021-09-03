@@ -20,10 +20,15 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface DesignatedSaleInterface extends ethers.utils.Interface {
   functions: {
+    "c_0xb208f2ab(bytes32)": FunctionFragment;
     "canBid(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
     "canClaim(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "c_0xb208f2ab",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "canBid",
     values: [
@@ -49,6 +54,10 @@ interface DesignatedSaleInterface extends ethers.utils.Interface {
     ]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "c_0xb208f2ab",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "canBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canClaim", data: BytesLike): Result;
 
@@ -99,6 +108,11 @@ export class DesignatedSale extends BaseContract {
   interface: DesignatedSaleInterface;
 
   functions: {
+    c_0xb208f2ab(
+      c__0xb208f2ab: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -121,6 +135,11 @@ export class DesignatedSale extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
+
+  c_0xb208f2ab(
+    c__0xb208f2ab: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   canBid(
     arg0: BigNumberish,
@@ -145,6 +164,11 @@ export class DesignatedSale extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
+    c_0xb208f2ab(
+      c__0xb208f2ab: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -171,6 +195,11 @@ export class DesignatedSale extends BaseContract {
   filters: {};
 
   estimateGas: {
+    c_0xb208f2ab(
+      c__0xb208f2ab: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -195,6 +224,11 @@ export class DesignatedSale extends BaseContract {
   };
 
   populateTransaction: {
+    c_0xb208f2ab(
+      c__0xb208f2ab: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,

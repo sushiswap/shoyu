@@ -16,7 +16,6 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import { removeConsoleLog } from "hardhat-preprocessor";
 
 import fs from "fs";
-import fse from "fs-extra";
 import path from "path";
 
 const accounts = {

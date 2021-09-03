@@ -30,6 +30,10 @@ interface SocialTokenV0Interface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256,uint256,bytes32)": FunctionFragment;
+    "c_0x55da0db1(bytes32)": FunctionFragment;
+    "c_0xa35e8bed(bytes32)": FunctionFragment;
+    "c_0xbc86f286(bytes32)": FunctionFragment;
+    "c_0xf2190be2(bytes32)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "dividendOf(address)": FunctionFragment;
@@ -80,6 +84,22 @@ interface SocialTokenV0Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "burn",
     values: [BigNumberish, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x55da0db1",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xa35e8bed",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xbc86f286",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xf2190be2",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
@@ -175,6 +195,22 @@ interface SocialTokenV0Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x55da0db1",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xa35e8bed",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xbc86f286",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xf2190be2",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
@@ -325,6 +361,26 @@ export class SocialTokenV0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0xa35e8bed(
+      c__0xa35e8bed: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0xbc86f286(
+      c__0xbc86f286: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0xf2190be2(
+      c__0xf2190be2: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
     decreaseAllowance(
@@ -459,6 +515,26 @@ export class SocialTokenV0 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  c_0x55da0db1(
+    c__0x55da0db1: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0xa35e8bed(
+    c__0xa35e8bed: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0xbc86f286(
+    c__0xbc86f286: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0xf2190be2(
+    c__0xf2190be2: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   decimals(overrides?: CallOverrides): Promise<number>;
 
   decreaseAllowance(
@@ -587,6 +663,26 @@ export class SocialTokenV0 extends BaseContract {
       value: BigNumberish,
       label: BigNumberish,
       data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0xa35e8bed(
+      c__0xa35e8bed: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0xbc86f286(
+      c__0xbc86f286: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0xf2190be2(
+      c__0xf2190be2: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -762,6 +858,26 @@ export class SocialTokenV0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0xa35e8bed(
+      c__0xa35e8bed: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0xbc86f286(
+      c__0xbc86f286: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0xf2190be2(
+      c__0xf2190be2: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
     decreaseAllowance(
@@ -895,6 +1011,26 @@ export class SocialTokenV0 extends BaseContract {
       label: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0x55da0db1(
+      c__0x55da0db1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xa35e8bed(
+      c__0xa35e8bed: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xbc86f286(
+      c__0xbc86f286: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xf2190be2(
+      c__0xf2190be2: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;

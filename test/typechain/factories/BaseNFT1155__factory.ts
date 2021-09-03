@@ -328,6 +328,45 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "c__0x55da0db1",
+        type: "bytes32",
+      },
+    ],
+    name: "c_0x55da0db1",
+    outputs: [],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "c__0x8d79f22d",
+        type: "bytes32",
+      },
+    ],
+    name: "c_0x8d79f22d",
+    outputs: [],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "c__0xafd58a9b",
+        type: "bytes32",
+      },
+    ],
+    name: "c_0xafd58a9b",
+    outputs: [],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "factory",
     outputs: [

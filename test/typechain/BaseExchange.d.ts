@@ -25,6 +25,8 @@ interface BaseExchangeInterface extends ethers.utils.Interface {
     "amountFilled(bytes32)": FunctionFragment;
     "bestBid(bytes32)": FunctionFragment;
     "bid(tuple,uint256,uint256,address,address)": FunctionFragment;
+    "c_0x5c8d7c6e(bytes32)": FunctionFragment;
+    "c_0x982d090c(bytes32)": FunctionFragment;
     "canTrade(address)": FunctionFragment;
     "cancel(tuple)": FunctionFragment;
     "claim(tuple)": FunctionFragment;
@@ -64,6 +66,14 @@ interface BaseExchangeInterface extends ethers.utils.Interface {
       string,
       string
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x5c8d7c6e",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0x982d090c",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "canTrade", values: [string]): string;
   encodeFunctionData(
@@ -124,6 +134,14 @@ interface BaseExchangeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "bestBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "bid", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x5c8d7c6e",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x982d090c",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "canTrade", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "cancel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
@@ -264,6 +282,16 @@ export class BaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    c_0x5c8d7c6e(
+      c__0x5c8d7c6e: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    c_0x982d090c(
+      c__0x982d090c: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     canTrade(token: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     cancel(
@@ -380,6 +408,16 @@ export class BaseExchange extends BaseContract {
     },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  c_0x5c8d7c6e(
+    c__0x5c8d7c6e: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  c_0x982d090c(
+    c__0x982d090c: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   canTrade(token: string, overrides?: CallOverrides): Promise<boolean>;
 
@@ -500,6 +538,16 @@ export class BaseExchange extends BaseContract {
       },
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    c_0x5c8d7c6e(
+      c__0x5c8d7c6e: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    c_0x982d090c(
+      c__0x982d090c: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     canTrade(token: string, overrides?: CallOverrides): Promise<boolean>;
 
@@ -654,6 +702,16 @@ export class BaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    c_0x5c8d7c6e(
+      c__0x5c8d7c6e: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    c_0x982d090c(
+      c__0x982d090c: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     canTrade(token: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     cancel(
@@ -764,6 +822,16 @@ export class BaseExchange extends BaseContract {
         s: BytesLike;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0x5c8d7c6e(
+      c__0x5c8d7c6e: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0x982d090c(
+      c__0x982d090c: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     canTrade(

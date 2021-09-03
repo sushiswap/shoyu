@@ -23,6 +23,7 @@ interface ERC1155MockInterface extends ethers.utils.Interface {
   functions: {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
+    "c_0xc7250efb(bytes32)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint(address,uint256,uint256,bytes)": FunctionFragment;
     "mintBatch(address,uint256[],uint256[],bytes)": FunctionFragment;
@@ -40,6 +41,10 @@ interface ERC1155MockInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "balanceOfBatch",
     values: [string[], BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "c_0xc7250efb",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -74,6 +79,10 @@ interface ERC1155MockInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xc7250efb",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -169,6 +178,11 @@ export class ERC1155Mock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
+    c_0xc7250efb(
+      c__0xc7250efb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     isApprovedForAll(
       account: string,
       operator: string,
@@ -235,6 +249,11 @@ export class ERC1155Mock extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
+  c_0xc7250efb(
+    c__0xc7250efb: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   isApprovedForAll(
     account: string,
     operator: string,
@@ -300,6 +319,11 @@ export class ERC1155Mock extends BaseContract {
       ids: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
+
+    c_0xc7250efb(
+      c__0xc7250efb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isApprovedForAll(
       account: string,
@@ -418,6 +442,11 @@ export class ERC1155Mock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    c_0xc7250efb(
+      c__0xc7250efb: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       account: string,
       operator: string,
@@ -482,6 +511,11 @@ export class ERC1155Mock extends BaseContract {
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xc7250efb(
+      c__0xc7250efb: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

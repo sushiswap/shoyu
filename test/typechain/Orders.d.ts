@@ -18,28 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface TokenHelperInterface extends ethers.utils.Interface {
+interface OrdersInterface extends ethers.utils.Interface {
   functions: {
-    "ETH()": FunctionFragment;
-    "c_0x5925b0d3(bytes32)": FunctionFragment;
+    "c_0x6fa5afeb(bytes32)": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "ETH", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "c_0x5925b0d3",
+    functionFragment: "c_0x6fa5afeb",
     values: [BytesLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "ETH", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "c_0x5925b0d3",
+    functionFragment: "c_0x6fa5afeb",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class TokenHelper extends BaseContract {
+export class Orders extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -80,29 +77,23 @@ export class TokenHelper extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: TokenHelperInterface;
+  interface: OrdersInterface;
 
   functions: {
-    ETH(overrides?: CallOverrides): Promise<[string]>;
-
-    c_0x5925b0d3(
-      c__0x5925b0d3: BytesLike,
+    c_0x6fa5afeb(
+      c__0x6fa5afeb: BytesLike,
       overrides?: CallOverrides
     ): Promise<[void]>;
   };
 
-  ETH(overrides?: CallOverrides): Promise<string>;
-
-  c_0x5925b0d3(
-    c__0x5925b0d3: BytesLike,
+  c_0x6fa5afeb(
+    c__0x6fa5afeb: BytesLike,
     overrides?: CallOverrides
   ): Promise<void>;
 
   callStatic: {
-    ETH(overrides?: CallOverrides): Promise<string>;
-
-    c_0x5925b0d3(
-      c__0x5925b0d3: BytesLike,
+    c_0x6fa5afeb(
+      c__0x6fa5afeb: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -110,19 +101,15 @@ export class TokenHelper extends BaseContract {
   filters: {};
 
   estimateGas: {
-    ETH(overrides?: CallOverrides): Promise<BigNumber>;
-
-    c_0x5925b0d3(
-      c__0x5925b0d3: BytesLike,
+    c_0x6fa5afeb(
+      c__0x6fa5afeb: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    ETH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    c_0x5925b0d3(
-      c__0x5925b0d3: BytesLike,
+    c_0x6fa5afeb(
+      c__0x6fa5afeb: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
