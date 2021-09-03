@@ -21,7 +21,6 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface ExchangeProxyInterface extends ethers.utils.Interface {
   functions: {
-    "c_0xe35b75b6(bytes32)": FunctionFragment;
     "claim(address,tuple,tuple)": FunctionFragment;
     "isClaimerWhitelisted(address)": FunctionFragment;
     "owner()": FunctionFragment;
@@ -30,10 +29,6 @@ interface ExchangeProxyInterface extends ethers.utils.Interface {
     "transferOwnership(address)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0xe35b75b6",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "claim",
     values: [
@@ -83,10 +78,6 @@ interface ExchangeProxyInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0xe35b75b6",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isClaimerWhitelisted",
@@ -159,11 +150,6 @@ export class ExchangeProxy extends BaseContract {
   interface: ExchangeProxyInterface;
 
   functions: {
-    c_0xe35b75b6(
-      c__0xe35b75b6: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     claim(
       exchange: string,
       askOrder: {
@@ -216,11 +202,6 @@ export class ExchangeProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
-
-  c_0xe35b75b6(
-    c__0xe35b75b6: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   claim(
     exchange: string,
@@ -275,11 +256,6 @@ export class ExchangeProxy extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    c_0xe35b75b6(
-      c__0xe35b75b6: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     claim(
       exchange: string,
       askOrder: {
@@ -363,11 +339,6 @@ export class ExchangeProxy extends BaseContract {
   };
 
   estimateGas: {
-    c_0xe35b75b6(
-      c__0xe35b75b6: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     claim(
       exchange: string,
       askOrder: {
@@ -422,11 +393,6 @@ export class ExchangeProxy extends BaseContract {
   };
 
   populateTransaction: {
-    c_0xe35b75b6(
-      c__0xe35b75b6: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     claim(
       exchange: string,
       askOrder: {

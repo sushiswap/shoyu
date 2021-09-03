@@ -30,8 +30,6 @@ interface TokenFactoryInterface extends ethers.utils.Interface {
     "PARK_TOKEN_IDS_721_TYPEHASH()": FunctionFragment;
     "baseURI1155()": FunctionFragment;
     "baseURI721()": FunctionFragment;
-    "c_0x9326b97c(bytes32)": FunctionFragment;
-    "c_0x9aa6d367(bytes32)": FunctionFragment;
     "deployNFT1155AndMintBatch(address,uint256[],uint256[],address,uint8)": FunctionFragment;
     "deployNFT721AndMintBatch(address,string,string,uint256[],address,uint8)": FunctionFragment;
     "deployNFT721AndPark(address,string,string,uint256,address,uint8)": FunctionFragment;
@@ -102,14 +100,6 @@ interface TokenFactoryInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "baseURI721",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x9326b97c",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x9aa6d367",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "deployNFT1155AndMintBatch",
@@ -282,14 +272,6 @@ interface TokenFactoryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "baseURI721", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x9326b97c",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x9aa6d367",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "deployNFT1155AndMintBatch",
     data: BytesLike
@@ -512,16 +494,6 @@ export class TokenFactory extends BaseContract {
 
     baseURI721(overrides?: CallOverrides): Promise<[string]>;
 
-    c_0x9326b97c(
-      c__0x9326b97c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     deployNFT1155AndMintBatch(
       owner: string,
       tokenIds: BigNumberish[],
@@ -733,16 +705,6 @@ export class TokenFactory extends BaseContract {
 
   baseURI721(overrides?: CallOverrides): Promise<string>;
 
-  c_0x9326b97c(
-    c__0x9326b97c: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x9aa6d367(
-    c__0x9aa6d367: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   deployNFT1155AndMintBatch(
     owner: string,
     tokenIds: BigNumberish[],
@@ -944,16 +906,6 @@ export class TokenFactory extends BaseContract {
     baseURI1155(overrides?: CallOverrides): Promise<string>;
 
     baseURI721(overrides?: CallOverrides): Promise<string>;
-
-    c_0x9326b97c(
-      c__0x9326b97c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     deployNFT1155AndMintBatch(
       owner: string,
@@ -1284,16 +1236,6 @@ export class TokenFactory extends BaseContract {
 
     baseURI721(overrides?: CallOverrides): Promise<BigNumber>;
 
-    c_0x9326b97c(
-      c__0x9326b97c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     deployNFT1155AndMintBatch(
       owner: string,
       tokenIds: BigNumberish[],
@@ -1502,16 +1444,6 @@ export class TokenFactory extends BaseContract {
     baseURI1155(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     baseURI721(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    c_0x9326b97c(
-      c__0x9326b97c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     deployNFT1155AndMintBatch(
       owner: string,

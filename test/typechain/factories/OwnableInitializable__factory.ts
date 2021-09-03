@@ -30,19 +30,6 @@ const _abi = [
     type: "event",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "c__0x55da0db1",
-        type: "bytes32",
-      },
-    ],
-    name: "c_0x55da0db1",
-    outputs: [],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "owner",
     outputs: [
