@@ -17,4 +17,4 @@ coverage.json
 .history/
 
 # Typechain
-typechain/
+/typechain/

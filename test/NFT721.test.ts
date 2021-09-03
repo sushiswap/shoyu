@@ -8,7 +8,7 @@ import {
     FixedPriceSale,
     DesignatedSale,
     ExchangeProxy,
-} from "../typechain";
+} from "./typechain";
 
 import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
 import { ethers } from "hardhat";

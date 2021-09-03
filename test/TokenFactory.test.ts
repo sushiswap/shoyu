@@ -8,7 +8,7 @@ import {
     ERC721Mock,
     ERC1155Mock,
     ERC20Mock,
-} from "../typechain";
+} from "./typechain";
 
 import {
     getMint1155Digest,

@@ -1,4 +1,4 @@
-import { TokenFactory, SocialTokenV0, ERC20Mock } from "../typechain";
+import { TokenFactory, SocialTokenV0, ERC20Mock } from "./typechain";
 
 import { sign, convertToHash, domainSeparator, getDigest, getHash } from "./utils/sign-utils";
 import { ethers } from "hardhat";
