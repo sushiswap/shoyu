@@ -419,32 +419,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32",
-        name: "c__0x5c8d7c6e",
-        type: "bytes32",
-      },
-    ],
-    name: "c_0x5c8d7c6e",
-    outputs: [],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "c__0x982d090c",
-        type: "bytes32",
-      },
-    ],
-    name: "c_0x982d090c",
-    outputs: [],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "token",
         type: "address",

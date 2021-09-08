@@ -21,7 +21,6 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface PaymentSplitterInterface extends ethers.utils.Interface {
   functions: {
-    "c_0x776830ed(bytes32)": FunctionFragment;
     "initialize(string,address[],uint256[])": FunctionFragment;
     "payees(uint256)": FunctionFragment;
     "release(address,address)": FunctionFragment;
@@ -32,10 +31,6 @@ interface PaymentSplitterInterface extends ethers.utils.Interface {
     "totalShares()": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0x776830ed",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [string, string[], BigNumberish[]]
@@ -63,10 +58,6 @@ interface PaymentSplitterInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0x776830ed",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "payees", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "release", data: BytesLike): Result;
@@ -135,11 +126,6 @@ export class PaymentSplitter extends BaseContract {
   interface: PaymentSplitterInterface;
 
   functions: {
-    c_0x776830ed(
-      c__0x776830ed: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     initialize(
       _title: string,
       _payees: string[],
@@ -173,11 +159,6 @@ export class PaymentSplitter extends BaseContract {
     totalShares(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
-  c_0x776830ed(
-    c__0x776830ed: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   initialize(
     _title: string,
     _payees: string[],
@@ -208,11 +189,6 @@ export class PaymentSplitter extends BaseContract {
   totalShares(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
-    c_0x776830ed(
-      c__0x776830ed: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     initialize(
       _title: string,
       _payees: string[],
@@ -263,11 +239,6 @@ export class PaymentSplitter extends BaseContract {
   };
 
   estimateGas: {
-    c_0x776830ed(
-      c__0x776830ed: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     initialize(
       _title: string,
       _payees: string[],
@@ -299,11 +270,6 @@ export class PaymentSplitter extends BaseContract {
   };
 
   populateTransaction: {
-    c_0x776830ed(
-      c__0x776830ed: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     initialize(
       _title: string,
       _payees: string[],

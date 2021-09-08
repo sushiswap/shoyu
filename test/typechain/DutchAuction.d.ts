@@ -20,15 +20,10 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface DutchAuctionInterface extends ethers.utils.Interface {
   functions: {
-    "c_0x5cc2c82b(bytes32)": FunctionFragment;
     "canBid(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
     "canClaim(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0x5cc2c82b",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "canBid",
     values: [
@@ -54,10 +49,6 @@ interface DutchAuctionInterface extends ethers.utils.Interface {
     ]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0x5cc2c82b",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "canBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canClaim", data: BytesLike): Result;
 
@@ -108,11 +99,6 @@ export class DutchAuction extends BaseContract {
   interface: DutchAuctionInterface;
 
   functions: {
-    c_0x5cc2c82b(
-      c__0x5cc2c82b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -135,11 +121,6 @@ export class DutchAuction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
-
-  c_0x5cc2c82b(
-    c__0x5cc2c82b: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   canBid(
     arg0: BigNumberish,
@@ -164,11 +145,6 @@ export class DutchAuction extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
-    c_0x5cc2c82b(
-      c__0x5cc2c82b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -195,11 +171,6 @@ export class DutchAuction extends BaseContract {
   filters: {};
 
   estimateGas: {
-    c_0x5cc2c82b(
-      c__0x5cc2c82b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,
@@ -224,11 +195,6 @@ export class DutchAuction extends BaseContract {
   };
 
   populateTransaction: {
-    c_0x5cc2c82b(
-      c__0x5cc2c82b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     canBid(
       arg0: BigNumberish,
       arg1: BytesLike,

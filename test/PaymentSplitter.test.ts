@@ -27,7 +27,7 @@ const setupTest = async () => {
     };
 };
 
-describe("PaymentSplitterFactory", () => {
+describe("PaymentSplitter", () => {
     beforeEach(async () => {
         await ethers.provider.send("hardhat_reset", []);
     });

@@ -23,7 +23,6 @@ interface ERC721MockInterface extends ethers.utils.Interface {
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "c_0xe742fb52(bytes32)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "name()": FunctionFragment;
@@ -44,10 +43,6 @@ interface ERC721MockInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "c_0xe742fb52",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -97,10 +92,6 @@ interface ERC721MockInterface extends ethers.utils.Interface {
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xe742fb52",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -202,11 +193,6 @@ export class ERC721Mock extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    c_0xe742fb52(
-      c__0xe742fb52: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -295,11 +281,6 @@ export class ERC721Mock extends BaseContract {
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  c_0xe742fb52(
-    c__0xe742fb52: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   getApproved(
     tokenId: BigNumberish,
     overrides?: CallOverrides
@@ -381,11 +362,6 @@ export class ERC721Mock extends BaseContract {
     ): Promise<void>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    c_0xe742fb52(
-      c__0xe742fb52: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -499,11 +475,6 @@ export class ERC721Mock extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    c_0xe742fb52(
-      c__0xe742fb52: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -593,11 +564,6 @@ export class ERC721Mock extends BaseContract {
 
     balanceOf(
       owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xe742fb52(
-      c__0xe742fb52: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

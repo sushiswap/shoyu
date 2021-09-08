@@ -419,8 +419,8 @@ describe("Exchange part of NFT1155", () => {
         return contract.address.toLowerCase();
     }
     async function checkEvent(contract: Contract, eventName: string, args: any[]) {
-        const events: any = await contract.queryFilter(contract.filters[eventName](), "latest");
-        expect(events[0].event).to.be.equal(eventName);
+        const events = await contract.queryFilter(contract.filters[eventName](), "latest");
+        expect(events[0]?.event).to.be.equal(eventName);
 
         if (args !== undefined) {
             const length = events[0].args.length;
@@ -977,10 +977,10 @@ describe("Exchange part of NFT1155", () => {
         );
 
         await bid1(nft1155_0, bob, askOrder1.order, bidOrder1.order);
-        checkEvent(nft1155_0, "Claim", [askOrder1.hash, carol.address, 4, 990, carol.address, AddressZero]);
+        await checkEvent(nft1155_0, "Claim", [askOrder1.hash, carol.address, 4, 990, carol.address, AddressZero]);
 
         await bid1(nft1155_0, alice, askOrder2.order, bidOrder2.order);
-        checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 3, 100, dan.address, AddressZero]);
+        await checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 3, 100, dan.address, AddressZero]);
     });
 
     it("should be that fees and nft go to receipients if they are set in orders", async () => {

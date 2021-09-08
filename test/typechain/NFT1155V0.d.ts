@@ -30,12 +30,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     "bid(tuple,uint256,uint256,address,address)": FunctionFragment;
     "burn(uint256,uint256,uint256,bytes32)": FunctionFragment;
     "burnBatch(uint256[],uint256[])": FunctionFragment;
-    "c_0x55da0db1(bytes32)": FunctionFragment;
-    "c_0x5c8d7c6e(bytes32)": FunctionFragment;
-    "c_0x8d79f22d(bytes32)": FunctionFragment;
-    "c_0x982d090c(bytes32)": FunctionFragment;
-    "c_0xafd58a9b(bytes32)": FunctionFragment;
-    "c_0xf3ba4abc(bytes32)": FunctionFragment;
     "canTrade(address)": FunctionFragment;
     "cancel(tuple)": FunctionFragment;
     "claim(tuple)": FunctionFragment;
@@ -114,30 +108,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "burnBatch",
     values: [BigNumberish[], BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x55da0db1",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x5c8d7c6e",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x8d79f22d",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x982d090c",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0xafd58a9b",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0xf3ba4abc",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "canTrade", values: [string]): string;
   encodeFunctionData(
@@ -273,30 +243,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "bid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burnBatch", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x55da0db1",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x5c8d7c6e",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x8d79f22d",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x982d090c",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xafd58a9b",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xf3ba4abc",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "canTrade", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "cancel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
@@ -533,36 +479,6 @@ export class NFT1155V0 extends BaseContract {
       amounts: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    c_0x55da0db1(
-      c__0x55da0db1: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x5c8d7c6e(
-      c__0x5c8d7c6e: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x8d79f22d(
-      c__0x8d79f22d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x982d090c(
-      c__0x982d090c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0xafd58a9b(
-      c__0xafd58a9b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0xf3ba4abc(
-      c__0xf3ba4abc: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
 
     canTrade(token: string, overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -828,36 +744,6 @@ export class NFT1155V0 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  c_0x55da0db1(
-    c__0x55da0db1: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x5c8d7c6e(
-    c__0x5c8d7c6e: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x8d79f22d(
-    c__0x8d79f22d: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x982d090c(
-    c__0x982d090c: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0xafd58a9b(
-    c__0xafd58a9b: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0xf3ba4abc(
-    c__0xf3ba4abc: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   canTrade(token: string, overrides?: CallOverrides): Promise<boolean>;
 
   cancel(
@@ -1122,36 +1008,6 @@ export class NFT1155V0 extends BaseContract {
     burnBatch(
       tokenIds: BigNumberish[],
       amounts: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x55da0db1(
-      c__0x55da0db1: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x5c8d7c6e(
-      c__0x5c8d7c6e: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x8d79f22d(
-      c__0x8d79f22d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x982d090c(
-      c__0x982d090c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0xafd58a9b(
-      c__0xafd58a9b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0xf3ba4abc(
-      c__0xf3ba4abc: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1529,36 +1385,6 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    c_0x55da0db1(
-      c__0x55da0db1: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x5c8d7c6e(
-      c__0x5c8d7c6e: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x8d79f22d(
-      c__0x8d79f22d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x982d090c(
-      c__0x982d090c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0xafd58a9b(
-      c__0xafd58a9b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0xf3ba4abc(
-      c__0xf3ba4abc: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     canTrade(token: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     cancel(
@@ -1814,36 +1640,6 @@ export class NFT1155V0 extends BaseContract {
       tokenIds: BigNumberish[],
       amounts: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    c_0x55da0db1(
-      c__0x55da0db1: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x5c8d7c6e(
-      c__0x5c8d7c6e: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x8d79f22d(
-      c__0x8d79f22d: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x982d090c(
-      c__0x982d090c: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xafd58a9b(
-      c__0xafd58a9b: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xf3ba4abc(
-      c__0xf3ba4abc: BytesLike,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     canTrade(

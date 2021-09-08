@@ -101,14 +101,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OwnableInitializable__factory>;
     getContractFactory(
-      name: "ProxyFactory",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ProxyFactory__factory>;
-    getContractFactory(
-      name: "ReentrancyGuardInitializable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ReentrancyGuardInitializable__factory>;
-    getContractFactory(
       name: "ERC1155ExchangeV0",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC1155ExchangeV0__factory>;
@@ -184,14 +176,6 @@ declare module "hardhat/types/runtime" {
       name: "ITokenFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ITokenFactory__factory>;
-    getContractFactory(
-      name: "Orders",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Orders__factory>;
-    getContractFactory(
-      name: "Signature",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Signature__factory>;
     getContractFactory(
       name: "TokenHelper",
       signerOrOptions?: ethers.Signer | FactoryOptions

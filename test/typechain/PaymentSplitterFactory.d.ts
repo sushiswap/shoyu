@@ -21,20 +21,10 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface PaymentSplitterFactoryInterface extends ethers.utils.Interface {
   functions: {
-    "c_0x99326011(bytes32)": FunctionFragment;
-    "c_0x9aa6d367(bytes32)": FunctionFragment;
     "deployPaymentSplitter(address,string,address[],uint256[])": FunctionFragment;
     "isPaymentSplitter(address)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "c_0x99326011",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x9aa6d367",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "deployPaymentSplitter",
     values: [string, string, string[], BigNumberish[]]
@@ -44,14 +34,6 @@ interface PaymentSplitterFactoryInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "c_0x99326011",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x9aa6d367",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "deployPaymentSplitter",
     data: BytesLike
@@ -112,16 +94,6 @@ export class PaymentSplitterFactory extends BaseContract {
   interface: PaymentSplitterFactoryInterface;
 
   functions: {
-    c_0x99326011(
-      c__0x99326011: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     deployPaymentSplitter(
       owner: string,
       title: string,
@@ -136,16 +108,6 @@ export class PaymentSplitterFactory extends BaseContract {
     ): Promise<[boolean] & { result: boolean }>;
   };
 
-  c_0x99326011(
-    c__0x99326011: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
-  c_0x9aa6d367(
-    c__0x9aa6d367: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   deployPaymentSplitter(
     owner: string,
     title: string,
@@ -157,16 +119,6 @@ export class PaymentSplitterFactory extends BaseContract {
   isPaymentSplitter(query: string, overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    c_0x99326011(
-      c__0x99326011: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     deployPaymentSplitter(
       owner: string,
       title: string,
@@ -201,16 +153,6 @@ export class PaymentSplitterFactory extends BaseContract {
   };
 
   estimateGas: {
-    c_0x99326011(
-      c__0x99326011: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     deployPaymentSplitter(
       owner: string,
       title: string,
@@ -226,16 +168,6 @@ export class PaymentSplitterFactory extends BaseContract {
   };
 
   populateTransaction: {
-    c_0x99326011(
-      c__0x99326011: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x9aa6d367(
-      c__0x9aa6d367: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     deployPaymentSplitter(
       owner: string,
       title: string,
