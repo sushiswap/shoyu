@@ -10,6 +10,7 @@ import "../interfaces/IStrategy.sol";
 import "../interfaces/IDividendPayingERC20.sol";
 import "./ReentrancyGuardInitializable.sol";
 import "../libraries/Signature.sol";
+import "../interfaces/IERC2981.sol";
 
 abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     using SafeERC20 for IERC20;
@@ -36,10 +37,6 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     function DOMAIN_SEPARATOR() public view virtual override returns (bytes32);
 
     function factory() public view virtual override returns (address);
-
-    function royaltyFeeInfo() public view virtual override returns (address, uint8) {
-        return (address(0), uint8(0));
-    }
 
     function canTrade(address token) public view virtual override returns (bool) {
         return token == address(this);
@@ -132,7 +129,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
             require(
-                _transferFeesAndFunds(askOrder.currency, bidder, recipient, bidPrice * bidAmount),
+                _transferFeesAndFunds(
+                    askOrder.token,
+                    askOrder.tokenId,
+                    askOrder.currency,
+                    bidder,
+                    recipient,
+                    bidPrice * bidAmount
+                ),
                 "SHOYU: FAILED_TO_TRANSFER_FUNDS"
             );
 
@@ -193,7 +197,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
 
         isCancelledOrClaimed[askHash] = true;
         require(
-            _transferFeesAndFunds(askOrder.currency, best.bidder, recipient, best.price * best.amount),
+            _transferFeesAndFunds(
+                askOrder.token,
+                askOrder.tokenId,
+                askOrder.currency,
+                best.bidder,
+                recipient,
+                best.price * best.amount
+            ),
             "SHOYU: FAILED_TO_TRANSFER_FUNDS"
         );
         amountFilled[askHash] = amountFilled[askHash] + best.amount;
@@ -219,6 +230,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     }
 
     function _transferFeesAndFunds(
+        address token,
+        uint256 tokenId,
         address currency,
         address from,
         address to,
@@ -245,14 +258,15 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             remainder -= operationalFeeAmount;
         }
 
-        (address royaltyFeeRecipient, uint8 royaltyFeePermil) = royaltyFeeInfo();
-        if (royaltyFeePermil != type(uint8).max) {
-            uint256 royaltyFeeAmount = (remainder * royaltyFeePermil) / 1000;
+        try IERC2981(token).royaltyInfo(tokenId, amount) returns (
+            address royaltyFeeRecipient,
+            uint256 royaltyFeeAmount
+        ) {
             if (royaltyFeeAmount > 0) {
                 remainder -= royaltyFeeAmount;
                 _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
             }
-        }
+        } catch {}
 
         IERC20(currency).safeTransfer(to, remainder);
         return true;

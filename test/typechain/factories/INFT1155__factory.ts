@@ -1154,24 +1154,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "royaltyFeeInfo",
-    outputs: [
-      {
-        internalType: "address",
-        name: "recipient",
-        type: "address",
-      },
-      {
-        internalType: "uint8",
-        name: "permil",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",

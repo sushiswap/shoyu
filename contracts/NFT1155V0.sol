@@ -51,12 +51,10 @@ contract NFT1155V0 is BaseNFT1155, BaseExchange, IERC2981, INFT1155 {
         return _factory;
     }
 
-    function royaltyFeeInfo() public view override(BaseExchange, INFT1155) returns (address recipient, uint8 permil) {
-        return (_royaltyFeeRecipient, _royaltyFee);
-    }
-
     function royaltyInfo(uint256, uint256 _salePrice) external view override returns (address, uint256) {
-        return (_royaltyFeeRecipient, (_salePrice * _royaltyFee) / 1000);
+        uint256 royaltyAmount;
+        if (_royaltyFee != type(uint8).max) royaltyAmount = (_salePrice * _royaltyFee) / 1000;
+        return (_royaltyFeeRecipient, royaltyAmount);
     }
 
     function _transfer(

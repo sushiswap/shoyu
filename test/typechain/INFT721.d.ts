@@ -51,7 +51,6 @@ interface INFT721Interface extends ethers.utils.Interface {
     "permit(address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "permitAll(address,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "royaltyFeeInfo()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
@@ -224,10 +223,6 @@ interface INFT721Interface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "royaltyFeeInfo",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "safeTransferFrom",
     values: [string, string, BigNumberish]
   ): string;
@@ -324,10 +319,6 @@ interface INFT721Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "permitAll", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "royaltyFeeInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -690,10 +681,6 @@ export class INFT721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
-
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
@@ -991,10 +978,6 @@ export class INFT721 extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  royaltyFeeInfo(
-    overrides?: CallOverrides
-  ): Promise<[string, number] & { recipient: string; permil: number }>;
 
   "safeTransferFrom(address,address,uint256)"(
     from: string,
@@ -1297,10 +1280,6 @@ export class INFT721 extends BaseContract {
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,
@@ -1706,8 +1685,6 @@ export class INFT721 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
     "safeTransferFrom(address,address,uint256)"(
       from: string,
       to: string,
@@ -2020,8 +1997,6 @@ export class INFT721 extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,

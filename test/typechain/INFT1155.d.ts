@@ -43,7 +43,6 @@ interface INFT1155Interface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "permit(address,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "royaltyFeeInfo()": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
@@ -179,10 +178,6 @@ interface INFT1155Interface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "royaltyFeeInfo",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "safeBatchTransferFrom",
     values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
   ): string;
@@ -258,10 +253,6 @@ interface INFT1155Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "royaltyFeeInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -570,10 +561,6 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
-
     safeBatchTransferFrom(
       from: string,
       to: string,
@@ -827,10 +814,6 @@ export class INFT1155 extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  royaltyFeeInfo(
-    overrides?: CallOverrides
-  ): Promise<[string, number] & { recipient: string; permil: number }>;
 
   safeBatchTransferFrom(
     from: string,
@@ -1086,10 +1069,6 @@ export class INFT1155 extends BaseContract {
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
 
     safeBatchTransferFrom(
       from: string,
@@ -1457,8 +1436,6 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
     safeBatchTransferFrom(
       from: string,
       to: string,
@@ -1713,8 +1690,6 @@ export class INFT1155 extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     safeBatchTransferFrom(
       from: string,

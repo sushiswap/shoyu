@@ -9,6 +9,7 @@ import {
     DesignatedSale,
     ExchangeProxy,
     ERC721ExchangeV0,
+    ERC721RoyaltyMock
 } from "./typechain";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
@@ -146,7 +147,7 @@ describe("ERC721Exchange", () => {
 
         const p = BigNumber.from(price).mul(protocol).div(1000);
         const o = BigNumber.from(price).mul(operator).div(1000);
-        const r = BigNumber.from(price).sub(p.add(o)).mul(royalty).div(1000);
+        const r = BigNumber.from(price).mul(royalty).div(1000);
         const seller = BigNumber.from(price).sub(p.add(o).add(r));
 
         fee.push(p);
@@ -1199,5 +1200,87 @@ describe("ERC721Exchange", () => {
             [-100, fees1[0], fees1[1], fees1[3], 0]
         );
         expect(await erc721Mock0.ownerOf(0)).to.be.equal(dan.address);
+    });
+
+    it("should be that token implementing EIP2981 give royalty to receipient when auction is finished", async () => {
+        const {
+            deployer,
+            operationalVault,
+            protocolVault,
+            erc721Exchange,
+            exchangeName,
+            erc20Mock,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, bob, carol } = getWallets();
+
+        const ERC721RoyaltyMockContract = await ethers.getContractFactory("ERC721RoyaltyMock");
+        const erc721RoyaltyMock0 = (await ERC721RoyaltyMockContract.deploy()) as ERC721RoyaltyMock;
+    
+        await erc721RoyaltyMock0.safeMintBatch1(alice.address, [0, 1, 20], []);
+        await erc721RoyaltyMock0.connect(alice).setApprovalForAll(erc721Exchange.address, true);
+
+        const currentBlock = await getBlock();
+        const deadline = currentBlock + 100;
+
+        await erc20Mock.mint(bob.address, 10000000);
+        await erc20Mock.mint(carol.address, 10000000);
+        await erc20Mock.connect(bob).approve(erc721Exchange.address, 10000000);
+        await erc20Mock.connect(carol).approve(erc721Exchange.address, 10000000);
+
+        expect((await erc721RoyaltyMock0.royaltyInfo(1,1000))[0]).to.be.equal(deployer.address);
+        expect((await erc721RoyaltyMock0.royaltyInfo(1,1000))[1]).to.be.equal(10);
+        expect((await erc721RoyaltyMock0.royaltyInfo(20,1000))[0]).to.be.equal(deployer.address);
+        expect((await erc721RoyaltyMock0.royaltyInfo(20,1000))[1]).to.be.equal(100);
+
+        //protocol 25 operator 5 royalty 10
+        const askOrder0 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            alice,
+            erc721RoyaltyMock0.address,
+            1,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            alice.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [12345])
+        );
+
+        const fees0 = fees(12345, 25, 5, 10);
+        await expect(() => bid2(erc721Exchange, carol, askOrder0.order, 1, 12345, carol.address)).to.changeTokenBalances(
+            erc20Mock,
+            [carol, protocolVault, operationalVault, deployer, alice],
+            [-12345, fees0[0], fees0[1], fees0[2], fees0[3]]
+        );
+        expect(await erc721RoyaltyMock0.ownerOf(1)).to.be.equal(carol.address);
+
+        
+        //protocol 25 operator 5 royalty 100
+        const askOrder1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            alice,
+            erc721RoyaltyMock0.address,
+            20,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            alice.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [54321])
+        );
+
+        const fees1 = fees(54321, 25, 5, 100);
+        await expect(() => bid2(erc721Exchange, bob, askOrder1.order, 1, 54321, bob.address)).to.changeTokenBalances(
+            erc20Mock,
+            [bob, protocolVault, operationalVault, deployer, alice],
+            [-54321, fees1[0], fees1[1], fees1[2], fees1[3]]
+        );
+        expect(await erc721RoyaltyMock0.ownerOf(20)).to.be.equal(bob.address);
     });
 });

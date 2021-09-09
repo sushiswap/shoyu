@@ -129,10 +129,8 @@ describe("NFT part of NFT721", () => {
         expect(await nft721_0.tokenURI(4)).to.be.equal(await URI721(nft721_0, 4));
         await expect(nft721_0.tokenURI(1)).to.be.revertedWith("SHOYU: INVALID_TOKEN_ID");
 
-        expect((await nft721_0.royaltyFeeInfo())[0]).to.be.equal(royaltyVault.address);
         expect((await nft721_0.royaltyInfo(0, 0))[0]).to.be.equal(royaltyVault.address);
 
-        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(13);
         expect((await nft721_0.royaltyInfo(0, 12345))[1]).to.be.equal(Math.floor((12345 * 13) / 1000));
 
         for (let i = 0; i < 10; i++) {
@@ -176,10 +174,8 @@ describe("NFT part of NFT721", () => {
         expect(await nft721_0.tokenURI(6)).to.be.equal(await URI721(nft721_0, 6));
         await expect(nft721_0.tokenURI(7)).to.be.revertedWith("SHOYU: INVALID_TOKEN_ID");
 
-        expect((await nft721_0.royaltyFeeInfo())[0]).to.be.equal(royaltyVault.address);
         expect((await nft721_0.royaltyInfo(0, 0))[0]).to.be.equal(royaltyVault.address);
 
-        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(13);
         expect((await nft721_0.royaltyInfo(0, 12345))[1]).to.be.equal(Math.floor((12345 * 13) / 1000));
 
         for (let i = 0; i <= 6; i++) {
@@ -317,20 +313,20 @@ describe("NFT part of NFT721", () => {
         await expect(nft721_0.setRoyaltyFee(10)).to.be.revertedWith("SHOYU: FORBIDDEN");
         await expect(nft721_0.connect(alice).setRoyaltyFee(30)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft721_0.connect(alice).setRoyaltyFee(3);
-        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(3);
+        expect((await nft721_0.royaltyInfo(0, 1000))[1]).to.be.equal(3);
         await nft721_0.connect(alice).setRoyaltyFee(0);
-        expect((await nft721_0.royaltyFeeInfo())[1]).to.be.equal(0);
+        expect((await nft721_0.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft721_0.connect(alice).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
 
         await factory.deployNFT721AndMintBatch(bob.address, "Name", "Symbol", [9, 11], royaltyVault.address, 0);
         const nft721_1 = await getNFT721(factory);
-        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(255);
+        expect((await nft721_1.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft721_1.connect(bob).setRoyaltyFee(251)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft721_1.connect(bob).setRoyaltyFee(93);
-        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(93);
+        expect((await nft721_1.royaltyInfo(0, 1000))[1]).to.be.equal(93);
         await expect(nft721_1.connect(bob).setRoyaltyFee(111)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft721_1.connect(bob).setRoyaltyFee(0);
-        expect((await nft721_1.royaltyFeeInfo())[1]).to.be.equal(0);
+        expect((await nft721_1.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft721_1.connect(bob).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
     });
 
@@ -538,7 +534,7 @@ describe("Exchange part of NFT721", () => {
 
         const p = BigNumber.from(price).mul(protocol).div(1000);
         const o = BigNumber.from(price).mul(operator).div(1000);
-        const r = BigNumber.from(price).sub(p.add(o)).mul(royalty).div(1000);
+        const r = BigNumber.from(price).mul(royalty).div(1000);
         const seller = BigNumber.from(price).sub(p.add(o).add(r));
 
         fee.push(p);

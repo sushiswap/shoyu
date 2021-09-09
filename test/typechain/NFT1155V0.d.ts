@@ -43,7 +43,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "permit(address,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "royaltyFeeInfo()": FunctionFragment;
     "royaltyInfo(uint256,uint256)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
@@ -180,10 +179,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "royaltyFeeInfo",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "royaltyInfo",
     values: [BigNumberish, BigNumberish]
   ): string;
@@ -263,10 +258,6 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "royaltyFeeInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -579,10 +570,6 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
-
     royaltyInfo(
       arg0: BigNumberish,
       _salePrice: BigNumberish,
@@ -842,10 +829,6 @@ export class NFT1155V0 extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  royaltyFeeInfo(
-    overrides?: CallOverrides
-  ): Promise<[string, number] & { recipient: string; permil: number }>;
 
   royaltyInfo(
     arg0: BigNumberish,
@@ -1107,10 +1090,6 @@ export class NFT1155V0 extends BaseContract {
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
 
     royaltyInfo(
       arg0: BigNumberish,
@@ -1484,8 +1463,6 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
     royaltyInfo(
       arg0: BigNumberish,
       _salePrice: BigNumberish,
@@ -1746,8 +1723,6 @@ export class NFT1155V0 extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     royaltyInfo(
       arg0: BigNumberish,
