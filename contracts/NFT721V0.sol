@@ -3,7 +3,6 @@
 pragma solidity =0.8.3;
 
 import "./interfaces/INFT721.sol";
-import "./interfaces/IERC2981.sol";
 import "./base/BaseNFT721.sol";
 import "./base/BaseExchange.sol";
 
@@ -73,12 +72,10 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
         return _factory;
     }
 
-    function royaltyFeeInfo() public view override(BaseExchange, INFT721) returns (address recipient, uint8 permil) {
-        return (_royaltyFeeRecipient, _royaltyFee);
-    }
-
     function royaltyInfo(uint256, uint256 _salePrice) external view override returns (address, uint256) {
-        return (_royaltyFeeRecipient, (_salePrice * _royaltyFee) / 1000);
+        uint256 royaltyAmount;
+        if (_royaltyFee != type(uint8).max) royaltyAmount = (_salePrice * _royaltyFee) / 1000;
+        return (_royaltyFeeRecipient, royaltyAmount);
     }
 
     function _transfer(

@@ -20,8 +20,6 @@ interface IBaseExchange {
 
     function factory() external view returns (address);
 
-    function royaltyFeeInfo() external view returns (address recipient, uint8 permil);
-
     function canTrade(address token) external view returns (bool);
 
     function bestBid(bytes32 hash)

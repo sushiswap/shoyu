@@ -31,8 +31,6 @@ interface INFT721 is IBaseNFT721, IBaseExchange {
 
     function factory() external view override(IBaseNFT721, IBaseExchange) returns (address);
 
-    function royaltyFeeInfo() external view override returns (address recipient, uint8 permil);
-
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 
     function setRoyaltyFee(uint8 _royaltyFee) external;

@@ -21,8 +21,6 @@ interface INFT1155 is IBaseNFT1155, IBaseExchange {
 
     function factory() external view override(IBaseNFT1155, IBaseExchange) returns (address);
 
-    function royaltyFeeInfo() external view override returns (address recipient, uint8 permil);
-
     function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external;
 
     function setRoyaltyFee(uint8 _royaltyFee) external;
