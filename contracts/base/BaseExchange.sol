@@ -265,6 +265,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             if (royaltyFeeAmount > 0) {
                 remainder -= royaltyFeeAmount;
                 _transferRoyaltyFee(currency, royaltyFeeRecipient, royaltyFeeAmount);
+                emit TransferRoyalty(token, tokenId, royaltyFeeRecipient, currency, royaltyFeeAmount);
             }
         } catch {}
 

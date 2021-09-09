@@ -15,6 +15,13 @@ interface IBaseExchange {
         address referrer
     );
     event Bid(bytes32 indexed hash, address bidder, uint256 amount, uint256 price, address recipient, address referrer);
+    event TransferRoyalty(
+        address indexed nft,
+        uint256 id,
+        address indexed recipient,
+        address indexed currency,
+        uint256 amount
+    );
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
