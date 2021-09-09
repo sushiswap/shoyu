@@ -121,10 +121,8 @@ describe("NFT part of NFT1155", () => {
         expect(await nft1155_0.uri(1)).to.be.equal(await URI1155(nft1155_0));
         expect(await nft1155_0.uri(11759)).to.be.equal(await URI1155(nft1155_0));
 
-        expect((await nft1155_0.royaltyFeeInfo())[0]).to.be.equal(royaltyVault.address);
         expect((await nft1155_0.royaltyInfo(0, 0))[0]).to.be.equal(royaltyVault.address);
 
-        expect((await nft1155_0.royaltyFeeInfo())[1]).to.be.equal(13);
         expect((await nft1155_0.royaltyInfo(0, 12345))[1]).to.be.equal(Math.floor((12345 * 13) / 1000));
     });
 
@@ -236,20 +234,20 @@ describe("NFT part of NFT1155", () => {
         await expect(nft1155_0.setRoyaltyFee(10)).to.be.revertedWith("SHOYU: FORBIDDEN");
         await expect(nft1155_0.connect(alice).setRoyaltyFee(30)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft1155_0.connect(alice).setRoyaltyFee(3);
-        expect((await nft1155_0.royaltyFeeInfo())[1]).to.be.equal(3);
+        expect((await nft1155_0.royaltyInfo(0, 1000))[1]).to.be.equal(3);
         await nft1155_0.connect(alice).setRoyaltyFee(0);
-        expect((await nft1155_0.royaltyFeeInfo())[1]).to.be.equal(0);
+        expect((await nft1155_0.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft1155_0.connect(alice).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
 
         await factory.deployNFT1155AndMintBatch(bob.address, [9, 11], [10, 50], royaltyVault.address, 0);
         const nft1155_1 = await getNFT1155(factory);
-        expect((await nft1155_1.royaltyFeeInfo())[1]).to.be.equal(255);
+        expect((await nft1155_1.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft1155_1.connect(bob).setRoyaltyFee(251)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft1155_1.connect(bob).setRoyaltyFee(93);
-        expect((await nft1155_1.royaltyFeeInfo())[1]).to.be.equal(93);
+        expect((await nft1155_1.royaltyInfo(0, 1000))[1]).to.be.equal(93);
         await expect(nft1155_1.connect(bob).setRoyaltyFee(111)).to.be.revertedWith("SHOYU: INVALID_FEE");
         await nft1155_1.connect(bob).setRoyaltyFee(0);
-        expect((await nft1155_1.royaltyFeeInfo())[1]).to.be.equal(0);
+        expect((await nft1155_1.royaltyInfo(0, 1000))[1]).to.be.equal(0);
         await expect(nft1155_1.connect(bob).setRoyaltyFee(1)).to.be.revertedWith("SHOYU: INVALID_FEE");
     });
 
@@ -405,7 +403,7 @@ describe("Exchange part of NFT1155", () => {
 
         const p = BigNumber.from(price).mul(protocol).div(1000);
         const o = BigNumber.from(price).mul(operator).div(1000);
-        const r = BigNumber.from(price).sub(p.add(o)).mul(royalty).div(1000);
+        const r = BigNumber.from(price).mul(royalty).div(1000);
         const seller = BigNumber.from(price).sub(p.add(o).add(r));
 
         fee.push(p);

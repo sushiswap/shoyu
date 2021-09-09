@@ -30,7 +30,6 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     "claim(tuple)": FunctionFragment;
     "factory()": FunctionFragment;
     "isCancelledOrClaimed(bytes32)": FunctionFragment;
-    "royaltyFeeInfo()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -109,10 +108,6 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     functionFragment: "isCancelledOrClaimed",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "royaltyFeeInfo",
-    values?: undefined
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
@@ -130,10 +125,6 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isCancelledOrClaimed",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "royaltyFeeInfo",
     data: BytesLike
   ): Result;
 
@@ -308,10 +299,6 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -427,10 +414,6 @@ export class IBaseExchange extends BaseContract {
     hash: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  royaltyFeeInfo(
-    overrides?: CallOverrides
-  ): Promise<[string, number] & { recipient: string; permil: number }>;
 
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -549,10 +532,6 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    royaltyFeeInfo(
-      overrides?: CallOverrides
-    ): Promise<[string, number] & { recipient: string; permil: number }>;
   };
 
   filters: {
@@ -704,8 +683,6 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -819,7 +796,5 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

@@ -9,6 +9,7 @@ import {
     DesignatedSale,
     ExchangeProxy,
     ERC1155ExchangeV0,
+    ERC1155RoyaltyMock
 } from "./typechain";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
@@ -145,7 +146,7 @@ describe("ERC1155Exchange", () => {
 
         const p = BigNumber.from(price).mul(protocol).div(1000);
         const o = BigNumber.from(price).mul(operator).div(1000);
-        const r = BigNumber.from(price).sub(p.add(o)).mul(royalty).div(1000);
+        const r = BigNumber.from(price).mul(royalty).div(1000);
         const seller = BigNumber.from(price).sub(p.add(o).add(r));
 
         fee.push(p);
@@ -827,5 +828,86 @@ describe("ERC1155Exchange", () => {
         );
         expect(await erc1155Mock0.balanceOf(carol.address, 1)).to.be.equal(0);
         expect(await erc1155Mock0.balanceOf(bob.address, 1)).to.be.equal(3);
+    });
+
+    it("should be that token implementing EIP2981 give royalty to receipient when auction is finished", async () => {
+        const {
+            deployer,
+            operationalVault,
+            protocolVault,
+            erc1155Exchange,
+            exchangeName,
+            erc20Mock,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, bob, carol } = getWallets();
+
+        const ERC1155RoyaltyMockContract = await ethers.getContractFactory("ERC1155RoyaltyMock");
+        const erc1155RoyaltyMock0 = (await ERC1155RoyaltyMockContract.deploy()) as ERC1155RoyaltyMock;
+    
+        await erc1155RoyaltyMock0.mintBatch(alice.address, [8, 25], [22, 55], []);
+        await erc1155RoyaltyMock0.connect(alice).setApprovalForAll(erc1155Exchange.address, true);
+
+        const currentBlock = await getBlock();
+        const deadline = currentBlock + 100;
+
+        await erc20Mock.mint(bob.address, 10000000);
+        await erc20Mock.mint(carol.address, 10000000);
+        await erc20Mock.connect(bob).approve(erc1155Exchange.address, 10000000);
+        await erc20Mock.connect(carol).approve(erc1155Exchange.address, 10000000);
+
+        expect((await erc1155RoyaltyMock0.royaltyInfo(8,1000))[0]).to.be.equal(deployer.address);
+        expect((await erc1155RoyaltyMock0.royaltyInfo(8,1000))[1]).to.be.equal(10);
+        expect((await erc1155RoyaltyMock0.royaltyInfo(25,1000))[0]).to.be.equal(deployer.address);
+        expect((await erc1155RoyaltyMock0.royaltyInfo(25,1000))[1]).to.be.equal(100);
+
+        //protocol 25 operator 5 royalty 10
+        const askOrder0 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            erc1155RoyaltyMock0.address,
+            8,
+            20,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            alice.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [12345])
+        );
+
+        const fees0 = fees(12345*15, 25, 5, 10);
+        await expect(() => bid2(erc1155Exchange, carol, askOrder0.order, 15, 12345, carol.address)).to.changeTokenBalances(
+            erc20Mock,
+            [carol, protocolVault, operationalVault, deployer, alice],
+            [-12345*15, fees0[0], fees0[1], fees0[2], fees0[3]]
+        );
+        expect(await erc1155RoyaltyMock0.balanceOf(carol.address, 8)).to.be.equal(15);
+        
+        //protocol 25 operator 5 royalty 100
+        const askOrder1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            erc1155RoyaltyMock0.address,
+            25,
+            44,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            alice.address,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [54321])
+        );
+
+        const fees1 = fees(54321*44, 25, 5, 100);
+        await expect(() => bid2(erc1155Exchange, bob, askOrder1.order, 44, 54321, bob.address)).to.changeTokenBalances(
+            erc20Mock,
+            [bob, protocolVault, operationalVault, deployer, alice],
+            [-54321*44, fees1[0], fees1[1], fees1[2], fees1[3]]
+        );
+        expect(await erc1155RoyaltyMock0.balanceOf(bob.address, 25)).to.be.equal(44);
     });
 });

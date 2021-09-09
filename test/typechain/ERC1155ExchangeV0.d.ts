@@ -30,7 +30,6 @@ interface ERC1155ExchangeV0Interface extends ethers.utils.Interface {
     "claim(tuple)": FunctionFragment;
     "factory()": FunctionFragment;
     "isCancelledOrClaimed(bytes32)": FunctionFragment;
-    "royaltyFeeInfo()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -109,10 +108,6 @@ interface ERC1155ExchangeV0Interface extends ethers.utils.Interface {
     functionFragment: "isCancelledOrClaimed",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "royaltyFeeInfo",
-    values?: undefined
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
@@ -130,10 +125,6 @@ interface ERC1155ExchangeV0Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isCancelledOrClaimed",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "royaltyFeeInfo",
     data: BytesLike
   ): Result;
 
@@ -308,8 +299,6 @@ export class ERC1155ExchangeV0 extends BaseContract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<[string, number]>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -425,8 +414,6 @@ export class ERC1155ExchangeV0 extends BaseContract {
     arg0: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  royaltyFeeInfo(overrides?: CallOverrides): Promise<[string, number]>;
 
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -545,8 +532,6 @@ export class ERC1155ExchangeV0 extends BaseContract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<[string, number]>;
   };
 
   filters: {
@@ -698,8 +683,6 @@ export class ERC1155ExchangeV0 extends BaseContract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -813,7 +796,5 @@ export class ERC1155ExchangeV0 extends BaseContract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    royaltyFeeInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
