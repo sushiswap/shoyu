@@ -1626,7 +1626,7 @@ describe("Exchange part of NFT721", () => {
         expect((await nft721_0.bestBid(askOrder0.hash))[5]).to.be.equal(await ethers.provider.getBlockNumber());
     });
 
-    it("should be that fees and nft go to receipients if they are set in orders", async () => {
+    it("should be that fees and nft go to recipients if they are set in orders", async () => {
         const {
             factory,
             operationalVault,

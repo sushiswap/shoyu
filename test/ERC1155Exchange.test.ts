@@ -778,7 +778,7 @@ describe("ERC1155Exchange", () => {
         await checkEvent(erc1155Exchange, "Claim", [askOrder2.hash, dan.address, 3, 100, dan.address, AddressZero]);
     });
 
-    it("should be that fees and nft go to receipients if they are set in orders", async () => {
+    it("should be that fees and nft go to recipients if they are set in orders", async () => {
         const {
             operationalVault,
             protocolVault,
@@ -830,7 +830,7 @@ describe("ERC1155Exchange", () => {
         expect(await erc1155Mock0.balanceOf(bob.address, 1)).to.be.equal(3);
     });
 
-    it("should be that token implementing EIP2981 give royalty to receipient when auction is finished", async () => {
+    it("should be that token implementing EIP2981 give royalty to recipient when auction is finished", async () => {
         const {
             deployer,
             operationalVault,

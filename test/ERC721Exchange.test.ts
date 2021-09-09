@@ -1123,7 +1123,7 @@ describe("ERC721Exchange", () => {
         expect((await erc721Exchange.bestBid(askOrder0.hash))[5]).to.be.equal(await ethers.provider.getBlockNumber());
     });
 
-    it("should be that fees and nft go to receipients if they are set in orders", async () => {
+    it("should be that fees and nft go to recipients if they are set in orders", async () => {
         const {
             operationalVault,
             protocolVault,
@@ -1202,7 +1202,7 @@ describe("ERC721Exchange", () => {
         expect(await erc721Mock0.ownerOf(0)).to.be.equal(dan.address);
     });
 
-    it("should be that token implementing EIP2981 give royalty to receipient when auction is finished", async () => {
+    it("should be that token implementing EIP2981 give royalty to recipient when auction is finished", async () => {
         const {
             deployer,
             operationalVault,

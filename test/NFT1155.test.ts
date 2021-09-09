@@ -981,7 +981,7 @@ describe("Exchange part of NFT1155", () => {
         await checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 3, 100, dan.address, AddressZero]);
     });
 
-    it("should be that fees and nft go to receipients if they are set in orders", async () => {
+    it("should be that fees and nft go to recipients if they are set in orders", async () => {
         const {
             factory,
             operationalVault,
