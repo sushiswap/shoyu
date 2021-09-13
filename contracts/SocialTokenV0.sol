@@ -2,6 +2,8 @@
 
 pragma solidity =0.8.3;
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import "./base/DividendPayingERC20.sol";
 import "./base/OwnableInitializable.sol";
 import "./interfaces/ISocialToken.sol";
@@ -34,7 +36,7 @@ contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToke
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
-                keccak256(bytes(_name)),
+                keccak256(bytes(Strings.toHexString(uint160(address(this))))),
                 0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
                 block.chainid,
                 address(this)
@@ -50,7 +52,7 @@ contract SocialTokenV0 is DividendPayingERC20, OwnableInitializable, ISocialToke
                 abi.encode(
                     // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
                     0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
-                    keccak256(bytes(name())),
+                    keccak256(bytes(Strings.toHexString(uint160(address(this))))),
                     0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6, // keccak256(bytes("1"))
                     block.chainid,
                     address(this)
