@@ -11,7 +11,7 @@ import "hardhat-spdx-license-identifier";
 import "hardhat-watcher";
 import "solidity-coverage";
 import "@tenderly/hardhat-tenderly";
-import { TASK_TEST_SETUP_TEST_ENVIRONMENT } from "hardhat/builtin-tasks/task-names";
+import { TASK_TEST_GET_TEST_FILES, TASK_TEST_SETUP_TEST_ENVIRONMENT } from "hardhat/builtin-tasks/task-names";
 import { HardhatUserConfig, task } from "hardhat/config";
 import { removeConsoleLog } from "hardhat-preprocessor";
 
@@ -30,6 +30,11 @@ task("accounts", "Prints the list of accounts", async (args, { ethers }) => {
     for (const account of accounts) {
         console.log(await account.address);
     }
+});
+
+task(TASK_TEST_GET_TEST_FILES).setAction(async (args, hre, runSuper) => {
+    const files = await runSuper(args);
+    return files.filter(file => !file.includes("test/typechain") && !file.includes("test/utils"));
 });
 
 task(TASK_TEST_SETUP_TEST_ENVIRONMENT).setAction(async (args, hre, runSuper) => {

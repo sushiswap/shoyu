@@ -51,5 +51,4 @@ contract ERC721RoyaltyMock is ERC721("Mock", "MOCK") {
         if (_tokenId < 10) fee = 10;
         return (owner, (_salePrice * fee) / 1000);
     }
-
 }
