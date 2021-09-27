@@ -118,6 +118,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         BestBid storage best = bestBid[askHash];
         if (
             IStrategy(askOrder.strategy).canClaim(
+                askOrder.proxy,
                 askOrder.deadline,
                 askOrder.params,
                 bidder,
@@ -151,6 +152,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         } else {
             if (
                 IStrategy(askOrder.strategy).canBid(
+                    askOrder.proxy,
                     askOrder.deadline,
                     askOrder.params,
                     bidder,
@@ -184,6 +186,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         BestBid memory best = bestBid[askHash];
         require(
             IStrategy(askOrder.strategy).canClaim(
+                askOrder.proxy,
                 askOrder.deadline,
                 askOrder.params,
                 best.bidder,

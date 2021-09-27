@@ -6,6 +6,7 @@ import "../interfaces/IStrategy.sol";
 
 contract DutchAuction is IStrategy {
     function canClaim(
+        address,
         uint256 deadline,
         bytes memory params,
         address,
@@ -25,6 +26,7 @@ contract DutchAuction is IStrategy {
     }
 
     function canBid(
+        address,
         uint256,
         bytes memory,
         address,

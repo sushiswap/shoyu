@@ -6,6 +6,7 @@ import "../interfaces/IStrategy.sol";
 
 contract FixedPriceSale is IStrategy {
     function canClaim(
+        address,
         uint256 deadline,
         bytes memory params,
         address,
@@ -20,6 +21,7 @@ contract FixedPriceSale is IStrategy {
     }
 
     function canBid(
+        address,
         uint256,
         bytes memory,
         address,

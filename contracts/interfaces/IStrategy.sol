@@ -6,6 +6,7 @@ import "../libraries/Orders.sol";
 
 interface IStrategy {
     function canClaim(
+        address proxy,
         uint256 deadline,
         bytes memory params,
         address bidder,
@@ -16,6 +17,7 @@ interface IStrategy {
     ) external view returns (bool);
 
     function canBid(
+        address proxy,
         uint256 deadline,
         bytes memory params,
         address bidder,
