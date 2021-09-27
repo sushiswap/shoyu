@@ -51,7 +51,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     ) internal virtual;
 
     function cancel(Orders.Ask memory order) external override {
-        require(order.signer == msg.sender, "SHOYU: FORBIDDEN");
+        require(order.signer == msg.sender || order.proxy == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
         require(bestBid[hash].bidder == address(0), "SHOYU: BID_EXISTS");
@@ -70,6 +70,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         bytes32 askHash = askOrder.hash();
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
         require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
+        if (askOrder.proxy != address(0)) require(askOrder.proxy == msg.sender, "SHOYU: FORBIDDEN");
 
         Signature.verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
 
@@ -92,6 +93,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidRecipient,
         address bidReferrer
     ) external override nonReentrant returns (bool executed) {
+        if (askOrder.proxy != address(0)) require(askOrder.proxy == msg.sender, "SHOYU: FORBIDDEN");
+
         return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice, bidRecipient, bidReferrer);
     }
 
