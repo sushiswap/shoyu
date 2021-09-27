@@ -14,14 +14,14 @@ contract DutchAuction is IStrategy {
         uint256,
         uint256
     ) external view override returns (bool) {
-        (uint256 startPrice, uint256 endPrice, uint256 startBlock) = abi.decode(params, (uint256, uint256, uint256));
+        (uint256 startPrice, uint256 endPrice, uint256 startedAt) = abi.decode(params, (uint256, uint256, uint256));
         require(startPrice > endPrice, "SHOYU: INVALID_PRICE_RANGE");
-        require(startBlock < deadline, "SHOYU: INVALID_START_BLOCK");
+        require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
-        uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startBlock);
-        uint256 currentPrice = startPrice - ((block.number - startBlock) * tickPerBlock);
+        uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startedAt);
+        uint256 currentPrice = startPrice - ((block.number - startedAt) * tickPerBlock);
 
-        return block.number <= deadline && bidPrice >= currentPrice;
+        return block.timestamp <= deadline && bidPrice >= currentPrice;
     }
 
     function canBid(

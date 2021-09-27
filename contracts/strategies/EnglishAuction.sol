@@ -14,7 +14,7 @@ contract EnglishAuction is IStrategy {
         uint256 bestBidPrice,
         uint256
     ) external view override returns (bool) {
-        return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.number;
+        return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.timestamp;
     }
 
     function canBid(
@@ -29,6 +29,6 @@ contract EnglishAuction is IStrategy {
         uint256 startPrice = abi.decode(params, (uint256));
         require(startPrice > 0, "SHOYU: INVALID_START_PRICE");
 
-        return block.number <= deadline && bidPrice >= startPrice && bidPrice > bestBidPrice;
+        return block.timestamp <= deadline && bidPrice >= startPrice && bidPrice > bestBidPrice;
     }
 }

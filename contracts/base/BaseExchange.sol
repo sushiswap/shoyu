@@ -23,7 +23,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 price;
         address recipient;
         address referrer;
-        uint256 blockNumber;
+        uint256 timestamp;
     }
 
     mapping(bytes32 => BestBid) public override bestBid;
@@ -124,7 +124,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 bidPrice,
                 best.bidder,
                 best.price,
-                best.blockNumber
+                best.timestamp
             )
         ) {
             amountFilled[askHash] = _amountFilled + bidAmount;
@@ -157,7 +157,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                     bidPrice,
                     best.bidder,
                     best.price,
-                    best.blockNumber
+                    best.timestamp
                 )
             ) {
                 best.bidder = bidder;
@@ -165,7 +165,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 best.price = bidPrice;
                 best.recipient = bidRecipient;
                 best.referrer = bidReferrer;
-                best.blockNumber = block.number;
+                best.timestamp = block.timestamp;
 
                 emit Bid(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
                 return false;
@@ -190,7 +190,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 best.price,
                 best.bidder,
                 best.price,
-                best.blockNumber
+                best.timestamp
             ),
             "SHOYU: FAILURE"
         );

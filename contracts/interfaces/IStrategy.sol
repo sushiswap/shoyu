@@ -12,7 +12,7 @@ interface IStrategy {
         uint256 bidPrice,
         address bestBidder,
         uint256 bestBidPrice,
-        uint256 bestBidBlock
+        uint256 bestBidTimestamp
     ) external view returns (bool);
 
     function canBid(
@@ -22,6 +22,6 @@ interface IStrategy {
         uint256 bidPrice,
         address bestBidder,
         uint256 bestBidPrice,
-        uint256 bestBidBlock
+        uint256 bestBidTimestamp
     ) external view returns (bool);
 }
