@@ -38,7 +38,19 @@ interface IBaseExchange {
 
     function amountFilled(bytes32 hash) external view returns (uint256);
 
+    function approvedBidHash(
+        address proxy,
+        bytes32 askHash,
+        address bidder
+    ) external view returns (bytes32 bidHash);
+
     function cancel(Orders.Ask memory order) external;
+
+    function updateApprovedBidHash(
+        bytes32 askHash,
+        address bidder,
+        bytes32 bidHash
+    ) external;
 
     function bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) external returns (bool executed);
 
