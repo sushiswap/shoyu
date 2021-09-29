@@ -6,7 +6,7 @@ import "../interfaces/IStrategy.sol";
 
 contract DutchAuction is IStrategy {
     function canClaim(
-        address,
+        address proxy,
         uint256 deadline,
         bytes memory params,
         address,
@@ -22,7 +22,7 @@ contract DutchAuction is IStrategy {
         uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startedAt);
         uint256 currentPrice = startPrice - ((block.timestamp - startedAt) * tickPerBlock);
 
-        return block.timestamp <= deadline && bidPrice >= currentPrice;
+        return (proxy != address(0) || block.timestamp <= deadline) && bidPrice >= currentPrice;
     }
 
     function canBid(

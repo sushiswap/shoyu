@@ -6,7 +6,7 @@ import "../interfaces/IStrategy.sol";
 
 contract FixedPriceSale is IStrategy {
     function canClaim(
-        address,
+        address proxy,
         uint256 deadline,
         bytes memory params,
         address,
@@ -17,7 +17,7 @@ contract FixedPriceSale is IStrategy {
     ) external view override returns (bool) {
         uint256 price = abi.decode(params, (uint256));
         require(price > 0, "SHOYU: INVALID_PRICE");
-        return block.timestamp <= deadline && bidPrice == price;
+        return (proxy != address(0) || block.timestamp <= deadline) && bidPrice == price;
     }
 
     function canBid(
