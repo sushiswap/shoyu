@@ -4,7 +4,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer, admin } = await getNamedAccounts();
     const { deploy, execute, get } = deployments;
 
-    const baseURI = "https://raw.githubusercontent.com/shoyunft/metadata/master/" + network.name + "/";
+    const baseURI =
+        network.chainId === 1 ? "/" : "https://shoyu-api-server.herokuapp.com/metadata/" + network.chainId + "/"; // TODO
     const result = await deploy("TokenFactory", {
         from: deployer,
         args: [admin, 25, admin, 0, baseURI, baseURI],
