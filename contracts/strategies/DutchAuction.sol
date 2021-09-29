@@ -20,7 +20,7 @@ contract DutchAuction is IStrategy {
         require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
         uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startedAt);
-        uint256 currentPrice = startPrice - ((block.number - startedAt) * tickPerBlock);
+        uint256 currentPrice = startPrice - ((block.timestamp - startedAt) * tickPerBlock);
 
         return block.timestamp <= deadline && bidPrice >= currentPrice;
     }
