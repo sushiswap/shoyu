@@ -26,6 +26,7 @@ interface NFT721V0Interface extends ethers.utils.Interface {
     "PERMIT_TYPEHASH()": FunctionFragment;
     "amountFilled(bytes32)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
+    "approvedBidHash(address,bytes32,address)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "bestBid(bytes32)": FunctionFragment;
     "bid(tuple,uint256,uint256,address,address)": FunctionFragment;
@@ -63,6 +64,7 @@ interface NFT721V0Interface extends ethers.utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "updateApprovedBidHash(bytes32,address,bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -84,6 +86,10 @@ interface NFT721V0Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approvedBidHash",
+    values: [string, BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "bestBid", values: [BytesLike]): string;
@@ -268,6 +274,10 @@ interface NFT721V0Interface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateApprovedBidHash",
+    values: [BytesLike, string, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
@@ -286,6 +296,10 @@ interface NFT721V0Interface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "approvedBidHash",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "bestBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "bid", data: BytesLike): Result;
@@ -366,6 +380,10 @@ interface NFT721V0Interface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateApprovedBidHash",
     data: BytesLike
   ): Result;
 
@@ -460,6 +478,13 @@ export class NFT721V0 extends BaseContract {
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<[string] & { bidHash: string }>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -759,6 +784,13 @@ export class NFT721V0 extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
@@ -774,6 +806,13 @@ export class NFT721V0 extends BaseContract {
     tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  approvedBidHash(
+    proxy: string,
+    askHash: BytesLike,
+    bidder: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1065,6 +1104,13 @@ export class NFT721V0 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateApprovedBidHash(
+    askHash: BytesLike,
+    bidder: string,
+    bidHash: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
@@ -1082,6 +1128,13 @@ export class NFT721V0 extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1367,6 +1420,13 @@ export class NFT721V0 extends BaseContract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -1493,6 +1553,13 @@ export class NFT721V0 extends BaseContract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1781,6 +1848,13 @@ export class NFT721V0 extends BaseContract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1801,6 +1875,13 @@ export class NFT721V0 extends BaseContract {
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
@@ -2102,6 +2183,13 @@ export class NFT721V0 extends BaseContract {
 
     transferOwnership(
       newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

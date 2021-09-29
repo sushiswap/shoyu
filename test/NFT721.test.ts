@@ -1737,7 +1737,7 @@ describe("Exchange part of NFT721", () => {
             alice.address,
             "Name",
             "Symbol",
-            [0, 1, 2, 3, 4, 5],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             royaltyVault.address,
             10
         );
@@ -1881,14 +1881,7 @@ describe("Exchange part of NFT721", () => {
         );
 
         await bid1(nft721_0, bob, askOrderEwithoutP.order, bidOrderEwithoutP.order);
-        await checkEvent(nft721_0, "Bid", [
-            askOrderEwithoutP.hash,
-            dan.address,
-            1,
-            101,
-            AddressZero,
-            AddressZero,
-        ]);
+        await checkEvent(nft721_0, "Bid", [askOrderEwithoutP.hash, dan.address, 1, 101, AddressZero, AddressZero]);
 
         await mine(30);
         await expect(nft721_0.connect(carol).claim(askOrderEwithP.order)).to.be.revertedWith("SHOYU: FAILURE");
@@ -1926,24 +1919,10 @@ describe("Exchange part of NFT721", () => {
             "SHOYU: FORBIDDEN"
         );
         await bid1(nft721_0, proxy, askOrderFwithP.order, bidOrderFwithP.order);
-        await checkEvent(nft721_0, "Claim", [
-            askOrderFwithP.hash,
-            erin.address,
-            1,
-            200,
-            erin.address,
-            AddressZero,
-        ]);
+        await checkEvent(nft721_0, "Claim", [askOrderFwithP.hash, erin.address, 1, 200, erin.address, AddressZero]);
 
         await bid1(nft721_0, bob, askOrderFwithoutP.order, bidOrderFwithoutP.order);
-        await checkEvent(nft721_0, "Claim", [
-            askOrderFwithoutP.hash,
-            erin.address,
-            1,
-            201,
-            erin.address,
-            AddressZero,
-        ]);
+        await checkEvent(nft721_0, "Claim", [askOrderFwithoutP.hash, erin.address, 1, 201, erin.address, AddressZero]);
         expect(await nft721_0.ownerOf(2)).to.be.equal(erin.address);
         expect(await nft721_0.ownerOf(3)).to.be.equal(erin.address);
 
@@ -1974,14 +1953,7 @@ describe("Exchange part of NFT721", () => {
             "SHOYU: FORBIDDEN"
         );
         await bid1(nft721_0, proxy, askOrderDwithP.order, bidOrderDwithP.order);
-        await checkEvent(nft721_0, "Claim", [
-            askOrderDwithP.hash,
-            frank.address,
-            1,
-            990,
-            frank.address,
-            AddressZero,
-        ]);
+        await checkEvent(nft721_0, "Claim", [askOrderDwithP.hash, frank.address, 1, 990, frank.address, AddressZero]);
 
         await bid1(nft721_0, bob, askOrderDwithoutP.order, bidOrderDwithoutP.order);
         await checkEvent(nft721_0, "Claim", [
@@ -1995,5 +1967,142 @@ describe("Exchange part of NFT721", () => {
 
         expect(await nft721_0.ownerOf(4)).to.be.equal(frank.address);
         expect(await nft721_0.ownerOf(5)).to.be.equal(frank.address);
+
+
+        const askOrderFwithP1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            proxy.address,
+            nft721_0.address,
+            6,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderFwithoutP1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            AddressZero,
+            nft721_0.address,
+            7,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderDwithP1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            proxy.address,
+            nft721_0.address,
+            8,
+            1,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+        const askOrderDwithoutP1 = await signAsk(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            alice,
+            AddressZero,
+            nft721_0.address,
+            9,
+            1,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        await mine(100);
+        expect(await getBlockTimestamp()).gt(deadline);
+        const bidOrderFwithP1 = await signBid(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            askOrderFwithP1.hash,
+            erin,
+            1,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderFwithoutP1 = await signBid(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            askOrderFwithoutP1.hash,
+            erin,
+            1,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(nft721_0, proxy, askOrderFwithP1.order, bidOrderFwithP1.order);
+        await checkEvent(nft721_0, "Claim", [
+            askOrderFwithP1.hash,
+            erin.address,
+            1,
+            200,
+            erin.address,
+            AddressZero,
+        ]);
+        await expect(bid1(nft721_0, bob, askOrderFwithoutP1.order, bidOrderFwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+        
+        const bidOrderDwithP1 = await signBid(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            askOrderDwithP1.hash,
+            frank,
+            1,
+            990,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderDwithoutP1 = await signBid(
+            ethers.provider,
+            "Name",
+            nft721_0.address,
+            askOrderDwithoutP1.hash,
+            frank,
+            1,
+            980,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(nft721_0, proxy, askOrderDwithP1.order, bidOrderDwithP1.order);
+        await checkEvent(nft721_0, "Claim", [
+            askOrderDwithP1.hash,
+            frank.address,
+            1,
+            990,
+            frank.address,
+            AddressZero,
+        ]);
+        await expect(bid1(nft721_0, bob, askOrderDwithoutP1.order, bidOrderDwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
     });
 });

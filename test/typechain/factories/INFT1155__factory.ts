@@ -381,6 +381,35 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "proxy",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "askHash",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "bidder",
+        type: "address",
+      },
+    ],
+    name: "approvedBidHash",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "bidHash",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "account",
         type: "address",
       },
@@ -1342,6 +1371,29 @@ const _abi = [
       },
     ],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "askHash",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "bidder",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "bidHash",
+        type: "bytes32",
+      },
+    ],
+    name: "updateApprovedBidHash",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

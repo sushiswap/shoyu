@@ -114,7 +114,7 @@ export class FixedPriceSale extends BaseContract {
     ): Promise<[boolean]>;
 
     canClaim(
-      arg0: string,
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       arg3: string,
@@ -139,7 +139,7 @@ export class FixedPriceSale extends BaseContract {
   ): Promise<boolean>;
 
   canClaim(
-    arg0: string,
+    proxy: string,
     deadline: BigNumberish,
     params: BytesLike,
     arg3: string,
@@ -164,7 +164,7 @@ export class FixedPriceSale extends BaseContract {
     ): Promise<boolean>;
 
     canClaim(
-      arg0: string,
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       arg3: string,
@@ -192,7 +192,7 @@ export class FixedPriceSale extends BaseContract {
     ): Promise<BigNumber>;
 
     canClaim(
-      arg0: string,
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       arg3: string,
@@ -218,7 +218,7 @@ export class FixedPriceSale extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     canClaim(
-      arg0: string,
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       arg3: string,
