@@ -20,13 +20,14 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface EnglishAuctionInterface extends ethers.utils.Interface {
   functions: {
-    "canBid(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
-    "canClaim(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
+    "canBid(address,uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
+    "canClaim(address,uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "canBid",
     values: [
+      string,
       BigNumberish,
       BytesLike,
       string,
@@ -39,6 +40,7 @@ interface EnglishAuctionInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "canClaim",
     values: [
+      string,
       BigNumberish,
       BytesLike,
       string,
@@ -100,70 +102,76 @@ export class EnglishAuction extends BaseContract {
 
   functions: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
-      arg2: string,
+      arg3: string,
       bidPrice: BigNumberish,
-      arg4: string,
+      arg5: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
-      arg1: BytesLike,
+      params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
 
   canBid(
+    proxy: string,
     deadline: BigNumberish,
     params: BytesLike,
-    arg2: string,
+    arg3: string,
     bidPrice: BigNumberish,
-    arg4: string,
+    arg5: string,
     bestBidPrice: BigNumberish,
-    arg6: BigNumberish,
+    arg7: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   canClaim(
+    proxy: string,
     deadline: BigNumberish,
-    arg1: BytesLike,
+    params: BytesLike,
     bidder: string,
     bidPrice: BigNumberish,
     bestBidder: string,
     bestBidPrice: BigNumberish,
-    arg6: BigNumberish,
+    arg7: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   callStatic: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
-      arg2: string,
+      arg3: string,
       bidPrice: BigNumberish,
-      arg4: string,
+      arg5: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
-      arg1: BytesLike,
+      params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
   };
@@ -172,48 +180,52 @@ export class EnglishAuction extends BaseContract {
 
   estimateGas: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
-      arg2: string,
+      arg3: string,
       bidPrice: BigNumberish,
-      arg4: string,
+      arg5: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
-      arg1: BytesLike,
+      params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
-      arg2: string,
+      arg3: string,
       bidPrice: BigNumberish,
-      arg4: string,
+      arg5: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
-      arg1: BytesLike,
+      params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      arg6: BigNumberish,
+      arg7: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

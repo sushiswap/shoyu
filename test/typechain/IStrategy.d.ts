@@ -20,13 +20,14 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IStrategyInterface extends ethers.utils.Interface {
   functions: {
-    "canBid(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
-    "canClaim(uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
+    "canBid(address,uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
+    "canClaim(address,uint256,bytes,address,uint256,address,uint256,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "canBid",
     values: [
+      string,
       BigNumberish,
       BytesLike,
       string,
@@ -39,6 +40,7 @@ interface IStrategyInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "canClaim",
     values: [
+      string,
       BigNumberish,
       BytesLike,
       string,
@@ -100,70 +102,76 @@ export class IStrategy extends BaseContract {
 
   functions: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
 
   canBid(
+    proxy: string,
     deadline: BigNumberish,
     params: BytesLike,
     bidder: string,
     bidPrice: BigNumberish,
     bestBidder: string,
     bestBidPrice: BigNumberish,
-    bestBidBlock: BigNumberish,
+    bestBidTimestamp: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   canClaim(
+    proxy: string,
     deadline: BigNumberish,
     params: BytesLike,
     bidder: string,
     bidPrice: BigNumberish,
     bestBidder: string,
     bestBidPrice: BigNumberish,
-    bestBidBlock: BigNumberish,
+    bestBidTimestamp: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   callStatic: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
   };
@@ -172,48 +180,52 @@ export class IStrategy extends BaseContract {
 
   estimateGas: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     canBid(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     canClaim(
+      proxy: string,
       deadline: BigNumberish,
       params: BytesLike,
       bidder: string,
       bidPrice: BigNumberish,
       bestBidder: string,
       bestBidPrice: BigNumberish,
-      bestBidBlock: BigNumberish,
+      bestBidTimestamp: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

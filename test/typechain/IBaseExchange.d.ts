@@ -46,6 +46,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -70,6 +71,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -89,6 +91,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -204,9 +207,10 @@ export class IBaseExchange extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -226,9 +230,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -260,6 +265,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -278,6 +284,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -319,9 +326,10 @@ export class IBaseExchange extends BaseContract {
     }
   >;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -341,9 +349,10 @@ export class IBaseExchange extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -375,6 +384,7 @@ export class IBaseExchange extends BaseContract {
   cancel(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -393,6 +403,7 @@ export class IBaseExchange extends BaseContract {
   claim(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -437,9 +448,10 @@ export class IBaseExchange extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -459,9 +471,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -493,6 +506,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -511,6 +525,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -588,9 +603,10 @@ export class IBaseExchange extends BaseContract {
 
     bestBid(hash: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -610,9 +626,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -644,6 +661,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -662,6 +680,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -698,9 +717,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -720,9 +740,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -757,6 +778,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -775,6 +797,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;

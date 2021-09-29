@@ -4,6 +4,7 @@ import { getChainId, RSV, signData } from "./rpc";
 
 export interface AskOrder {
     signer: string;
+    proxy: string;
     token: string;
     tokenId: BigNumberish;
     amount: BigNumberish;
@@ -53,7 +54,7 @@ export const MINT_SOCIAL_TOKEN_TYPEHASH = convertToHash(
 );
 
 export const ASK_TYPEHASH = convertToHash(
-    "Ask(address signer,address token,uint256 tokenId,uint256 amount,address strategy,address currency,address recipient,uint256 deadline,bytes params)"
+    "Ask(address signer,address proxy,address token,uint256 tokenId,uint256 amount,address strategy,address currency,address recipient,uint256 deadline,bytes params)"
 );
 
 export const BID_TYPEHASH = convertToHash(
@@ -77,6 +78,7 @@ export const signAsk = async (
     exchangeName: string, //deprecated
     exchangeAddress: string,
     signer: ethers.Wallet,
+    proxy: string,
     token: string,
     tokenId: BigNumberish,
     amount: BigNumberish,
@@ -87,10 +89,11 @@ export const signAsk = async (
     params: BytesLike
 ) => {
     const hash = getHash(
-        ["bytes32", "address", "address", "uint256", "uint256", "address", "address", "address", "uint256", "bytes32"],
+        ["bytes32", "address", "address", "address", "uint256", "uint256", "address", "address", "address", "uint256", "bytes32"],
         [
             ASK_TYPEHASH,
             signer.address,
+            proxy,
             token,
             tokenId,
             amount,
@@ -105,6 +108,7 @@ export const signAsk = async (
     const sig = sign(digest, signer);
     const order: AskOrder = {
         signer: signer.address,
+        proxy,
         token,
         tokenId,
         amount,

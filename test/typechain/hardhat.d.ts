@@ -109,10 +109,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721ExchangeV0__factory>;
     getContractFactory(
-      name: "ExchangeProxy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ExchangeProxy__factory>;
-    getContractFactory(
       name: "IBaseExchange",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBaseExchange__factory>;
@@ -140,10 +136,6 @@ declare module "hardhat/types/runtime" {
       name: "IERC2981",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC2981__factory>;
-    getContractFactory(
-      name: "IExchangeProxy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IExchangeProxy__factory>;
     getContractFactory(
       name: "INFT1155",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -220,10 +212,6 @@ declare module "hardhat/types/runtime" {
       name: "SocialTokenV0",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SocialTokenV0__factory>;
-    getContractFactory(
-      name: "DesignatedSale",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DesignatedSale__factory>;
     getContractFactory(
       name: "DutchAuction",
       signerOrOptions?: ethers.Signer | FactoryOptions

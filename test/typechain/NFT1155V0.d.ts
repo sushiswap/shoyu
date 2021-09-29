@@ -82,6 +82,7 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -114,6 +115,7 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -133,6 +135,7 @@ interface NFT1155V0Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -402,13 +405,14 @@ export class NFT1155V0 extends BaseContract {
         price: BigNumber;
         recipient: string;
         referrer: string;
-        blockNumber: BigNumber;
+        timestamp: BigNumber;
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -428,9 +432,10 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -476,6 +481,7 @@ export class NFT1155V0 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -494,6 +500,7 @@ export class NFT1155V0 extends BaseContract {
     claim(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -662,13 +669,14 @@ export class NFT1155V0 extends BaseContract {
       price: BigNumber;
       recipient: string;
       referrer: string;
-      blockNumber: BigNumber;
+      timestamp: BigNumber;
     }
   >;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -688,9 +696,10 @@ export class NFT1155V0 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -736,6 +745,7 @@ export class NFT1155V0 extends BaseContract {
   cancel(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -754,6 +764,7 @@ export class NFT1155V0 extends BaseContract {
   claim(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -925,13 +936,14 @@ export class NFT1155V0 extends BaseContract {
         price: BigNumber;
         recipient: string;
         referrer: string;
-        blockNumber: BigNumber;
+        timestamp: BigNumber;
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -951,9 +963,10 @@ export class NFT1155V0 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -999,6 +1012,7 @@ export class NFT1155V0 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1017,6 +1031,7 @@ export class NFT1155V0 extends BaseContract {
     claim(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1299,9 +1314,10 @@ export class NFT1155V0 extends BaseContract {
 
     bestBid(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1321,9 +1337,10 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1369,6 +1386,7 @@ export class NFT1155V0 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1387,6 +1405,7 @@ export class NFT1155V0 extends BaseContract {
     claim(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1554,9 +1573,10 @@ export class NFT1155V0 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1576,9 +1596,10 @@ export class NFT1155V0 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1627,6 +1648,7 @@ export class NFT1155V0 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1645,6 +1667,7 @@ export class NFT1155V0 extends BaseContract {
     claim(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;

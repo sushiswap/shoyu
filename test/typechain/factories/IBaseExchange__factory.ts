@@ -193,6 +193,11 @@ const _abi = [
           },
           {
             internalType: "address",
+            name: "proxy",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "token",
             type: "address",
           },
@@ -290,6 +295,11 @@ const _abi = [
           {
             internalType: "address",
             name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "proxy",
             type: "address",
           },
           {
@@ -446,6 +456,11 @@ const _abi = [
           },
           {
             internalType: "address",
+            name: "proxy",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "token",
             type: "address",
           },
@@ -517,6 +532,11 @@ const _abi = [
           {
             internalType: "address",
             name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "proxy",
             type: "address",
           },
           {
