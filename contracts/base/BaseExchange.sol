@@ -155,6 +155,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
             )
         ) {
             amountFilled[askHash] = _amountFilled + bidAmount;
+            if (_amountFilled + bidAmount == askOrder.amount) isCancelledOrClaimed[askHash] = true;
 
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
