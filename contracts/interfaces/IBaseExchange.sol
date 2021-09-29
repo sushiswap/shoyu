@@ -15,6 +15,12 @@ interface IBaseExchange {
         address referrer
     );
     event Bid(bytes32 indexed hash, address bidder, uint256 amount, uint256 price, address recipient, address referrer);
+    event UpdateApprovedBidHash(
+        address indexed proxy,
+        bytes32 indexed askHash,
+        address indexed bidder,
+        bytes32 bidHash
+    );
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 

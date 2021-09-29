@@ -77,6 +77,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         bytes32 bidHash
     ) external override {
         _bidHashes[msg.sender][askHash][bidder] = bidHash;
+        emit UpdateApprovedBidHash(msg.sender, askHash, bidder, bidHash);
     }
 
     function bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder)
@@ -96,6 +97,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 "SHOYU: FORBIDDEN"
             );
             delete _bidHashes[askOrder.proxy][askHash][bidOrder.signer];
+            emit UpdateApprovedBidHash(askOrder.proxy, askHash, bidOrder.signer, bytes32(0));
         }
 
         Signature.verify(bidHash, bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
