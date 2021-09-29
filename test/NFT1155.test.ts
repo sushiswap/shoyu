@@ -1325,7 +1325,7 @@ describe("Exchange part of NFT1155", () => {
         );
     });
 
-    it.only("should be that bid and claim functions work properly with _bidHashes", async () => {
+    it("should be that bid and claim functions work properly with _bidHashes", async () => {
         const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
 
         const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();

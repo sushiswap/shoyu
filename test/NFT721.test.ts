@@ -2106,7 +2106,7 @@ describe("Exchange part of NFT721", () => {
         );
     });
 
-    it.only("should be that bid and claim functions work properly with proxy", async () => {
+    it("should be that bid and claim functions work properly with proxy", async () => {
         const {
             factory,
             nft721,
