@@ -902,4 +902,505 @@ describe("ERC1155Exchange", () => {
         );
         expect(await erc1155RoyaltyMock0.balanceOf(bob.address, 25)).to.be.equal(44);
     });
+
+    it("should be that bid and claim functions work properly with proxy", async () => {
+        const {
+            erc1155Exchange,
+            erc1155Mock0,
+            exchangeName,
+            erc20Mock,
+            dutchAuction,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+
+        await erc1155Mock0.mintBatch(
+            alice.address,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            []
+        );
+        await erc1155Mock0.connect(alice).setApprovalForAll(erc1155Exchange.address, true);
+
+        const currentTime = await getBlockTimestamp();
+        const deadline = currentTime + 100;
+
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.mint(erin.address, 10000000);
+        await erc20Mock.mint(frank.address, 10000000);
+        await erc20Mock.connect(dan).approve(erc1155Exchange.address, 10000000);
+        await erc20Mock.connect(erin).approve(erc1155Exchange.address, 10000000);
+        await erc20Mock.connect(frank).approve(erc1155Exchange.address, 10000000);
+
+        const askOrderFwithP = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            2,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderFwithoutP = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            AddressZero,
+            erc1155Mock0.address,
+            3,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderDwithP = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            4,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+        const askOrderDwithoutP = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            AddressZero,
+            erc1155Mock0.address,
+            5,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        const bidOrderFwithP = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderFwithP.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderFwithoutP = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderFwithoutP.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        await expect(bid1(erc1155Exchange, bob, askOrderFwithP.order, bidOrderFwithP.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+        await bid1(erc1155Exchange, proxy, askOrderFwithP.order, bidOrderFwithP.order);
+        await checkEvent(erc1155Exchange, "Claim", [askOrderFwithP.hash, erin.address, 3, 200, erin.address, AddressZero]);
+
+        await bid1(erc1155Exchange, bob, askOrderFwithoutP.order, bidOrderFwithoutP.order);
+        await checkEvent(erc1155Exchange, "Claim", [askOrderFwithoutP.hash, erin.address, 4, 201, erin.address, AddressZero]);
+        expect(await erc1155Mock0.balanceOf(erin.address, 2)).to.be.equal(3);
+        expect(await erc1155Mock0.balanceOf(erin.address, 3)).to.be.equal(4);
+
+        const bidOrderDwithP = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderDwithP.hash,
+            frank,
+            2,
+            990,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderDwithoutP = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderDwithoutP.hash,
+            frank,
+            3,
+            980,
+            AddressZero,
+            AddressZero
+        );
+
+        await expect(bid1(erc1155Exchange, bob, askOrderDwithP.order, bidOrderDwithP.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+        await bid1(erc1155Exchange, proxy, askOrderDwithP.order, bidOrderDwithP.order);
+        await checkEvent(erc1155Exchange, "Claim", [askOrderDwithP.hash, frank.address, 2, 990, frank.address, AddressZero]);
+
+        await bid1(erc1155Exchange, bob, askOrderDwithoutP.order, bidOrderDwithoutP.order);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderDwithoutP.hash,
+            frank.address,
+            3,
+            980,
+            frank.address,
+            AddressZero,
+        ]);
+        expect(await erc1155Mock0.balanceOf(frank.address, 4)).to.be.equal(2);
+        expect(await erc1155Mock0.balanceOf(frank.address, 5)).to.be.equal(3);
+
+        const askOrderFwithP1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            6,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderFwithoutP1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            AddressZero,
+            erc1155Mock0.address,
+            7,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderDwithP1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            8,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+        const askOrderDwithoutP1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            AddressZero,
+            erc1155Mock0.address,
+            9,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        await mine(100);
+        expect(await getBlockTimestamp()).gt(deadline);
+        const bidOrderFwithP1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderFwithP1.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderFwithoutP1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderFwithoutP1.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(erc1155Exchange, proxy, askOrderFwithP1.order, bidOrderFwithP1.order);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderFwithP1.hash,
+            erin.address,
+            3,
+            200,
+            erin.address,
+            AddressZero,
+        ]);
+        await expect(bid1(erc1155Exchange, bob, askOrderFwithoutP1.order, bidOrderFwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+        
+        const bidOrderDwithP1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderDwithP1.hash,
+            frank,
+            5,
+            990,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderDwithoutP1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderDwithoutP1.hash,
+            frank,
+            6,
+            980,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(erc1155Exchange, proxy, askOrderDwithP1.order, bidOrderDwithP1.order);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderDwithP1.hash,
+            frank.address,
+            5,
+            990,
+            frank.address,
+            AddressZero,
+        ]);
+        await expect(bid1(erc1155Exchange, bob, askOrderDwithoutP1.order, bidOrderDwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+    });
+
+    it("should be that bid and claim functions work properly with _bidHashes", async () => {
+        const {
+            erc1155Exchange,
+            erc1155Mock0,
+            exchangeName,
+            erc20Mock,
+            dutchAuction,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+
+        await erc1155Mock0.mintBatch(
+            alice.address,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            []
+        );
+        await erc1155Mock0.connect(alice).setApprovalForAll(erc1155Exchange.address, true);
+
+        const currentTime = await getBlockTimestamp();
+        const deadline = currentTime + 100;
+
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.mint(erin.address, 10000000);
+        await erc20Mock.mint(frank.address, 10000000);
+        await erc20Mock.connect(dan).approve(erc1155Exchange.address, 10000000);
+        await erc20Mock.connect(erin).approve(erc1155Exchange.address, 10000000);
+        await erc20Mock.connect(frank).approve(erc1155Exchange.address, 10000000);
+
+        const askOrderF0 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            2,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderF1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            3,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+        const askOrderD0 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            alice,
+            proxy.address,
+            erc1155Mock0.address,
+            4,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        const bidOrderF0 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderF0.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderF1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderF1.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
+        await expect(erc1155Exchange.connect(proxy).updateApprovedBidHash(askOrderF0.hash, erin.address, bidOrderF0.hash))
+            .to.emit(erc1155Exchange, "UpdateApprovedBidHash")
+            .withArgs(proxy.address, askOrderF0.hash, erin.address, bidOrderF0.hash);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(
+            bidOrderF0.hash
+        );
+
+        await expect(
+            bid2(
+                erc1155Exchange,
+                erin,
+                askOrderF0.order,
+                bidOrderF0.order.amount,
+                bidOrderF0.order.price,
+                bidOrderF0.order.recipient
+            )
+        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+
+        await expect(erc1155Exchange.connect(carol).claim(askOrderF0.order)).to.be.revertedWith("SHOYU: FAILURE");
+        await bid1(erc1155Exchange, frank, askOrderF0.order, bidOrderF0.order); //frank can call
+        await checkEvent(erc1155Exchange, "Claim", [askOrderF0.hash, erin.address, 3, 200, erin.address, AddressZero]);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
+
+        const bidOrderF1_ = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderF1.hash,
+            erin,
+            9,
+            201,
+            AddressZero,
+            AddressZero
+        );
+        await erc1155Exchange.connect(erin).updateApprovedBidHash(askOrderF1.hash, erin.address, bidOrderF1_.hash); //make fake hash for abusing
+        expect(await erc1155Exchange.approvedBidHash(erin.address, askOrderF1.hash, erin.address)).to.be.equal(
+            bidOrderF1_.hash
+        );
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        await expect(bid1(erc1155Exchange, erin, askOrderF1.order, bidOrderF1_.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+
+        await mine(100);
+        expect(await getBlockTimestamp()).to.be.gt(askOrderF1.order.deadline);
+        await erc1155Exchange.connect(proxy).updateApprovedBidHash(askOrderF1.hash, erin.address, bidOrderF1.hash); //timeover but update available
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(
+            bidOrderF1.hash
+        );
+
+        const bidOrderF1__ = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderF1.hash,
+            erin,
+            3,
+            201,
+            AddressZero,
+            AddressZero
+        ); //change conditions after hash approved
+        await expect(bid1(erc1155Exchange, erin, askOrderF1.order, bidOrderF1__.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+
+        await bid1(erc1155Exchange, erin, askOrderF1.order, bidOrderF1.order);
+        await checkEvent(erc1155Exchange, "Claim", [askOrderF1.hash, erin.address, 4, 201, erin.address, AddressZero]);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        expect(await erc1155Mock0.balanceOf(erin.address, 2)).to.be.equal(3);
+        expect(await erc1155Mock0.balanceOf(erin.address, 3)).to.be.equal(4);
+
+        const bidOrderD0 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc1155Exchange.address,
+            askOrderD0.hash,
+            frank,
+            2,
+            990,
+            AddressZero,
+            AddressZero
+        );
+
+        expect(await getBlockTimestamp()).to.be.gt(askOrderD0.order.deadline);
+        await erc1155Exchange.connect(proxy).updateApprovedBidHash(askOrderD0.hash, frank.address, bidOrderD0.hash); //timeover but update available
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderD0.hash, frank.address)).to.be.equal(
+            bidOrderD0.hash
+        );
+
+        await bid1(erc1155Exchange, frank, askOrderD0.order, bidOrderD0.order);
+        await checkEvent(erc1155Exchange, "Claim", [askOrderD0.hash, frank.address, 2, 990, frank.address, AddressZero]);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderD0.hash, frank.address)).to.be.equal(
+            HashZero
+        );
+        expect(await erc1155Mock0.balanceOf(frank.address, 4)).to.be.equal(2);
+    });    
 });

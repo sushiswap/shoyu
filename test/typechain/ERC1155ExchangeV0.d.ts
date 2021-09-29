@@ -153,11 +153,13 @@ interface ERC1155ExchangeV0Interface extends ethers.utils.Interface {
     "Bid(bytes32,address,uint256,uint256,address,address)": EventFragment;
     "Cancel(bytes32)": EventFragment;
     "Claim(bytes32,address,uint256,uint256,address,address)": EventFragment;
+    "UpdateApprovedBidHash(address,bytes32,address,bytes32)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Cancel"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Claim"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateApprovedBidHash"): EventFragment;
 }
 
 export class ERC1155ExchangeV0 extends BaseContract {
@@ -650,6 +652,16 @@ export class ERC1155ExchangeV0 extends BaseContract {
         recipient: string;
         referrer: string;
       }
+    >;
+
+    UpdateApprovedBidHash(
+      proxy?: string | null,
+      askHash?: BytesLike | null,
+      bidder?: string | null,
+      bidHash?: null
+    ): TypedEventFilter<
+      [string, string, string, string],
+      { proxy: string; askHash: string; bidder: string; bidHash: string }
     >;
   };
 

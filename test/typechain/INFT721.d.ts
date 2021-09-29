@@ -392,6 +392,7 @@ interface INFT721Interface extends ethers.utils.Interface {
     "SetRoyaltyFeeRecipient(address)": EventFragment;
     "SetTokenURI(uint256,string)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
+    "UpdateApprovedBidHash(address,bytes32,address,bytes32)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
@@ -407,6 +408,7 @@ interface INFT721Interface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "SetRoyaltyFeeRecipient"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetTokenURI"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateApprovedBidHash"): EventFragment;
 }
 
 export class INFT721 extends BaseContract {
@@ -1522,6 +1524,16 @@ export class INFT721 extends BaseContract {
     ): TypedEventFilter<
       [string, string, BigNumber],
       { from: string; to: string; tokenId: BigNumber }
+    >;
+
+    UpdateApprovedBidHash(
+      proxy?: string | null,
+      askHash?: BytesLike | null,
+      bidder?: string | null,
+      bidHash?: null
+    ): TypedEventFilter<
+      [string, string, string, string],
+      { proxy: string; askHash: string; bidder: string; bidHash: string }
     >;
   };
 

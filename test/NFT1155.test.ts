@@ -524,7 +524,7 @@ describe("Exchange part of NFT1155", () => {
             englishAuction,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank , proxy} = getWallets();
+        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
@@ -582,7 +582,7 @@ describe("Exchange part of NFT1155", () => {
             englishAuction.address,
             erc20Mock.address,
             AddressZero,
-            currentTime+5,
+            currentTime + 5,
             param2
         );
         const param3 = defaultAbiCoder.encode(["uint256"], [15000]);
@@ -622,9 +622,7 @@ describe("Exchange part of NFT1155", () => {
             AddressZero
         );
         const fees1 = fees(31313, 25, 5, 10);
-        await expect(() =>
-            bid1(nft1155_0, proxy, askOrder2.order, bidOrder2.order)
-        ).to.changeTokenBalances(
+        await expect(() => bid1(nft1155_0, proxy, askOrder2.order, bidOrder2.order)).to.changeTokenBalances(
             erc20Mock,
             [dan, protocolVault, operationalVault, royaltyVault, alice, frank, proxy],
             [-31313, fees1[0], fees1[1], fees1[2], fees1[3], 0, 0]
@@ -818,7 +816,7 @@ describe("Exchange part of NFT1155", () => {
             englishAuction.address,
             erc20Mock.address,
             AddressZero,
-            currentTime+5,
+            currentTime + 5,
             defaultAbiCoder.encode(["uint256"], [100])
         );
 
@@ -854,9 +852,7 @@ describe("Exchange part of NFT1155", () => {
         await bid2(nft1155_0, dan, askOrder2.order, 1, 100, AddressZero);
         await checkEvent(nft1155_0, "Claim", [askOrder2.hash, dan.address, 1, 100, dan.address, AddressZero]);
 
-        await expect(
-            bid1(nft1155_0, proxy, askOrder3.order, bidOrder3.order)
-        ).to.be.revertedWith("SHOYU: SOLD_OUT");
+        await expect(bid1(nft1155_0, proxy, askOrder3.order, bidOrder3.order)).to.be.revertedWith("SHOYU: SOLD_OUT");
 
         await nft1155_0.connect(carol).safeTransferFrom(carol.address, alice.address, 1, 9, []);
         await expect(bid2(nft1155_0, carol, askOrder1.order, 9, 999, AddressZero)).to.be.revertedWith(
@@ -1037,5 +1033,489 @@ describe("Exchange part of NFT1155", () => {
         );
         expect(await nft1155_0.balanceOf(carol.address, 1)).to.be.equal(0);
         expect(await nft1155_0.balanceOf(bob.address, 1)).to.be.equal(3);
+    });
+
+    it("should be that bid and claim functions work properly with proxy", async () => {
+        const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT1155(nft1155.address);
+
+        await factory.deployNFT1155AndMintBatch(
+            alice.address,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            royaltyVault.address,
+            10
+        );
+        const nft1155_0 = await getNFT1155(factory);
+
+        await factory.setStrategyWhitelisted(dutchAuction.address, true);
+        await factory.setStrategyWhitelisted(fixedPriceSale.address, true);
+
+        const currentTime = await getBlockTimestamp();
+        const deadline = currentTime + 100;
+
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.mint(erin.address, 10000000);
+        await erc20Mock.mint(frank.address, 10000000);
+        await erc20Mock.connect(dan).approve(nft1155_0.address, 10000000);
+        await erc20Mock.connect(erin).approve(nft1155_0.address, 10000000);
+        await erc20Mock.connect(frank).approve(nft1155_0.address, 10000000);
+
+        const askOrderFwithP = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            2,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderFwithoutP = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            AddressZero,
+            nft1155_0.address,
+            3,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderDwithP = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            4,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+        const askOrderDwithoutP = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            AddressZero,
+            nft1155_0.address,
+            5,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        const bidOrderFwithP = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderFwithP.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderFwithoutP = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderFwithoutP.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        await expect(bid1(nft1155_0, bob, askOrderFwithP.order, bidOrderFwithP.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+        await bid1(nft1155_0, proxy, askOrderFwithP.order, bidOrderFwithP.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderFwithP.hash, erin.address, 3, 200, erin.address, AddressZero]);
+
+        await bid1(nft1155_0, bob, askOrderFwithoutP.order, bidOrderFwithoutP.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderFwithoutP.hash, erin.address, 4, 201, erin.address, AddressZero]);
+        expect(await nft1155_0.balanceOf(erin.address, 2)).to.be.equal(3);
+        expect(await nft1155_0.balanceOf(erin.address, 3)).to.be.equal(4);
+
+        const bidOrderDwithP = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderDwithP.hash,
+            frank,
+            2,
+            990,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderDwithoutP = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderDwithoutP.hash,
+            frank,
+            3,
+            980,
+            AddressZero,
+            AddressZero
+        );
+
+        await expect(bid1(nft1155_0, bob, askOrderDwithP.order, bidOrderDwithP.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+        await bid1(nft1155_0, proxy, askOrderDwithP.order, bidOrderDwithP.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderDwithP.hash, frank.address, 2, 990, frank.address, AddressZero]);
+
+        await bid1(nft1155_0, bob, askOrderDwithoutP.order, bidOrderDwithoutP.order);
+        await checkEvent(nft1155_0, "Claim", [
+            askOrderDwithoutP.hash,
+            frank.address,
+            3,
+            980,
+            frank.address,
+            AddressZero,
+        ]);
+        expect(await nft1155_0.balanceOf(frank.address, 4)).to.be.equal(2);
+        expect(await nft1155_0.balanceOf(frank.address, 5)).to.be.equal(3);
+
+        const askOrderFwithP1 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            6,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderFwithoutP1 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            AddressZero,
+            nft1155_0.address,
+            7,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderDwithP1 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            8,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+        const askOrderDwithoutP1 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            AddressZero,
+            nft1155_0.address,
+            9,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        await mine(100);
+        expect(await getBlockTimestamp()).gt(deadline);
+        const bidOrderFwithP1 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderFwithP1.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderFwithoutP1 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderFwithoutP1.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(nft1155_0, proxy, askOrderFwithP1.order, bidOrderFwithP1.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderFwithP1.hash, erin.address, 3, 200, erin.address, AddressZero]);
+        await expect(bid1(nft1155_0, bob, askOrderFwithoutP1.order, bidOrderFwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+
+        const bidOrderDwithP1 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderDwithP1.hash,
+            frank,
+            5,
+            990,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderDwithoutP1 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderDwithoutP1.hash,
+            frank,
+            6,
+            980,
+            AddressZero,
+            AddressZero
+        );
+
+        await bid1(nft1155_0, proxy, askOrderDwithP1.order, bidOrderDwithP1.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderDwithP1.hash, frank.address, 5, 990, frank.address, AddressZero]);
+        await expect(bid1(nft1155_0, bob, askOrderDwithoutP1.order, bidOrderDwithoutP1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+    });
+
+    it.only("should be that bid and claim functions work properly with _bidHashes", async () => {
+        const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
+
+        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT1155(nft1155.address);
+
+        await factory.deployNFT1155AndMintBatch(
+            alice.address,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            royaltyVault.address,
+            10
+        );
+        const nft1155_0 = await getNFT1155(factory);
+
+        await factory.setStrategyWhitelisted(dutchAuction.address, true);
+        await factory.setStrategyWhitelisted(fixedPriceSale.address, true);
+
+        const currentTime = await getBlockTimestamp();
+        const deadline = currentTime + 100;
+
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.mint(erin.address, 10000000);
+        await erc20Mock.mint(frank.address, 10000000);
+        await erc20Mock.connect(dan).approve(nft1155_0.address, 10000000);
+        await erc20Mock.connect(erin).approve(nft1155_0.address, 10000000);
+        await erc20Mock.connect(frank).approve(nft1155_0.address, 10000000);
+
+        const askOrderF0 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            2,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [200])
+        );
+        const askOrderF1 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            3,
+            10,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256"], [201])
+        );
+
+        const askOrderD0 = await signAsk(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            alice,
+            proxy.address,
+            nft1155_0.address,
+            4,
+            10,
+            dutchAuction.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256", "uint256"], [1000, 100, currentTime])
+        );
+
+        const bidOrderF0 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderF0.hash,
+            erin,
+            3,
+            200,
+            AddressZero,
+            AddressZero
+        );
+        const bidOrderF1 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderF1.hash,
+            erin,
+            4,
+            201,
+            AddressZero,
+            AddressZero
+        );
+
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
+        await expect(nft1155_0.connect(proxy).updateApprovedBidHash(askOrderF0.hash, erin.address, bidOrderF0.hash))
+            .to.emit(nft1155_0, "UpdateApprovedBidHash")
+            .withArgs(proxy.address, askOrderF0.hash, erin.address, bidOrderF0.hash);
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(
+            bidOrderF0.hash
+        );
+
+        await expect(
+            bid2(
+                nft1155_0,
+                erin,
+                askOrderF0.order,
+                bidOrderF0.order.amount,
+                bidOrderF0.order.price,
+                bidOrderF0.order.recipient
+            )
+        ).to.be.revertedWith("SHOYU: FORBIDDEN");
+
+        await expect(nft1155_0.connect(carol).claim(askOrderF0.order)).to.be.revertedWith("SHOYU: FAILURE");
+        await bid1(nft1155_0, frank, askOrderF0.order, bidOrderF0.order); //frank can call
+        await checkEvent(nft1155_0, "Claim", [askOrderF0.hash, erin.address, 3, 200, erin.address, AddressZero]);
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
+
+        const bidOrderF1_ = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderF1.hash,
+            erin,
+            9,
+            201,
+            AddressZero,
+            AddressZero
+        );
+        await nft1155_0.connect(erin).updateApprovedBidHash(askOrderF1.hash, erin.address, bidOrderF1_.hash); //make fake hash for abusing
+        expect(await nft1155_0.approvedBidHash(erin.address, askOrderF1.hash, erin.address)).to.be.equal(
+            bidOrderF1_.hash
+        );
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        await expect(bid1(nft1155_0, erin, askOrderF1.order, bidOrderF1_.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
+
+        await mine(100);
+        expect(await getBlockTimestamp()).to.be.gt(askOrderF1.order.deadline);
+        await nft1155_0.connect(proxy).updateApprovedBidHash(askOrderF1.hash, erin.address, bidOrderF1.hash); //timeover but update available
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(
+            bidOrderF1.hash
+        );
+
+        const bidOrderF1__ = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderF1.hash,
+            erin,
+            3,
+            201,
+            AddressZero,
+            AddressZero
+        ); //change conditions after hash approved
+        await expect(bid1(nft1155_0, erin, askOrderF1.order, bidOrderF1__.order)).to.be.revertedWith(
+            "SHOYU: FORBIDDEN"
+        );
+
+        await bid1(nft1155_0, erin, askOrderF1.order, bidOrderF1.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderF1.hash, erin.address, 4, 201, erin.address, AddressZero]);
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        expect(await nft1155_0.balanceOf(erin.address, 2)).to.be.equal(3);
+        expect(await nft1155_0.balanceOf(erin.address, 3)).to.be.equal(4);
+
+        const bidOrderD0 = await signBid(
+            ethers.provider,
+            name(nft1155_0),
+            nft1155_0.address,
+            askOrderD0.hash,
+            frank,
+            2,
+            990,
+            AddressZero,
+            AddressZero
+        );
+
+        expect(await getBlockTimestamp()).to.be.gt(askOrderD0.order.deadline);
+        await nft1155_0.connect(proxy).updateApprovedBidHash(askOrderD0.hash, frank.address, bidOrderD0.hash); //timeover but update available
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderD0.hash, frank.address)).to.be.equal(
+            bidOrderD0.hash
+        );
+
+        await bid1(nft1155_0, frank, askOrderD0.order, bidOrderD0.order);
+        await checkEvent(nft1155_0, "Claim", [askOrderD0.hash, frank.address, 2, 990, frank.address, AddressZero]);
+        expect(await nft1155_0.approvedBidHash(proxy.address, askOrderD0.hash, frank.address)).to.be.equal(HashZero);
+        expect(await nft1155_0.balanceOf(frank.address, 4)).to.be.equal(2);
     });
 });
