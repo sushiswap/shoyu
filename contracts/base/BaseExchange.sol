@@ -95,6 +95,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 askOrder.proxy == msg.sender || _bidHashes[askOrder.proxy][askHash][bidOrder.signer] == bidHash,
                 "SHOYU: FORBIDDEN"
             );
+            delete _bidHashes[askOrder.proxy][askHash][bidOrder.signer];
         }
 
         Signature.verify(bidHash, bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
