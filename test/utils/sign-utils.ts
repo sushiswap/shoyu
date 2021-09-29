@@ -74,7 +74,7 @@ const getDomain = async (provider: any, name: string, verifyingContract: string)
 
 export const signAsk = async (
     provider: any,
-    exchangeName: string,
+    exchangeName: string, //deprecated
     exchangeAddress: string,
     signer: ethers.Wallet,
     token: string,
@@ -101,7 +101,7 @@ export const signAsk = async (
             keccak256(params),
         ]
     );
-    const digest = await getDigest(provider, exchangeName, exchangeAddress, hash);
+    const digest = await getDigest(provider, exchangeAddress.toLowerCase(), exchangeAddress, hash);
     const sig = sign(digest, signer);
     const order: AskOrder = {
         signer: signer.address,
@@ -122,7 +122,7 @@ export const signAsk = async (
 
 export const signBid = async (
     provider: any,
-    exchangeName: string,
+    exchangeName: string, //deprecated
     exchangeAddress: string,
     askHash: string,
     signer: ethers.Wallet,
@@ -135,7 +135,7 @@ export const signBid = async (
         ["bytes32", "bytes32", "address", "uint256", "uint256", "address", "address"],
         [BID_TYPEHASH, askHash, signer.address, amount, price, recipient, referrer]
     );
-    const digest = await getDigest(provider, exchangeName, exchangeAddress, hash);
+    const digest = await getDigest(provider, exchangeAddress.toLowerCase(), exchangeAddress, hash);
     const sig = sign(digest, signer);
     const order: BidOrder = {
         askHash,
@@ -151,8 +151,12 @@ export const signBid = async (
     return { hash, digest, sig, order };
 };
 
-export const domainSeparator = async (provider: any, name: string, contractAddress: string): Promise<string> => {
-    const domain = await getDomain(provider, name, contractAddress);
+export const domainSeparator = async (
+    provider: any,
+    name: string, // name is deprecated
+    contractAddress: string
+): Promise<string> => {
+    const domain = await getDomain(provider, contractAddress.toLowerCase(), contractAddress);
     return _TypedDataEncoder.hashDomain(domain);
 };
 
@@ -228,7 +232,7 @@ export const getHash = (types: string[], values: any[]): string => {
 
 export const getDigest = async (
     provider: any,
-    name: string,
+    name: string,   // name is deprecated
     contractAddress: string,
     hash: BytesLike
 ): Promise<string> => {
