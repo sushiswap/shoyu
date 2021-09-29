@@ -23,8 +23,10 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         uint256 price;
         address recipient;
         address referrer;
-        uint256 blockNumber;
+        uint256 timestamp;
     }
+
+    mapping(address => mapping(bytes32 => mapping(address => bytes32))) internal _bidHashes;
 
     mapping(bytes32 => BestBid) public override bestBid;
     mapping(bytes32 => bool) public override isCancelledOrClaimed;
@@ -42,6 +44,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         return token == address(this);
     }
 
+    function approvedBidHash(
+        address proxy,
+        bytes32 askHash,
+        address bidder
+    ) external view override returns (bytes32 bidHash) {
+        return _bidHashes[proxy][askHash][bidder];
+    }
+
     function _transfer(
         address token,
         address from,
@@ -51,7 +61,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
     ) internal virtual;
 
     function cancel(Orders.Ask memory order) external override {
-        require(order.signer == msg.sender, "SHOYU: FORBIDDEN");
+        require(order.signer == msg.sender || order.proxy == msg.sender, "SHOYU: FORBIDDEN");
 
         bytes32 hash = order.hash();
         require(bestBid[hash].bidder == address(0), "SHOYU: BID_EXISTS");
@@ -59,6 +69,15 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         isCancelledOrClaimed[hash] = true;
 
         emit Cancel(hash);
+    }
+
+    function updateApprovedBidHash(
+        bytes32 askHash,
+        address bidder,
+        bytes32 bidHash
+    ) external override {
+        _bidHashes[msg.sender][askHash][bidder] = bidHash;
+        emit UpdateApprovedBidHash(msg.sender, askHash, bidder, bidHash);
     }
 
     function bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder)
@@ -71,7 +90,17 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         require(askHash == bidOrder.askHash, "SHOYU: UNMATCHED_HASH");
         require(bidOrder.signer != address(0), "SHOYU: INVALID_SIGNER");
 
-        Signature.verify(bidOrder.hash(), bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
+        bytes32 bidHash = bidOrder.hash();
+        if (askOrder.proxy != address(0)) {
+            require(
+                askOrder.proxy == msg.sender || _bidHashes[askOrder.proxy][askHash][bidOrder.signer] == bidHash,
+                "SHOYU: FORBIDDEN"
+            );
+            delete _bidHashes[askOrder.proxy][askHash][bidOrder.signer];
+            emit UpdateApprovedBidHash(askOrder.proxy, askHash, bidOrder.signer, bytes32(0));
+        }
+
+        Signature.verify(bidHash, bidOrder.signer, bidOrder.v, bidOrder.r, bidOrder.s, DOMAIN_SEPARATOR());
 
         return
             _bid(
@@ -92,6 +121,8 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         address bidRecipient,
         address bidReferrer
     ) external override nonReentrant returns (bool executed) {
+        require(askOrder.proxy == address(0), "SHOYU: FORBIDDEN");
+
         return _bid(askOrder, askOrder.hash(), msg.sender, bidAmount, bidPrice, bidRecipient, bidReferrer);
     }
 
@@ -115,16 +146,18 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         BestBid storage best = bestBid[askHash];
         if (
             IStrategy(askOrder.strategy).canClaim(
+                askOrder.proxy,
                 askOrder.deadline,
                 askOrder.params,
                 bidder,
                 bidPrice,
                 best.bidder,
                 best.price,
-                best.blockNumber
+                best.timestamp
             )
         ) {
             amountFilled[askHash] = _amountFilled + bidAmount;
+            if (_amountFilled + bidAmount == askOrder.amount) isCancelledOrClaimed[askHash] = true;
 
             address recipient = askOrder.recipient;
             if (recipient == address(0)) recipient = askOrder.signer;
@@ -148,13 +181,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         } else {
             if (
                 IStrategy(askOrder.strategy).canBid(
+                    askOrder.proxy,
                     askOrder.deadline,
                     askOrder.params,
                     bidder,
                     bidPrice,
                     best.bidder,
                     best.price,
-                    best.blockNumber
+                    best.timestamp
                 )
             ) {
                 best.bidder = bidder;
@@ -162,7 +196,7 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
                 best.price = bidPrice;
                 best.recipient = bidRecipient;
                 best.referrer = bidReferrer;
-                best.blockNumber = block.number;
+                best.timestamp = block.timestamp;
 
                 emit Bid(askHash, bidder, bidAmount, bidPrice, bidRecipient, bidReferrer);
                 return false;
@@ -181,13 +215,14 @@ abstract contract BaseExchange is ReentrancyGuardInitializable, IBaseExchange {
         BestBid memory best = bestBid[askHash];
         require(
             IStrategy(askOrder.strategy).canClaim(
+                askOrder.proxy,
                 askOrder.deadline,
                 askOrder.params,
                 best.bidder,
                 best.price,
                 best.bidder,
                 best.price,
-                best.blockNumber
+                best.timestamp
             ),
             "SHOYU: FAILURE"
         );

@@ -23,6 +23,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "amountFilled(bytes32)": FunctionFragment;
+    "approvedBidHash(address,bytes32,address)": FunctionFragment;
     "bestBid(bytes32)": FunctionFragment;
     "bid(tuple,uint256,uint256,address,address)": FunctionFragment;
     "canTrade(address)": FunctionFragment;
@@ -30,6 +31,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     "claim(tuple)": FunctionFragment;
     "factory()": FunctionFragment;
     "isCancelledOrClaimed(bytes32)": FunctionFragment;
+    "updateApprovedBidHash(bytes32,address,bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -40,12 +42,17 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     functionFragment: "amountFilled",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "approvedBidHash",
+    values: [string, BytesLike, string]
+  ): string;
   encodeFunctionData(functionFragment: "bestBid", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "bid",
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -70,6 +77,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -89,6 +97,7 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -108,6 +117,10 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     functionFragment: "isCancelledOrClaimed",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateApprovedBidHash",
+    values: [BytesLike, string, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
@@ -115,6 +128,10 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "amountFilled",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "approvedBidHash",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "bestBid", data: BytesLike): Result;
@@ -127,16 +144,22 @@ interface IBaseExchangeInterface extends ethers.utils.Interface {
     functionFragment: "isCancelledOrClaimed",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateApprovedBidHash",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Bid(bytes32,address,uint256,uint256,address,address)": EventFragment;
     "Cancel(bytes32)": EventFragment;
     "Claim(bytes32,address,uint256,uint256,address,address)": EventFragment;
+    "UpdateApprovedBidHash(address,bytes32,address,bytes32)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Cancel"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Claim"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateApprovedBidHash"): EventFragment;
 }
 
 export class IBaseExchange extends BaseContract {
@@ -190,6 +213,13 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<[string] & { bidHash: string }>;
+
     bestBid(
       hash: BytesLike,
       overrides?: CallOverrides
@@ -204,9 +234,10 @@ export class IBaseExchange extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -226,9 +257,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -260,6 +292,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -278,6 +311,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -299,11 +333,25 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
   amountFilled(hash: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+  approvedBidHash(
+    proxy: string,
+    askHash: BytesLike,
+    bidder: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   bestBid(
     hash: BytesLike,
@@ -319,9 +367,10 @@ export class IBaseExchange extends BaseContract {
     }
   >;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -341,9 +390,10 @@ export class IBaseExchange extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -375,6 +425,7 @@ export class IBaseExchange extends BaseContract {
   cancel(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -393,6 +444,7 @@ export class IBaseExchange extends BaseContract {
   claim(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -415,6 +467,13 @@ export class IBaseExchange extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  updateApprovedBidHash(
+    askHash: BytesLike,
+    bidder: string,
+    bidHash: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
 
@@ -422,6 +481,13 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     bestBid(
       hash: BytesLike,
@@ -437,9 +503,10 @@ export class IBaseExchange extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -459,9 +526,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -493,6 +561,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -511,6 +580,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -532,6 +602,13 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -576,6 +653,16 @@ export class IBaseExchange extends BaseContract {
         referrer: string;
       }
     >;
+
+    UpdateApprovedBidHash(
+      proxy?: string | null,
+      askHash?: BytesLike | null,
+      bidder?: string | null,
+      bidHash?: null
+    ): TypedEventFilter<
+      [string, string, string, string],
+      { proxy: string; askHash: string; bidder: string; bidHash: string }
+    >;
   };
 
   estimateGas: {
@@ -586,11 +673,19 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     bestBid(hash: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -610,9 +705,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -644,6 +740,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -662,6 +759,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -683,6 +781,13 @@ export class IBaseExchange extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -693,14 +798,22 @@ export class IBaseExchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     bestBid(
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -720,9 +833,10 @@ export class IBaseExchange extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -757,6 +871,7 @@ export class IBaseExchange extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -775,6 +890,7 @@ export class IBaseExchange extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -795,6 +911,13 @@ export class IBaseExchange extends BaseContract {
     isCancelledOrClaimed(
       hash: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

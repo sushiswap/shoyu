@@ -297,6 +297,37 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "proxy",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "askHash",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "bidder",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "bidHash",
+        type: "bytes32",
+      },
+    ],
+    name: "UpdateApprovedBidHash",
+    type: "event",
+  },
+  {
     inputs: [],
     name: "DOMAIN_SEPARATOR",
     outputs: [
@@ -376,6 +407,35 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "proxy",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "askHash",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "bidder",
+        type: "address",
+      },
+    ],
+    name: "approvedBidHash",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "bidHash",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "owner",
         type: "address",
       },
@@ -442,6 +502,11 @@ const _abi = [
           {
             internalType: "address",
             name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "proxy",
             type: "address",
           },
           {
@@ -543,6 +608,11 @@ const _abi = [
           {
             internalType: "address",
             name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "proxy",
             type: "address",
           },
           {
@@ -735,6 +805,11 @@ const _abi = [
           },
           {
             internalType: "address",
+            name: "proxy",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "token",
             type: "address",
           },
@@ -806,6 +881,11 @@ const _abi = [
           {
             internalType: "address",
             name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "proxy",
             type: "address",
           },
           {
@@ -1501,6 +1581,29 @@ const _abi = [
       },
     ],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "askHash",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "bidder",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "bidHash",
+        type: "bytes32",
+      },
+    ],
+    name: "updateApprovedBidHash",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

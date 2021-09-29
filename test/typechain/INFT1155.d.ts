@@ -24,6 +24,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "PERMIT_TYPEHASH()": FunctionFragment;
     "amountFilled(bytes32)": FunctionFragment;
+    "approvedBidHash(address,bytes32,address)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "bestBid(bytes32)": FunctionFragment;
@@ -52,6 +53,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     "setURI(uint256,string)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "updateApprovedBidHash(bytes32,address,bytes32)": FunctionFragment;
     "uri(uint256)": FunctionFragment;
   };
 
@@ -68,6 +70,10 @@ interface INFT1155Interface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "approvedBidHash",
+    values: [string, BytesLike, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "balanceOf",
     values: [string, BigNumberish]
   ): string;
@@ -81,6 +87,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -113,6 +120,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -132,6 +140,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     values: [
       {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -210,6 +219,10 @@ interface INFT1155Interface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateApprovedBidHash",
+    values: [BytesLike, string, BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
 
   decodeFunctionResult(
@@ -222,6 +235,10 @@ interface INFT1155Interface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "amountFilled",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "approvedBidHash",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -285,6 +302,10 @@ interface INFT1155Interface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateApprovedBidHash",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "uri", data: BytesLike): Result;
 
   events: {
@@ -301,6 +322,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
     "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
     "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
     "URI(string,uint256)": EventFragment;
+    "UpdateApprovedBidHash(address,bytes32,address,bytes32)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
@@ -316,6 +338,7 @@ interface INFT1155Interface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateApprovedBidHash"): EventFragment;
 }
 
 export class INFT1155 extends BaseContract {
@@ -371,6 +394,13 @@ export class INFT1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<[string] & { bidHash: string }>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -397,9 +427,10 @@ export class INFT1155 extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -419,9 +450,10 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -467,6 +499,7 @@ export class INFT1155 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -485,6 +518,7 @@ export class INFT1155 extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -616,6 +650,13 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     uri(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
@@ -624,6 +665,13 @@ export class INFT1155 extends BaseContract {
   PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
   amountFilled(hash: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+  approvedBidHash(
+    proxy: string,
+    askHash: BytesLike,
+    bidder: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   balanceOf(
     account: string,
@@ -651,9 +699,10 @@ export class INFT1155 extends BaseContract {
     }
   >;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -673,9 +722,10 @@ export class INFT1155 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+  "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
     askOrder: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -721,6 +771,7 @@ export class INFT1155 extends BaseContract {
   cancel(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -739,6 +790,7 @@ export class INFT1155 extends BaseContract {
   claim(
     order: {
       signer: string;
+      proxy: string;
       token: string;
       tokenId: BigNumberish;
       amount: BigNumberish;
@@ -870,6 +922,13 @@ export class INFT1155 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateApprovedBidHash(
+    askHash: BytesLike,
+    bidder: string,
+    bidHash: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   uri(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
@@ -881,6 +940,13 @@ export class INFT1155 extends BaseContract {
       hash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     balanceOf(
       account: string,
@@ -908,9 +974,10 @@ export class INFT1155 extends BaseContract {
       }
     >;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -930,9 +997,10 @@ export class INFT1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -978,6 +1046,7 @@ export class INFT1155 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -996,6 +1065,7 @@ export class INFT1155 extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1119,6 +1189,13 @@ export class INFT1155 extends BaseContract {
 
     transferOwnership(
       newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1246,6 +1323,16 @@ export class INFT1155 extends BaseContract {
       value?: null,
       id?: BigNumberish | null
     ): TypedEventFilter<[string, BigNumber], { value: string; id: BigNumber }>;
+
+    UpdateApprovedBidHash(
+      proxy?: string | null,
+      askHash?: BytesLike | null,
+      bidder?: string | null,
+      bidHash?: null
+    ): TypedEventFilter<
+      [string, string, string, string],
+      { proxy: string; askHash: string; bidder: string; bidHash: string }
+    >;
   };
 
   estimateGas: {
@@ -1255,6 +1342,13 @@ export class INFT1155 extends BaseContract {
 
     amountFilled(
       hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1272,9 +1366,10 @@ export class INFT1155 extends BaseContract {
 
     bestBid(hash: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1294,9 +1389,10 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1342,6 +1438,7 @@ export class INFT1155 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1360,6 +1457,7 @@ export class INFT1155 extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1491,6 +1589,13 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     uri(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
@@ -1501,6 +1606,13 @@ export class INFT1155 extends BaseContract {
 
     amountFilled(
       hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    approvedBidHash(
+      proxy: string,
+      askHash: BytesLike,
+      bidder: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1521,9 +1633,10 @@ export class INFT1155 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),uint256,uint256,address,address)"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1543,9 +1656,10 @@ export class INFT1155 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "bid((address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
+    "bid((address,address,address,uint256,uint256,address,address,address,uint256,bytes,uint8,bytes32,bytes32),(bytes32,address,uint256,uint256,address,address,uint8,bytes32,bytes32))"(
       askOrder: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1594,6 +1708,7 @@ export class INFT1155 extends BaseContract {
     cancel(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1612,6 +1727,7 @@ export class INFT1155 extends BaseContract {
     claim(
       order: {
         signer: string;
+        proxy: string;
         token: string;
         tokenId: BigNumberish;
         amount: BigNumberish;
@@ -1743,6 +1859,13 @@ export class INFT1155 extends BaseContract {
 
     transferOwnership(
       newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateApprovedBidHash(
+      askHash: BytesLike,
+      bidder: string,
+      bidHash: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

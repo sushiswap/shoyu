@@ -6,6 +6,7 @@ import "../interfaces/IStrategy.sol";
 
 contract DutchAuction is IStrategy {
     function canClaim(
+        address proxy,
         uint256 deadline,
         bytes memory params,
         address,
@@ -14,17 +15,19 @@ contract DutchAuction is IStrategy {
         uint256,
         uint256
     ) external view override returns (bool) {
-        (uint256 startPrice, uint256 endPrice, uint256 startBlock) = abi.decode(params, (uint256, uint256, uint256));
+        (uint256 startPrice, uint256 endPrice, uint256 startedAt) = abi.decode(params, (uint256, uint256, uint256));
         require(startPrice > endPrice, "SHOYU: INVALID_PRICE_RANGE");
-        require(startBlock < deadline, "SHOYU: INVALID_START_BLOCK");
+        require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
-        uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startBlock);
-        uint256 currentPrice = startPrice - ((block.number - startBlock) * tickPerBlock);
+        uint256 tickPerBlock = (startPrice - endPrice) / (deadline - startedAt);
+        uint256 currentPrice =
+            block.timestamp >= deadline ? endPrice : startPrice - ((block.timestamp - startedAt) * tickPerBlock);
 
-        return block.number <= deadline && bidPrice >= currentPrice;
+        return (proxy != address(0) || block.timestamp <= deadline) && bidPrice >= currentPrice;
     }
 
     function canBid(
+        address,
         uint256,
         bytes memory,
         address,

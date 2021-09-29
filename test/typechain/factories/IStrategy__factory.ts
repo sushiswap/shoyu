@@ -10,6 +10,11 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "proxy",
+        type: "address",
+      },
+      {
         internalType: "uint256",
         name: "deadline",
         type: "uint256",
@@ -41,7 +46,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "bestBidBlock",
+        name: "bestBidTimestamp",
         type: "uint256",
       },
     ],
@@ -59,6 +64,11 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "proxy",
+        type: "address",
+      },
+      {
         internalType: "uint256",
         name: "deadline",
         type: "uint256",
@@ -90,7 +100,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "bestBidBlock",
+        name: "bestBidTimestamp",
         type: "uint256",
       },
     ],

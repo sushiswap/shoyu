@@ -15,6 +15,12 @@ interface IBaseExchange {
         address referrer
     );
     event Bid(bytes32 indexed hash, address bidder, uint256 amount, uint256 price, address recipient, address referrer);
+    event UpdateApprovedBidHash(
+        address indexed proxy,
+        bytes32 indexed askHash,
+        address indexed bidder,
+        bytes32 bidHash
+    );
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
@@ -38,7 +44,19 @@ interface IBaseExchange {
 
     function amountFilled(bytes32 hash) external view returns (uint256);
 
+    function approvedBidHash(
+        address proxy,
+        bytes32 askHash,
+        address bidder
+    ) external view returns (bytes32 bidHash);
+
     function cancel(Orders.Ask memory order) external;
+
+    function updateApprovedBidHash(
+        bytes32 askHash,
+        address bidder,
+        bytes32 bidHash
+    ) external;
 
     function bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) external returns (bool executed);
 
