@@ -1,0 +1,148 @@
+{
+  "address": "0x46d56903c75e9f7ac370F76415Eedc02BFA71cc4",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "proxy",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "params",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bidPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bestBidPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "canBid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "proxy",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "params",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bidPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "bestBidder",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bestBidPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "canClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x1bf3ef6696d351b06ea62349624921cac23a131f259595f8c0e0f1fafb86fd4e",
+  "receipt": {
+    "to": null,
+    "from": "0x80417137E490A5091dCAB34E85C457BB97c93161",
+    "contractAddress": "0x46d56903c75e9f7ac370F76415Eedc02BFA71cc4",
+    "transactionIndex": 17,
+    "gasUsed": "241448",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x21982d376b4985b444e92c3c21f586cdc48a7d87b99a713ebad7fd200c8c19be",
+    "transactionHash": "0x1bf3ef6696d351b06ea62349624921cac23a131f259595f8c0e0f1fafb86fd4e",
+    "logs": [],
+    "blockNumber": 13324212,
+    "cumulativeGasUsed": "1603092",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "b703ce783dd708774c8a875798f6f227",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.3+commit.8d00100c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proxy\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bidPrice\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bestBidPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"canBid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proxy\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bidPrice\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"bestBidder\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bestBidPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"canClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/strategies/EnglishAuction.sol\":\"EnglishAuction\"},\"evmVersion\":\"istanbul\",\"libraries\":{\":__CACHE_BREAKER__\":\"0x00000000d41867734bbee4c6863d9255b2b06ac1\"},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/interfaces/IStrategy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity >=0.5.0;\\n\\nimport \\\"../libraries/Orders.sol\\\";\\n\\ninterface IStrategy {\\n    function canClaim(\\n        address proxy,\\n        uint256 deadline,\\n        bytes memory params,\\n        address bidder,\\n        uint256 bidPrice,\\n        address bestBidder,\\n        uint256 bestBidPrice,\\n        uint256 bestBidTimestamp\\n    ) external view returns (bool);\\n\\n    function canBid(\\n        address proxy,\\n        uint256 deadline,\\n        bytes memory params,\\n        address bidder,\\n        uint256 bidPrice,\\n        address bestBidder,\\n        uint256 bestBidPrice,\\n        uint256 bestBidTimestamp\\n    ) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x9523c2173e0661cecb24d35404c65dc63660772f5247bacc141e485513d22b5f\",\"license\":\"MIT\"},\"contracts/libraries/Orders.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.3;\\n\\nlibrary Orders {\\n    // keccak256(\\\"Ask(address signer,address proxy,address token,uint256 tokenId,uint256 amount,address strategy,address currency,address recipient,uint256 deadline,bytes params)\\\")\\n    bytes32 internal constant ASK_TYPEHASH = 0x5fbc9a24e1532fa5245d1ec2dc5592849ae97ac5475f361b1a1f7a6e2ac9b2fd;\\n    // keccak256(\\\"Bid(bytes32 askHash,address signer,uint256 amount,uint256 price,address recipient,address referrer)\\\")\\n    bytes32 internal constant BID_TYPEHASH = 0xb98e1dc48988064e6dfb813618609d7da80a8841e5f277039788ac4b50d497b2;\\n\\n    struct Ask {\\n        address signer;\\n        address proxy;\\n        address token;\\n        uint256 tokenId;\\n        uint256 amount;\\n        address strategy;\\n        address currency;\\n        address recipient;\\n        uint256 deadline;\\n        bytes params;\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    struct Bid {\\n        bytes32 askHash;\\n        address signer;\\n        uint256 amount;\\n        uint256 price;\\n        address recipient;\\n        address referrer;\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    function hash(Ask memory ask) internal pure returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(\\n                    ASK_TYPEHASH,\\n                    ask.signer,\\n                    ask.proxy,\\n                    ask.token,\\n                    ask.tokenId,\\n                    ask.amount,\\n                    ask.strategy,\\n                    ask.currency,\\n                    ask.recipient,\\n                    ask.deadline,\\n                    keccak256(ask.params)\\n                )\\n            );\\n    }\\n\\n    function hash(Bid memory bid) internal pure returns (bytes32) {\\n        return\\n            keccak256(\\n                abi.encode(BID_TYPEHASH, bid.askHash, bid.signer, bid.amount, bid.price, bid.recipient, bid.referrer)\\n            );\\n    }\\n}\\n\",\"keccak256\":\"0xf6bf58506ceb341b7d4664dd3ba50b682a2d823dfa1473180328e170226e877d\",\"license\":\"MIT\"},\"contracts/strategies/EnglishAuction.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.3;\\n\\nimport \\\"../interfaces/IStrategy.sol\\\";\\n\\ncontract EnglishAuction is IStrategy {\\n    function canClaim(\\n        address proxy,\\n        uint256 deadline,\\n        bytes memory params,\\n        address bidder,\\n        uint256 bidPrice,\\n        address bestBidder,\\n        uint256 bestBidPrice,\\n        uint256\\n    ) external view override returns (bool) {\\n        if (proxy == address(0)) {\\n            return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.timestamp;\\n        } else {\\n            uint256 startPrice = abi.decode(params, (uint256));\\n            require(startPrice > 0, \\\"SHOYU: INVALID_START_PRICE\\\");\\n\\n            return bidPrice >= startPrice && deadline < block.timestamp;\\n        }\\n    }\\n\\n    function canBid(\\n        address proxy,\\n        uint256 deadline,\\n        bytes memory params,\\n        address,\\n        uint256 bidPrice,\\n        address,\\n        uint256 bestBidPrice,\\n        uint256\\n    ) external view override returns (bool) {\\n        if (proxy == address(0)) {\\n            uint256 startPrice = abi.decode(params, (uint256));\\n            require(startPrice > 0, \\\"SHOYU: INVALID_START_PRICE\\\");\\n\\n            return block.timestamp <= deadline && bidPrice >= startPrice && bidPrice > bestBidPrice;\\n        } else {\\n            return false;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x90c211618b6b8a86b3cc0dda02d0d680cc19e453aea23bebb57e426e722ad083\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610368806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063610e2d3b1461003b578063e9b3838f14610062575b600080fd5b61004e610049366004610200565b610075565b604051901515815260200160405180910390f35b61004e610070366004610200565b610143565b60006001600160a01b0389166100b757836001600160a01b0316866001600160a01b03161480156100a557508285145b80156100b057504288105b9050610137565b6000878060200190518101906100cd9190610304565b9050600081116101245760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f505249434500000000000060448201526064015b60405180910390fd5b80861015801561013357504289105b9150505b98975050505050505050565b60006001600160a01b0389166101dc576000878060200190518101906101699190610304565b9050600081116101bb5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f5052494345000000000000604482015260640161011b565b8842111580156101cb5750808610155b801561013357505050818411610137565b506000610137565b80356001600160a01b03811681146101fb57600080fd5b919050565b600080600080600080600080610100898b03121561021c578384fd5b610225896101e4565b975060208901359650604089013567ffffffffffffffff80821115610248578586fd5b818b0191508b601f83011261025b578586fd5b81358181111561026d5761026d61031c565b604051601f8201601f19908116603f011681019083821181831017156102955761029561031c565b816040528281528e60208487010111156102ad578889fd5b826020860160208301379182016020018890525097506102d291505060608a016101e4565b9450608089013593506102e760a08a016101e4565b925060c0890135915060e089013590509295985092959890939650565b600060208284031215610315578081fd5b5051919050565b634e487b7160e01b600052604160045260246000fdfea2646970667358221220ef72d9b89ac2f6fb810743a10ab9bef4414bfe3052521236f971e53dc37498d264736f6c63430008030033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063610e2d3b1461003b578063e9b3838f14610062575b600080fd5b61004e610049366004610200565b610075565b604051901515815260200160405180910390f35b61004e610070366004610200565b610143565b60006001600160a01b0389166100b757836001600160a01b0316866001600160a01b03161480156100a557508285145b80156100b057504288105b9050610137565b6000878060200190518101906100cd9190610304565b9050600081116101245760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f505249434500000000000060448201526064015b60405180910390fd5b80861015801561013357504289105b9150505b98975050505050505050565b60006001600160a01b0389166101dc576000878060200190518101906101699190610304565b9050600081116101bb5760405162461bcd60e51b815260206004820152601a60248201527f53484f59553a20494e56414c49445f53544152545f5052494345000000000000604482015260640161011b565b8842111580156101cb5750808610155b801561013357505050818411610137565b506000610137565b80356001600160a01b03811681146101fb57600080fd5b919050565b600080600080600080600080610100898b03121561021c578384fd5b610225896101e4565b975060208901359650604089013567ffffffffffffffff80821115610248578586fd5b818b0191508b601f83011261025b578586fd5b81358181111561026d5761026d61031c565b604051601f8201601f19908116603f011681019083821181831017156102955761029561031c565b816040528281528e60208487010111156102ad578889fd5b826020860160208301379182016020018890525097506102d291505060608a016101e4565b9450608089013593506102e760a08a016101e4565b925060c0890135915060e089013590509295985092959890939650565b600060208284031215610315578081fd5b5051919050565b634e487b7160e01b600052604160045260246000fdfea2646970667358221220ef72d9b89ac2f6fb810743a10ab9bef4414bfe3052521236f971e53dc37498d264736f6c63430008030033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
