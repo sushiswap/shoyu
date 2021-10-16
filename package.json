@@ -1,6 +1,6 @@
 {
   "name": "@shoyunft/contracts",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Shoyu NFT platform contracts",
   "keywords": [
     "solidity",
