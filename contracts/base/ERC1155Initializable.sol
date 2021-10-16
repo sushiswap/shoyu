@@ -142,7 +142,7 @@ contract ERC1155Initializable is Initializable, ERC165, IERC1155, IERC1155Metada
         address to,
         uint256 id,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         uint256 fromBalance = _balances[id][from];
         require(fromBalance >= amount, "SHOYU: INSUFFICIENT_BALANCE");
         _balances[id][from] = fromBalance - amount;
