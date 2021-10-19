@@ -145,6 +145,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.INFT1155__factory>;
     getContractFactory(
+      name: "INFT1155Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INFT1155Metadata__factory>;
+    getContractFactory(
       name: "INFT721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.INFT721__factory>;

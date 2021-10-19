@@ -41,6 +41,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
     "locked()": FunctionFragment;
     "mint(address,uint256,uint256,bytes)": FunctionFragment;
     "mintBatch(address,uint256[],uint256[],bytes)": FunctionFragment;
+    "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "permit(address,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
@@ -51,6 +52,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
     "setLocked(bool)": FunctionFragment;
+    "setName(string)": FunctionFragment;
     "setRoyaltyFee(uint8)": FunctionFragment;
     "setRoyaltyFeeRecipient(address)": FunctionFragment;
     "setURI(uint256,string)": FunctionFragment;
@@ -180,6 +182,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
     functionFragment: "mintBatch",
     values: [string, BigNumberish[], BigNumberish[], BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "nonces", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -208,6 +211,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(functionFragment: "setLocked", values: [boolean]): string;
+  encodeFunctionData(functionFragment: "setName", values: [string]): string;
   encodeFunctionData(
     functionFragment: "setRoyaltyFee",
     values: [BigNumberish]
@@ -275,6 +279,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "locked", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintBatch", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
@@ -300,6 +305,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setLocked", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setName", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setRoyaltyFee",
     data: BytesLike
@@ -332,6 +338,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
     "OwnershipTransferred(address,address)": EventFragment;
     "SetBaseURI(string)": EventFragment;
     "SetLocked(bool)": EventFragment;
+    "SetName(string)": EventFragment;
     "SetRoyaltyFee(uint8)": EventFragment;
     "SetRoyaltyFeeRecipient(address)": EventFragment;
     "SetURI(uint256,string)": EventFragment;
@@ -349,6 +356,7 @@ interface NFT1155V2Interface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetBaseURI"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetLocked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetName"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetRoyaltyFee"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetRoyaltyFeeRecipient"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetURI"): EventFragment;
@@ -596,6 +604,8 @@ export class NFT1155V2 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    name(overrides?: CallOverrides): Promise<[string]>;
+
     nonces(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
@@ -651,6 +661,11 @@ export class NFT1155V2 extends BaseContract {
 
     setLocked(
       _locked: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setName(
+      _name: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -881,6 +896,8 @@ export class NFT1155V2 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  name(overrides?: CallOverrides): Promise<string>;
+
   nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   owner(overrides?: CallOverrides): Promise<string>;
@@ -936,6 +953,11 @@ export class NFT1155V2 extends BaseContract {
 
   setLocked(
     _locked: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setName(
+    _name: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1169,6 +1191,8 @@ export class NFT1155V2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    name(overrides?: CallOverrides): Promise<string>;
+
     nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
@@ -1218,6 +1242,8 @@ export class NFT1155V2 extends BaseContract {
     setBaseURI(baseURI: string, overrides?: CallOverrides): Promise<void>;
 
     setLocked(_locked: boolean, overrides?: CallOverrides): Promise<void>;
+
+    setName(_name: string, overrides?: CallOverrides): Promise<void>;
 
     setRoyaltyFee(
       royaltyFee: BigNumberish,
@@ -1328,6 +1354,8 @@ export class NFT1155V2 extends BaseContract {
     SetBaseURI(uri?: null): TypedEventFilter<[string], { uri: string }>;
 
     SetLocked(locked?: null): TypedEventFilter<[boolean], { locked: boolean }>;
+
+    SetName(name?: null): TypedEventFilter<[string], { name: string }>;
 
     SetRoyaltyFee(fee?: null): TypedEventFilter<[number], { fee: number }>;
 
@@ -1573,6 +1601,8 @@ export class NFT1155V2 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
     nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1628,6 +1658,11 @@ export class NFT1155V2 extends BaseContract {
 
     setLocked(
       _locked: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setName(
+      _name: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1856,6 +1891,8 @@ export class NFT1155V2 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     nonces(
       arg0: string,
       overrides?: CallOverrides
@@ -1914,6 +1951,11 @@ export class NFT1155V2 extends BaseContract {
 
     setLocked(
       _locked: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setName(
+      _name: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
