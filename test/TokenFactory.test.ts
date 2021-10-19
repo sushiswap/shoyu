@@ -2,12 +2,12 @@ import {
     TokenFactory,
     ERC721ExchangeV0,
     ERC1155ExchangeV0,
-    NFT721V0,
-    NFT1155V0,
     SocialTokenV0,
     ERC721Mock,
     ERC1155Mock,
     ERC20Mock,
+    NFT1155V2,
+    NFT721V1,
 } from "./typechain";
 
 import {
@@ -45,11 +45,11 @@ const setupTest = async () => {
     const ERC1155ExchangeContract = await ethers.getContractFactory("ERC1155ExchangeV0");
     const erc1155Exchange = (await ERC1155ExchangeContract.deploy(factory.address)) as ERC1155ExchangeV0;
 
-    const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-    const nft721 = (await NFT721Contract.deploy()) as NFT721V0;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
+    const nft721 = (await NFT721Contract.deploy()) as NFT721V1;
 
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V2;
 
     const SocialTokenContract = await ethers.getContractFactory("SocialTokenV0");
     const socialToken = (await SocialTokenContract.deploy()) as SocialTokenV0;
@@ -82,17 +82,17 @@ const setupTest = async () => {
     };
 };
 
-async function getNFT721(factory: TokenFactory): Promise<NFT721V0> {
+async function getNFT721(factory: TokenFactory): Promise<NFT721V1> {
     let events: any = await factory.queryFilter(factory.filters.DeployNFT721AndMintBatch(), "latest");
     if (events.length == 0) events = await factory.queryFilter(factory.filters.DeployNFT721AndPark(), "latest");
-    const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V0;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
+    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V1;
 }
 
-async function getNFT1155(factory: TokenFactory): Promise<NFT1155V0> {
+async function getNFT1155(factory: TokenFactory): Promise<NFT1155V2> {
     const events = await factory.queryFilter(factory.filters.DeployNFT1155AndMintBatch(), "latest");
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V2;
 }
 
 async function getSocialToken(factory: TokenFactory): Promise<SocialTokenV0> {
@@ -219,7 +219,7 @@ describe("TokenFactory", () => {
     });
 
     it("should be that someone who has NFT721 contract owner's signature can call mintBatch721/park functions", async () => {
-        const { factory, alice, bob, carol, nft721 } = await setupTest();
+        const { factory, alice, bob, nft721 } = await setupTest();
 
         const signer = ethers.Wallet.createRandom();
 
@@ -461,7 +461,7 @@ describe("TokenFactory", () => {
     });
 
     it("should be fail when users try to deploy NFT1155 with invalid parameters", async () => {
-        const { factory, alice, bob, carol, nft1155 } = await setupTest();
+        const { factory, alice, bob, nft1155 } = await setupTest();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
@@ -522,11 +522,11 @@ describe("TokenFactory", () => {
         await factory.connect(alice).deploySocialToken(alice.address, "N", "S", erc20Mock.address, 100);
         const socialT_0 = await getSocialToken(factory);
 
-        const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-        const nft721_new = (await NFT721Contract.deploy()) as NFT721V0;
+        const NFT721Contract = await ethers.getContractFactory("NFT721V1");
+        const nft721_new = (await NFT721Contract.deploy()) as NFT721V1;
 
-        const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-        const nft1155_new = (await NFT1155Contract.deploy()) as NFT1155V0;
+        const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+        const nft1155_new = (await NFT1155Contract.deploy()) as NFT1155V2;
 
         const SocialTokenContract = await ethers.getContractFactory("SocialTokenV0");
         const socialToken_new = (await SocialTokenContract.deploy()) as SocialTokenV0;

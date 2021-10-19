@@ -8,6 +8,7 @@ import {
     FixedPriceSale,
     ERC1155ExchangeV0,
     ERC1155RoyaltyMock,
+    NFT1155V2,
 } from "./typechain";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
@@ -39,8 +40,8 @@ const setupTest = async () => {
 
     await factory.setDeployerWhitelisted(AddressZero, true);
 
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V2;
 
     const FixedPriceSaleContract = await ethers.getContractFactory("FixedPriceSale");
     const fixedPriceSale = (await FixedPriceSaleContract.deploy()) as FixedPriceSale;
@@ -88,10 +89,10 @@ const setupTest = async () => {
     };
 };
 
-async function getNFT1155(factory: TokenFactory): Promise<NFT1155V0> {
+async function getNFT1155(factory: TokenFactory): Promise<NFT1155V2> {
     const events = await factory.queryFilter(factory.filters.DeployNFT1155AndMintBatch(), "latest");
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V2;
 }
 
 describe("ERC1155Exchange", () => {
@@ -179,7 +180,7 @@ describe("ERC1155Exchange", () => {
     it("should be that the cancel function works well", async () => {
         const { erc1155Exchange, erc1155Mock0, exchangeName, erc20Mock, fixedPriceSale } = await setupTest();
 
-        const { alice, bob, carol } = getWallets();
+        const { alice, bob } = getWallets();
 
         await erc1155Mock0.mintBatch(alice.address, [0, 1, 2], [10, 10, 30], []);
         await erc1155Mock0.connect(alice).setApprovalForAll(erc1155Exchange.address, true);
@@ -317,7 +318,7 @@ describe("ERC1155Exchange", () => {
             englishAuction.address,
             erc20Mock.address,
             AddressZero,
-            deadline-100,
+            deadline - 100,
             defaultAbiCoder.encode(["uint256"], [100])
         );
         const askOrder3 = await signAsk(
@@ -687,7 +688,7 @@ describe("ERC1155Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank } = getWallets();
+        const { alice, bob, carol, dan, frank } = getWallets();
 
         await erc1155Mock0.mintBatch(
             alice.address,
@@ -776,7 +777,7 @@ describe("ERC1155Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank } = getWallets();
+        const { alice, bob, carol, dan, frank } = getWallets();
 
         await erc1155Mock0.mintBatch(alice.address, [0, 1], [10, 11], []);
         await erc1155Mock0.connect(alice).setApprovalForAll(erc1155Exchange.address, true);
@@ -913,7 +914,7 @@ describe("ERC1155Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, bob, dan, erin, frank, proxy } = getWallets();
 
         await erc1155Mock0.mintBatch(
             alice.address,
@@ -1022,10 +1023,24 @@ describe("ERC1155Exchange", () => {
             "SHOYU: FORBIDDEN"
         );
         await bid1(erc1155Exchange, proxy, askOrderFwithP.order, bidOrderFwithP.order);
-        await checkEvent(erc1155Exchange, "Claim", [askOrderFwithP.hash, erin.address, 3, 200, erin.address, AddressZero]);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderFwithP.hash,
+            erin.address,
+            3,
+            200,
+            erin.address,
+            AddressZero,
+        ]);
 
         await bid1(erc1155Exchange, bob, askOrderFwithoutP.order, bidOrderFwithoutP.order);
-        await checkEvent(erc1155Exchange, "Claim", [askOrderFwithoutP.hash, erin.address, 4, 201, erin.address, AddressZero]);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderFwithoutP.hash,
+            erin.address,
+            4,
+            201,
+            erin.address,
+            AddressZero,
+        ]);
         expect(await erc1155Mock0.balanceOf(erin.address, 2)).to.be.equal(3);
         expect(await erc1155Mock0.balanceOf(erin.address, 3)).to.be.equal(4);
 
@@ -1056,7 +1071,14 @@ describe("ERC1155Exchange", () => {
             "SHOYU: FORBIDDEN"
         );
         await bid1(erc1155Exchange, proxy, askOrderDwithP.order, bidOrderDwithP.order);
-        await checkEvent(erc1155Exchange, "Claim", [askOrderDwithP.hash, frank.address, 2, 990, frank.address, AddressZero]);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderDwithP.hash,
+            frank.address,
+            2,
+            990,
+            frank.address,
+            AddressZero,
+        ]);
 
         await bid1(erc1155Exchange, bob, askOrderDwithoutP.order, bidOrderDwithoutP.order);
         await checkEvent(erc1155Exchange, "Claim", [
@@ -1169,7 +1191,7 @@ describe("ERC1155Exchange", () => {
         await expect(bid1(erc1155Exchange, bob, askOrderFwithoutP1.order, bidOrderFwithoutP1.order)).to.be.revertedWith(
             "SHOYU: FAILURE"
         );
-        
+
         const bidOrderDwithP1 = await signBid(
             ethers.provider,
             exchangeName,
@@ -1217,7 +1239,7 @@ describe("ERC1155Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, carol, dan, erin, frank, proxy } = getWallets();
 
         await erc1155Mock0.mintBatch(
             alice.address,
@@ -1306,8 +1328,12 @@ describe("ERC1155Exchange", () => {
             AddressZero
         );
 
-        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
-        await expect(erc1155Exchange.connect(proxy).updateApprovedBidHash(askOrderF0.hash, erin.address, bidOrderF0.hash))
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(
+            HashZero
+        );
+        await expect(
+            erc1155Exchange.connect(proxy).updateApprovedBidHash(askOrderF0.hash, erin.address, bidOrderF0.hash)
+        )
             .to.emit(erc1155Exchange, "UpdateApprovedBidHash")
             .withArgs(proxy.address, askOrderF0.hash, erin.address, bidOrderF0.hash);
         expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(
@@ -1328,7 +1354,9 @@ describe("ERC1155Exchange", () => {
         await expect(erc1155Exchange.connect(carol).claim(askOrderF0.order)).to.be.revertedWith("SHOYU: FAILURE");
         await bid1(erc1155Exchange, frank, askOrderF0.order, bidOrderF0.order); //frank can call
         await checkEvent(erc1155Exchange, "Claim", [askOrderF0.hash, erin.address, 3, 200, erin.address, AddressZero]);
-        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(HashZero);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF0.hash, erin.address)).to.be.equal(
+            HashZero
+        );
 
         const bidOrderF1_ = await signBid(
             ethers.provider,
@@ -1345,7 +1373,9 @@ describe("ERC1155Exchange", () => {
         expect(await erc1155Exchange.approvedBidHash(erin.address, askOrderF1.hash, erin.address)).to.be.equal(
             bidOrderF1_.hash
         );
-        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(
+            HashZero
+        );
         await expect(bid1(erc1155Exchange, erin, askOrderF1.order, bidOrderF1_.order)).to.be.revertedWith(
             "SHOYU: FORBIDDEN"
         );
@@ -1374,7 +1404,9 @@ describe("ERC1155Exchange", () => {
 
         await bid1(erc1155Exchange, erin, askOrderF1.order, bidOrderF1.order);
         await checkEvent(erc1155Exchange, "Claim", [askOrderF1.hash, erin.address, 4, 201, erin.address, AddressZero]);
-        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(HashZero);
+        expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderF1.hash, erin.address)).to.be.equal(
+            HashZero
+        );
         expect(await erc1155Mock0.balanceOf(erin.address, 2)).to.be.equal(3);
         expect(await erc1155Mock0.balanceOf(erin.address, 3)).to.be.equal(4);
 
@@ -1397,10 +1429,17 @@ describe("ERC1155Exchange", () => {
         );
 
         await bid1(erc1155Exchange, frank, askOrderD0.order, bidOrderD0.order);
-        await checkEvent(erc1155Exchange, "Claim", [askOrderD0.hash, frank.address, 2, 990, frank.address, AddressZero]);
+        await checkEvent(erc1155Exchange, "Claim", [
+            askOrderD0.hash,
+            frank.address,
+            2,
+            990,
+            frank.address,
+            AddressZero,
+        ]);
         expect(await erc1155Exchange.approvedBidHash(proxy.address, askOrderD0.hash, frank.address)).to.be.equal(
             HashZero
         );
         expect(await erc1155Mock0.balanceOf(frank.address, 4)).to.be.equal(2);
-    });    
+    });
 });

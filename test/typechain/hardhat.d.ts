@@ -97,6 +97,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721Initializable__factory>;
     getContractFactory(
+      name: "NFTLockable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFTLockable__factory>;
+    getContractFactory(
       name: "OwnableInitializable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OwnableInitializable__factory>;
@@ -144,6 +148,10 @@ declare module "hardhat/types/runtime" {
       name: "INFT721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.INFT721__factory>;
+    getContractFactory(
+      name: "INFTLockable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INFTLockable__factory>;
     getContractFactory(
       name: "IOwnable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -197,9 +205,21 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NFT1155V0__factory>;
     getContractFactory(
+      name: "NFT1155V1",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFT1155V1__factory>;
+    getContractFactory(
+      name: "NFT1155V2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFT1155V2__factory>;
+    getContractFactory(
       name: "NFT721V0",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NFT721V0__factory>;
+    getContractFactory(
+      name: "NFT721V1",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFT721V1__factory>;
     getContractFactory(
       name: "PaymentSplitter",
       signerOrOptions?: ethers.Signer | FactoryOptions
