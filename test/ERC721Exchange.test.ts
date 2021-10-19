@@ -1,6 +1,5 @@
 import {
     TokenFactory,
-    NFT721V0,
     ERC721Mock,
     ERC20Mock,
     EnglishAuction,
@@ -8,6 +7,7 @@ import {
     FixedPriceSale,
     ERC721ExchangeV0,
     ERC721RoyaltyMock,
+    NFT721V1,
 } from "./typechain";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
@@ -39,8 +39,8 @@ const setupTest = async () => {
 
     await factory.setDeployerWhitelisted(AddressZero, true);
 
-    const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-    const nft721 = (await NFT721Contract.deploy()) as NFT721V0;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
+    const nft721 = (await NFT721Contract.deploy()) as NFT721V1;
 
     const FixedPriceSaleContract = await ethers.getContractFactory("FixedPriceSale");
     const fixedPriceSale = (await FixedPriceSaleContract.deploy()) as FixedPriceSale;
@@ -88,11 +88,11 @@ const setupTest = async () => {
     };
 };
 
-async function getNFT721(factory: TokenFactory): Promise<NFT721V0> {
+async function getNFT721(factory: TokenFactory): Promise<NFT721V1> {
     let events: any = await factory.queryFilter(factory.filters.DeployNFT721AndMintBatch(), "latest");
     if (events.length == 0) events = await factory.queryFilter(factory.filters.DeployNFT721AndPark(), "latest");
-    const NFT721Contract = await ethers.getContractFactory("NFT721V0");
-    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V0;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
+    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V1;
 }
 
 describe("ERC721Exchange", () => {
@@ -994,7 +994,7 @@ describe("ERC721Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, bob, carol, dan, erin, frank } = getWallets();
 
         await erc721Mock0.safeMintBatch1(alice.address, [0, 1, 2], []);
         await erc721Mock0.connect(alice).setApprovalForAll(erc721Exchange.address, true);
@@ -1711,7 +1711,7 @@ describe("ERC721Exchange", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, carol, dan, erin, frank, proxy } = getWallets();
 
         await erc721Mock0.safeMintBatch1(alice.address, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], []);
         await erc721Mock0.connect(alice).setApprovalForAll(erc721Exchange.address, true);

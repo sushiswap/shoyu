@@ -1,17 +1,17 @@
 import {
     TokenFactory,
-    NFT1155V0,
     ERC1155Mock,
     ERC20Mock,
     EnglishAuction,
     DutchAuction,
     FixedPriceSale,
+    NFT1155V2,
 } from "./typechain";
 
 import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
 import { bid1, bid2 } from "./utils/bid_utils";
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike, Wallet, Contract } from "ethers";
+import { BigNumber, BigNumberish, Wallet, Contract } from "ethers";
 import { expect, assert } from "chai";
 import { solidityPack, toUtf8String, defaultAbiCoder } from "ethers/lib/utils";
 import { getBlockTimestamp, mine } from "./utils/blocks";
@@ -35,8 +35,8 @@ const setupTest = async () => {
         "https://nft1155.sushi.com/"
     )) as TokenFactory;
 
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    const nft1155 = (await NFT1155Contract.deploy()) as NFT1155V2;
 
     const ERC1155MockContract = await ethers.getContractFactory("ERC1155Mock");
     const erc1155Mock = (await ERC1155MockContract.deploy()) as ERC1155Mock;
@@ -71,10 +71,10 @@ const setupTest = async () => {
     };
 };
 
-async function getNFT1155(factory: TokenFactory): Promise<NFT1155V0> {
+async function getNFT1155(factory: TokenFactory): Promise<NFT1155V2> {
     const events = await factory.queryFilter(factory.filters.DeployNFT1155AndMintBatch(), "latest");
-    const NFT1155Contract = await ethers.getContractFactory("NFT1155V0");
-    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V0;
+    const NFT1155Contract = await ethers.getContractFactory("NFT1155V2");
+    return (await NFT1155Contract.attach(events[0].args[0])) as NFT1155V2;
 }
 
 describe("NFT part of NFT1155", () => {
@@ -99,17 +99,17 @@ describe("NFT part of NFT1155", () => {
         );
         expect(await nft1155_0.factory()).to.be.equal(factory.address);
 
-        async function URI1155(nft: NFT1155V0): Promise<string> {
+        async function URI1155(nft: NFT1155V2, tokenId: number): Promise<string> {
             const baseURI = await factory.baseURI1155();
             const addy = nft.address.toLowerCase();
-            return toUtf8String(solidityPack(["string", "string", "string"], [baseURI, addy, "/{id}.json"]));
+            return toUtf8String(solidityPack(["string", "string", "string"], [baseURI, addy, "/" + tokenId + ".json"]));
         }
 
-        expect(await nft1155_0.uri(0)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(1)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(11759)).to.be.equal(await URI1155(nft1155_0));
+        expect(await nft1155_0.uri(0)).to.be.equal(await URI1155(nft1155_0, 0));
+        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0, 2));
+        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0, 4));
+        expect(await nft1155_0.uri(1)).to.be.equal(await URI1155(nft1155_0, 1));
+        expect(await nft1155_0.uri(11759)).to.be.equal(await URI1155(nft1155_0, 11759));
 
         expect((await nft1155_0.royaltyInfo(0, 0))[0]).to.be.equal(royaltyVault.address);
 
@@ -128,7 +128,7 @@ describe("NFT part of NFT1155", () => {
         const nft1155_0 = await getNFT1155(factory);
 
         const currentTime = await getBlockTimestamp();
-        let deadline = currentTime + 100;
+        const deadline = currentTime + 100;
         const permitDigest0 = await getDigest(
             ethers.provider,
             nft1155_0.address.toLowerCase(),
@@ -247,13 +247,15 @@ describe("NFT part of NFT1155", () => {
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
 
-        async function URI1155(nft: NFT1155V0, _baseURI?: string): Promise<string> {
+        async function URI1155(nft: NFT1155V2, tokenId: number, _baseURI?: string): Promise<string> {
             if (_baseURI === undefined) {
                 const baseURI = await factory.baseURI1155();
                 const addy = nft.address.toLowerCase();
-                return toUtf8String(solidityPack(["string", "string", "string"], [baseURI, addy, "/{id}.json"]));
+                return toUtf8String(
+                    solidityPack(["string", "string", "string"], [baseURI, addy, "/" + tokenId + ".json"])
+                );
             } else {
-                return toUtf8String(solidityPack(["string", "string"], [_baseURI, "{id}.json"]));
+                return toUtf8String(solidityPack(["string", "string"], [_baseURI, tokenId + ".json"]));
             }
         }
 
@@ -267,22 +269,22 @@ describe("NFT part of NFT1155", () => {
         expect(await nft1155_0.uri(0)).to.be.equal("https://foo.bar/0.json");
         expect(await nft1155_0.uri(1)).to.be.equal("https://foo.bar/1.json");
 
-        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(7)).to.be.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(2)).to.be.not.equal(await URI1155(nft1155_0, "https://foo.bar/"));
-        expect(await nft1155_0.uri(4)).to.be.not.equal(await URI1155(nft1155_0, "https://foo.bar/"));
-        expect(await nft1155_0.uri(7)).to.be.not.equal(await URI1155(nft1155_0, "https://foo.bar/"));
+        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0, 2));
+        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0, 4));
+        expect(await nft1155_0.uri(7)).to.be.equal(await URI1155(nft1155_0, 7));
+        expect(await nft1155_0.uri(2)).to.be.not.equal(await URI1155(nft1155_0, 2, "https://foo.bar/"));
+        expect(await nft1155_0.uri(4)).to.be.not.equal(await URI1155(nft1155_0, 4, "https://foo.bar/"));
+        expect(await nft1155_0.uri(7)).to.be.not.equal(await URI1155(nft1155_0, 7, "https://foo.bar/"));
 
         await expect(nft1155_0.connect(bob).setBaseURI("https://foo.bar/")).to.be.revertedWith("SHOYU: FORBIDDEN");
         await nft1155_0.connect(alice).setBaseURI("https://foo.bar/");
 
-        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0, "https://foo.bar/"));
-        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0, "https://foo.bar/"));
-        expect(await nft1155_0.uri(7)).to.be.equal(await URI1155(nft1155_0, "https://foo.bar/"));
-        expect(await nft1155_0.uri(2)).to.be.not.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(4)).to.be.not.equal(await URI1155(nft1155_0));
-        expect(await nft1155_0.uri(7)).to.be.not.equal(await URI1155(nft1155_0));
+        expect(await nft1155_0.uri(2)).to.be.equal(await URI1155(nft1155_0, 2, "https://foo.bar/"));
+        expect(await nft1155_0.uri(4)).to.be.equal(await URI1155(nft1155_0, 4, "https://foo.bar/"));
+        expect(await nft1155_0.uri(7)).to.be.equal(await URI1155(nft1155_0, 7, "https://foo.bar/"));
+        expect(await nft1155_0.uri(2)).to.be.not.equal(await URI1155(nft1155_0, 2));
+        expect(await nft1155_0.uri(4)).to.be.not.equal(await URI1155(nft1155_0, 4));
+        expect(await nft1155_0.uri(7)).to.be.not.equal(await URI1155(nft1155_0, 7));
     });
 
     it("should be that mint/mintBatch functions work well", async () => {
@@ -408,7 +410,7 @@ describe("Exchange part of NFT1155", () => {
 
         return fee;
     }
-    function name(contract: NFT1155V0): string {
+    function name(contract: NFT1155V2): string {
         return contract.address.toLowerCase();
     }
     async function checkEvent(contract: Contract, eventName: string, args: any[]) {
@@ -677,7 +679,7 @@ describe("Exchange part of NFT1155", () => {
     it("should be that NFT tokens can be traded on itself not others", async () => {
         const { factory, nft1155, royaltyVault, erc1155Mock, erc20Mock, fixedPriceSale } = await setupTest();
 
-        const { alice, bob, carol } = getWallets();
+        const { alice, bob } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
@@ -875,15 +877,7 @@ describe("Exchange part of NFT1155", () => {
     });
 
     it("should be that bid(Orders.Ask memory askOrder, Orders.Bid memory bidOrder) function works well", async () => {
-        const {
-            factory,
-            nft1155,
-            royaltyVault,
-            erc20Mock,
-            englishAuction,
-            dutchAuction,
-            fixedPriceSale,
-        } = await setupTest();
+        const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
 
         const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
 
@@ -989,7 +983,7 @@ describe("Exchange part of NFT1155", () => {
             fixedPriceSale,
         } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank } = getWallets();
+        const { alice, bob, carol, dan, frank } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
@@ -1038,7 +1032,7 @@ describe("Exchange part of NFT1155", () => {
     it("should be that bid and claim functions work properly with proxy", async () => {
         const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, bob, dan, erin, frank, proxy } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
@@ -1328,7 +1322,7 @@ describe("Exchange part of NFT1155", () => {
     it("should be that bid and claim functions work properly with _bidHashes", async () => {
         const { factory, nft1155, royaltyVault, erc20Mock, dutchAuction, fixedPriceSale } = await setupTest();
 
-        const { alice, bob, carol, dan, erin, frank, proxy } = getWallets();
+        const { alice, carol, dan, erin, frank, proxy } = getWallets();
 
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT1155(nft1155.address);
