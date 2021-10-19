@@ -84,7 +84,7 @@ abstract contract BaseNFT1155 is ERC1155Initializable, OwnableInitializable, IBa
             } else {
                 baseURI = ITokenFactory(_factory).baseURI1155();
                 string memory addy = Strings.toHexString(uint160(address(this)), 20);
-                return string(abi.encodePacked(baseURI, addy, "/", Strings.toString(tokenId), ".json"));
+                return string(abi.encodePacked(baseURI, addy, "/", Strings.toString(id), ".json"));
             }
         }
     }
