@@ -12,14 +12,23 @@ We are looking to create an NFT platform that focuses on artists and creators ne
 * DutchAuction: [0xFc7D3C1cd94a2a06a550b22D0aFB290bb17A8f06](https://etherscan.io/address/0xFc7D3C1cd94a2a06a550b22D0aFB290bb17A8f06)
 * PaymentSplitterFactory: [0x0F74f283AD32a749946713426381806Da2B8353c](https://etherscan.io/address/0x0F74f283AD32a749946713426381806Da2B8353c)
  
+### Rinkeby
+* TokenFactory: [0xc7943Cf70509E8276FCe2e2bA6036D5eD66599f3](https://rinkeby.etherscan.io/address/0xc7943Cf70509E8276FCe2e2bA6036D5eD66599f3)
+* ERC721Exchange: [0xD8c3eF0342E1E5dcA21Fdb90f5F9FdB88EC78502](https://rinkeby.etherscan.io/address/0xD8c3eF0342E1E5dcA21Fdb90f5F9FdB88EC78502)
+* ERC1155Exchange: [0xf6412254C841B0d7Da548643BA601Dd4b7fFaacc](https://rinkeby.etherscan.io/address/0xf6412254C841B0d7Da548643BA601Dd4b7fFaacc)
+* FixedPriceSale: [0x932126d05B66aEdF93E7889C06cCe86D1EC19Cab](https://rinkeby.etherscan.io/address/0x932126d05B66aEdF93E7889C06cCe86D1EC19Cab)
+* EnglishAuction: [0x11A68Fb28eFa15450C4DF6d98CCebcF61c7D7BA8](https://rinkeby.etherscan.io/address/0x11A68Fb28eFa15450C4DF6d98CCebcF61c7D7BA8)
+* DutchAuction: [0xe5db59804080FC3673D258869C48FD8E332e3BAc](https://rinkeby.etherscan.io/address/0xe5db59804080FC3673D258869C48FD8E332e3BAc)
+* PaymentSplitterFactory: [0x608f15CbBdA8fa808CD3ffBFa7c9A2ce8D639423](https://rinkeby.etherscan.io/address/0x608f15CbBdA8fa808CD3ffBFa7c9A2ce8D639423)
+
 ### Kovan
-* TokenFactory: [0x8623D156d2d5443e3c9c6f3ABA4FDf5de23C2DB5](https://etherscan.io/address/0x8623D156d2d5443e3c9c6f3ABA4FDf5de23C2DB5)
-* ERC721Exchange: [0x1e739dD27cC8d43918dD7AA76e8993f1d4485B0d](https://etherscan.io/address/0x1e739dD27cC8d43918dD7AA76e8993f1d4485B0d)
-* ERC1155Exchange: [0x42f870e4d42EF465A714c29220372d75e90859dB](https://etherscan.io/address/0x42f870e4d42EF465A714c29220372d75e90859dB)
-* FixedPriceSale: [0x92982B7A32Ac98Cf51b61EAeAaBf1BD1A60A002b](https://etherscan.io/address/0x92982B7A32Ac98Cf51b61EAeAaBf1BD1A60A002b)
-* EnglishAuction: [0xC983a9de7B0315fa7435284D5C3B52332Da05317](https://etherscan.io/address/0xC983a9de7B0315fa7435284D5C3B52332Da05317)
-* DutchAuction: [0x3168870BC2aACfe81Cc365E668205ead2e0EE11a](https://etherscan.io/address/0x3168870BC2aACfe81Cc365E668205ead2e0EE11a)
-* PaymentSplitterFactory: [0x037D6E6533D3888c81FF190Dfd5fE41809f40247](https://etherscan.io/address/0x037D6E6533D3888c81FF190Dfd5fE41809f40247)
+* TokenFactory: [0x8623D156d2d5443e3c9c6f3ABA4FDf5de23C2DB5](https://kovan.etherscan.io/address/0x8623D156d2d5443e3c9c6f3ABA4FDf5de23C2DB5)
+* ERC721Exchange: [0x1e739dD27cC8d43918dD7AA76e8993f1d4485B0d](https://kovan.etherscan.io/address/0x1e739dD27cC8d43918dD7AA76e8993f1d4485B0d)
+* ERC1155Exchange: [0x42f870e4d42EF465A714c29220372d75e90859dB](https://kovan.etherscan.io/address/0x42f870e4d42EF465A714c29220372d75e90859dB)
+* FixedPriceSale: [0x92982B7A32Ac98Cf51b61EAeAaBf1BD1A60A002b](https://kovan.etherscan.io/address/0x92982B7A32Ac98Cf51b61EAeAaBf1BD1A60A002b)
+* EnglishAuction: [0xC983a9de7B0315fa7435284D5C3B52332Da05317](https://kovan.etherscan.io/address/0xC983a9de7B0315fa7435284D5C3B52332Da05317)
+* DutchAuction: [0x3168870BC2aACfe81Cc365E668205ead2e0EE11a](https://kovan.etherscan.io/address/0x3168870BC2aACfe81Cc365E668205ead2e0EE11a)
+* PaymentSplitterFactory: [0x037D6E6533D3888c81FF190Dfd5fE41809f40247](https://kovan.etherscan.io/address/0x037D6E6533D3888c81FF190Dfd5fE41809f40247)
 
 ## Features
 ### 1 Social Token
