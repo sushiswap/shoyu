@@ -15,9 +15,11 @@ contract FixedPriceSale is IStrategy {
         uint256,
         uint256
     ) external view override returns (bool) {
-        uint256 price = abi.decode(params, (uint256));
+        (uint256 price, uint256 startedAt) = abi.decode(params, (uint256, uint256));
         require(price > 0, "SHOYU: INVALID_PRICE");
-        return (proxy != address(0) || block.timestamp <= deadline) && bidPrice == price;
+        require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
+        uint256 timestamp = block.timestamp;
+        return (proxy != address(0) || (startedAt <= timestamp && timestamp < deadline)) && bidPrice == price;
     }
 
     function canBid(
