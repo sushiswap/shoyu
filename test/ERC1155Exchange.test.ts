@@ -10,7 +10,6 @@ import {
     ERC1155RoyaltyMock,
     NFT1155V2,
 } from "./typechain";
-import { now } from "./utils/now";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
 import { bid1, bid2 } from "./utils/bid_utils";
@@ -202,7 +201,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder1 = await signAsk(
             ethers.provider,
@@ -217,7 +216,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         await expect(erc1155Exchange.connect(bob).cancel(askOrder0.order)).to.be.revertedWith("SHOYU: FORBIDDEN");
@@ -241,7 +240,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         await erc20Mock.mint(bob.address, 10000);
         await erc20Mock.connect(bob).approve(erc1155Exchange.address, 10000);
@@ -305,7 +304,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
         const askOrder2 = await signAsk(
             ethers.provider,
@@ -335,7 +334,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [15000, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [15000, currentTime])
         );
 
         const fees0 = fees(12345, 25, 5, 0);
@@ -396,7 +395,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline + 1000,
-            defaultAbiCoder.encode(["uint256", "uint256"], [11000, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [11000, currentTime])
         );
 
         //erin 25/1000 frank 17/1000
@@ -450,7 +449,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder1 = await signAsk(
             ethers.provider,
@@ -465,7 +464,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         assert.isFalse(await erc1155Exchange.canTrade(nft1155_0.address));
@@ -501,7 +500,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder4 = await signAsk(
             ethers.provider,
@@ -516,7 +515,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder5 = await signAsk(
             ethers.provider,
@@ -531,7 +530,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         assert.isTrue(await erc1155Exchange.canTrade(erc1155Mock0.address));
@@ -603,7 +602,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -618,7 +617,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         await bid2(erc1155Exchange, carol, askOrder1.order, 9, 999, AddressZero);
@@ -735,7 +734,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         const bidOrder1 = await signBid(
@@ -807,7 +806,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             frank.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
 
         const fees0 = fees(12345 * 3, 25, 5, 0);
@@ -866,7 +865,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             alice.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
 
         const fees0 = fees(12345 * 15, 25, 5, 10);
@@ -893,7 +892,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             alice.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [54321, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [54321, currentTime])
         );
 
         const fees1 = fees(54321 * 44, 25, 5, 100);
@@ -948,7 +947,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP = await signAsk(
             ethers.provider,
@@ -963,7 +962,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [201, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP = await signAsk(
@@ -1106,7 +1105,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP1 = await signAsk(
             ethers.provider,
@@ -1121,7 +1120,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [201, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP1 = await signAsk(
@@ -1273,7 +1272,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderF1 = await signAsk(
             ethers.provider,
@@ -1288,7 +1287,7 @@ describe("ERC1155Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [201, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
         const askOrderD0 = await signAsk(
             ethers.provider,

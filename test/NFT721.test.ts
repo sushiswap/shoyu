@@ -800,7 +800,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -904,7 +904,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [12345])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
         const askOrder2 = await signAsk(
             ethers.provider,
@@ -934,7 +934,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [15000])
+            defaultAbiCoder.encode(["uint256", "uint256"], [15000, currentTime])
         );
 
         await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
@@ -1006,7 +1006,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline + 1000,
-            defaultAbiCoder.encode(["uint256"], [11000])
+            defaultAbiCoder.encode(["uint256", "uint256"], [11000, currentTime])
         );
 
         //erin 25/1000 frank 17/1000 royalty 0/1000
@@ -1099,7 +1099,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -1114,7 +1114,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder4 = await signAsk(
             ethers.provider,
@@ -1129,7 +1129,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         expect(await nft721_0.parked(0)).to.be.true;
@@ -1234,7 +1234,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [50])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder1 = await signAsk(
             ethers.provider,
@@ -1249,7 +1249,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [50])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         assert.isFalse(await nft721_0.canTrade(nft721_1.address));
@@ -1343,7 +1343,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -1358,7 +1358,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         await bid2(nft721_0, bob, askOrder0.order, 1, 100, AddressZero);
@@ -1557,7 +1557,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         const bidOrder0 = await signBid(
@@ -1692,7 +1692,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             frank.address,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [12345])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
 
         await bid2(nft721_0, bob, askOrder0.order, 1, 100, dan.address);
@@ -1801,7 +1801,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [200])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP = await signAsk(
             ethers.provider,
@@ -1816,7 +1816,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [201])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP = await signAsk(
@@ -1981,7 +1981,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [200])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP1 = await signAsk(
             ethers.provider,
@@ -1996,7 +1996,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [201])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP1 = await signAsk(
@@ -2175,7 +2175,7 @@ describe("Exchange part of NFT721", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256"], [200])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
 
         const askOrderD0 = await signAsk(
