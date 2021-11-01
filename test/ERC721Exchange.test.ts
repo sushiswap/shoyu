@@ -9,7 +9,6 @@ import {
     ERC721RoyaltyMock,
     NFT721V1,
 } from "./typechain";
-import { now } from "./utils/now";
 
 import { domainSeparator, signAsk, signBid } from "./utils/sign-utils";
 import { bid1, bid2 } from "./utils/bid_utils";
@@ -407,7 +406,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -422,7 +421,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline0,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         expect((await erc721Exchange.bestBid(askOrder0.hash))[0]).to.be.equal(AddressZero);
@@ -508,7 +507,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
         const askOrder2 = await signAsk(
             ethers.provider,
@@ -538,7 +537,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [15000, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [15000, currentTime])
         );
 
         await bid2(erc721Exchange, bob, askOrder0.order, 1, 100, AddressZero);
@@ -608,7 +607,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline + 1000,
-            defaultAbiCoder.encode(["uint256", "uint256"], [11000, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [11000, currentTime])
         );
 
         //erin 25/1000 frank 17/1000
@@ -662,7 +661,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder1 = await signAsk(
             ethers.provider,
@@ -677,7 +676,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         assert.isFalse(await erc721Exchange.canTrade(nft721_0.address));
@@ -713,7 +712,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder4 = await signAsk(
             ethers.provider,
@@ -728,7 +727,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
         const askOrder5 = await signAsk(
             ethers.provider,
@@ -743,7 +742,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [50, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [50, currentTime])
         );
 
         assert.isTrue(await erc721Exchange.canTrade(erc721Mock0.address));
@@ -831,7 +830,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
@@ -1057,7 +1056,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [100, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         const bidOrder0 = await signBid(
@@ -1189,7 +1188,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             frank.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
 
         await bid2(erc721Exchange, bob, askOrder0.order, 1, 100, dan.address);
@@ -1260,7 +1259,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             alice.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [12345, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [12345, currentTime])
         );
 
         const fees0 = fees(12345, 25, 5, 10);
@@ -1287,7 +1286,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             alice.address,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [54321, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [54321, currentTime])
         );
 
         const fees1 = fees(54321, 25, 5, 100);
@@ -1369,7 +1368,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP = await signAsk(
             ethers.provider,
@@ -1384,7 +1383,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [201, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP = await signAsk(
@@ -1577,7 +1576,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
         const askOrderFwithoutP1 = await signAsk(
             ethers.provider,
@@ -1592,7 +1591,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [201, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [201, currentTime])
         );
 
         const askOrderDwithP1 = await signAsk(
@@ -1771,7 +1770,7 @@ describe("ERC721Exchange", () => {
             erc20Mock.address,
             AddressZero,
             deadline,
-            defaultAbiCoder.encode(["uint256", "uint256"], [200, now()])
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime])
         );
 
         const askOrderD0 = await signAsk(
@@ -1934,4 +1933,99 @@ describe("ERC721Exchange", () => {
         );
         expect(await erc721Mock0.ownerOf(4)).to.be.equal(frank.address);
     });
+
+    it("should be that an auction with fixed price sale allows bids only between startTime and deadline", async () => {
+        const {
+            erc721Exchange,
+            erc721Mock0,
+            exchangeName,
+            erc20Mock,
+            fixedPriceSale,
+        } = await setupTest();
+
+        const { alice, dan } = getWallets();
+
+        await erc721Mock0.safeMintBatch1(alice.address, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], []);
+        await erc721Mock0.connect(alice).setApprovalForAll(erc721Exchange.address, true);
+
+        const currentTime = await getBlockTimestamp();
+        const deadline = currentTime + 100;
+
+        await erc20Mock.mint(dan.address, 10000000);
+        await erc20Mock.connect(dan).approve(erc721Exchange.address, 10000000);
+
+        const askOrder0 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            alice,
+            AddressZero,
+            erc721Mock0.address,
+            2,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime + 50])
+        );
+
+        const bidOrder0 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            askOrder0.hash,
+            dan,
+            1,
+            200,
+            AddressZero,
+            AddressZero
+        );
+
+        const askOrder1 = await signAsk(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            alice,
+            AddressZero,
+            erc721Mock0.address,
+            1,
+            1,
+            fixedPriceSale.address,
+            erc20Mock.address,
+            AddressZero,
+            deadline,
+            defaultAbiCoder.encode(["uint256", "uint256"], [200, currentTime + 80])
+        );
+
+        const bidOrder1 = await signBid(
+            ethers.provider,
+            exchangeName,
+            erc721Exchange.address,
+            askOrder1.hash,
+            dan,
+            1,
+            200,
+            AddressZero,
+            AddressZero
+        );
+
+        await expect(bid1(erc721Exchange, dan, askOrder0.order, bidOrder0.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+        await expect(bid1(erc721Exchange, dan, askOrder1.order, bidOrder1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+
+        await mine(50);
+        await bid1(erc721Exchange, dan, askOrder0.order, bidOrder0.order);
+        await expect(bid1(erc721Exchange, dan, askOrder1.order, bidOrder1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+
+        await mine(50);
+        await expect(bid1(erc721Exchange, dan, askOrder1.order, bidOrder1.order)).to.be.revertedWith(
+            "SHOYU: FAILURE"
+        );
+    })
 });
