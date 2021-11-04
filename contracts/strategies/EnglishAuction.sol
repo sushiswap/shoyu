@@ -41,7 +41,9 @@ contract EnglishAuction is IStrategy {
             require(startPrice > 0, "SHOYU: INVALID_START_PRICE");
             require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
-            return block.timestamp <= deadline && bidPrice >= startPrice && bidPrice > bestBidPrice;
+            uint256 timestamp = block.timestamp;
+            return
+                (startedAt <= timestamp && timestamp < deadline) && bidPrice >= startPrice && bidPrice > bestBidPrice;
         } else {
             return false;
         }
