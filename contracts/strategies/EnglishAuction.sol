@@ -18,8 +18,9 @@ contract EnglishAuction is IStrategy {
         if (proxy == address(0)) {
             return bidder == bestBidder && bidPrice == bestBidPrice && deadline < block.timestamp;
         } else {
-            uint256 startPrice = abi.decode(params, (uint256));
+            (uint256 startPrice, uint256 startedAt) = abi.decode(params, (uint256, uint256));
             require(startPrice > 0, "SHOYU: INVALID_START_PRICE");
+            require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
             return bidPrice >= startPrice && deadline < block.timestamp;
         }
@@ -36,8 +37,9 @@ contract EnglishAuction is IStrategy {
         uint256
     ) external view override returns (bool) {
         if (proxy == address(0)) {
-            uint256 startPrice = abi.decode(params, (uint256));
+            (uint256 startPrice, uint256 startedAt) = abi.decode(params, (uint256, uint256));
             require(startPrice > 0, "SHOYU: INVALID_START_PRICE");
+            require(startedAt < deadline, "SHOYU: INVALID_STARTED_AT");
 
             return block.timestamp <= deadline && bidPrice >= startPrice && bidPrice > bestBidPrice;
         } else {
