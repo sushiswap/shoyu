@@ -3,11 +3,12 @@
 pragma solidity =0.8.3;
 
 import "../interfaces/INFTStaticCallProxy.sol";
+import "./OwnableInitializable.sol";
 
-contract NFTStaticCallProxy is INFTStaticCallProxy {
+contract NFTStaticCallProxy is OwnableInitializable, INFTStaticCallProxy {
     address public override target;
 
-    function setTarget(address _target) public virtual override {
+    function setTarget(address _target) external override onlyOwner {
         target = _target;
 
         emit SetTarget(_target);

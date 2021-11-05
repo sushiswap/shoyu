@@ -6,7 +6,5 @@ import "./NFT1155V2.sol";
 import "./base/NFTStaticCallProxy.sol";
 
 contract NFT1155V3 is NFT1155V2, NFTStaticCallProxy {
-    function setTarget(address _target) public override onlyOwner {
-        super.setTarget(_target);
-    }
+    // Empty
 }
