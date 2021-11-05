@@ -68,7 +68,7 @@ contract NFT721V0 is BaseNFT721, BaseExchange, IERC2981, INFT721 {
         return BaseNFT721.DOMAIN_SEPARATOR();
     }
 
-    function factory() public view override(BaseNFT721, BaseExchange, INFT721) returns (address) {
+    function factory() public view virtual override(BaseNFT721, BaseExchange, INFT721) returns (address) {
         return _factory;
     }
 
