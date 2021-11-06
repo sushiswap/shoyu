@@ -229,6 +229,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721RoyaltyMock__factory>;
     getContractFactory(
+      name: "StaticCallMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StaticCallMock__factory>;
+    getContractFactory(
       name: "NFT1155V0",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NFT1155V0__factory>;
@@ -256,6 +260,10 @@ declare module "hardhat/types/runtime" {
       name: "NF721V2",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NF721V2__factory>;
+    getContractFactory(
+      name: "NFT721V2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFT721V2__factory>;
     getContractFactory(
       name: "PaymentSplitter",
       signerOrOptions?: ethers.Signer | FactoryOptions
