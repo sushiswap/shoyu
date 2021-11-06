@@ -23,7 +23,6 @@ interface NFT1155ContractURIdentifiableInterface
   extends ethers.utils.Interface {
   functions: {
     "contractURI()": FunctionFragment;
-    "factory()": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setContractURI(string)": FunctionFragment;
@@ -34,7 +33,6 @@ interface NFT1155ContractURIdentifiableInterface
     functionFragment: "contractURI",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "factory", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -53,7 +51,6 @@ interface NFT1155ContractURIdentifiableInterface
     functionFragment: "contractURI",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -123,8 +120,6 @@ export class NFT1155ContractURIdentifiable extends BaseContract {
   functions: {
     contractURI(overrides?: CallOverrides): Promise<[string]>;
 
-    factory(overrides?: CallOverrides): Promise<[string]>;
-
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
@@ -144,8 +139,6 @@ export class NFT1155ContractURIdentifiable extends BaseContract {
 
   contractURI(overrides?: CallOverrides): Promise<string>;
 
-  factory(overrides?: CallOverrides): Promise<string>;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   renounceOwnership(
@@ -164,8 +157,6 @@ export class NFT1155ContractURIdentifiable extends BaseContract {
 
   callStatic: {
     contractURI(overrides?: CallOverrides): Promise<string>;
-
-    factory(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -194,8 +185,6 @@ export class NFT1155ContractURIdentifiable extends BaseContract {
   estimateGas: {
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
-    factory(overrides?: CallOverrides): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
@@ -215,8 +204,6 @@ export class NFT1155ContractURIdentifiable extends BaseContract {
 
   populateTransaction: {
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    factory(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

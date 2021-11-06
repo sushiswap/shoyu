@@ -257,10 +257,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NFT721V1__factory>;
     getContractFactory(
-      name: "NF721V2",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NF721V2__factory>;
-    getContractFactory(
       name: "NFT721V2",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NFT721V2__factory>;
