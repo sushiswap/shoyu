@@ -5,7 +5,8 @@ import {
     EnglishAuction,
     DutchAuction,
     FixedPriceSale,
-    NFT721V1,
+    NFT721V2,
+    StaticCallMock,
 } from "./typechain";
 
 import { sign, convertToHash, domainSeparator, getDigest, getHash, signAsk, signBid } from "./utils/sign-utils";
@@ -35,8 +36,8 @@ const setupTest = async () => {
         "https://nft1155.sushi.com/"
     )) as TokenFactory;
 
-    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
-    const nft721 = (await NFT721Contract.deploy()) as NFT721V1;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V2");
+    const nft721 = (await NFT721Contract.deploy()) as NFT721V2;
 
     const ERC721MockContract = await ethers.getContractFactory("ERC721Mock");
     const erc721Mock = (await ERC721MockContract.deploy()) as ERC721Mock;
@@ -71,11 +72,11 @@ const setupTest = async () => {
     };
 };
 
-async function getNFT721(factory: TokenFactory): Promise<NFT721V1> {
+async function getNFT721(factory: TokenFactory): Promise<NFT721V2> {
     let events: any = await factory.queryFilter(factory.filters.DeployNFT721AndMintBatch(), "latest");
     if (events.length == 0) events = await factory.queryFilter(factory.filters.DeployNFT721AndPark(), "latest");
-    const NFT721Contract = await ethers.getContractFactory("NFT721V1");
-    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V1;
+    const NFT721Contract = await ethers.getContractFactory("NFT721V2");
+    return (await NFT721Contract.attach(events[0].args[0])) as NFT721V2;
 }
 
 describe("NFT part of NFT721", () => {
@@ -103,7 +104,7 @@ describe("NFT part of NFT721", () => {
         );
         expect(await nft721_0.factory()).to.be.equal(factory.address);
 
-        async function URI721(nft: NFT721V1, tokenId: number): Promise<string> {
+        async function URI721(nft: NFT721V2, tokenId: number): Promise<string> {
             const baseURI = await factory.baseURI721();
             const addy = nft.address.toLowerCase();
             return toUtf8String(
@@ -148,7 +149,7 @@ describe("NFT part of NFT721", () => {
         );
         expect(await nft721_0.factory()).to.be.equal(factory.address);
 
-        async function URI721(nft: NFT721V1, tokenId: number): Promise<string> {
+        async function URI721(nft: NFT721V2, tokenId: number): Promise<string> {
             const baseURI = await factory.baseURI721();
             const addy = nft.address.toLowerCase();
             return toUtf8String(
@@ -326,7 +327,7 @@ describe("NFT part of NFT721", () => {
         await factory.setDeployerWhitelisted(AddressZero, true);
         await factory.upgradeNFT721(nft721.address);
 
-        async function URI721(nft: NFT721V1, tokenId: number, _baseURI?: string): Promise<string> {
+        async function URI721(nft: NFT721V2, tokenId: number, _baseURI?: string): Promise<string> {
             if (_baseURI === undefined) {
                 const baseURI = await factory.baseURI721();
                 const addy = nft.address.toLowerCase();
@@ -480,6 +481,57 @@ describe("NFT part of NFT721", () => {
 
         await nft721_0.connect(alice).burnBatch([8, 10]);
         await nft721_0.connect(bob).burnBatch([2]);
+    });
+
+    it("should be that static call functions work properly", async () => {
+        const { factory, nft721, alice, bob, royaltyVault } = await setupTest();
+
+        await factory.setDeployerWhitelisted(AddressZero, true);
+        await factory.upgradeNFT721(nft721.address);
+
+        await factory.deployNFT721AndMintBatch(
+            bob.address,
+            "Name",
+            "Symbol",
+            [0, 2, 4, 6, 8, 10],
+            royaltyVault.address,
+            10
+        );
+        const nft721_0 = await getNFT721(factory);
+
+        expect(await nft721_0.target()).to.be.equal(AddressZero);
+        
+        const StaticCallMock = await ethers.getContractFactory("StaticCallMock");
+        const target0 = (await StaticCallMock.deploy()) as StaticCallMock;
+
+        let proxyNFT = (await StaticCallMock.attach(nft721_0.address)) as StaticCallMock;
+        await expect(proxyNFT.globalV()).to.be.reverted;
+        await expect(proxyNFT.pureTest11(1)).to.be.reverted;
+
+        await expect(nft721_0.setTarget(target0.address)).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft721_0.connect(bob).setTarget(target0.address);
+        expect(await nft721_0.target()).to.be.equal(target0.address);
+
+        expect(await proxyNFT.globalV()).to.be.equal(target0.address);
+        expect(await proxyNFT.pureTest11(1)).to.be.equal(1);
+        expect((await proxyNFT.pureTest23(2, "abc"))[0]).to.be.equal(2);
+        expect((await proxyNFT.pureTest23(2, "abc"))[1]).to.be.equal("0x0000000000000000000000000000000000000001");
+        expect((await proxyNFT.pureTest23(2, "abc"))[2]).to.be.equal("abc");
+
+        expect(await proxyNFT.viewTest11(10)).to.be.equal(0);
+        await target0.setX(10, 123);
+        expect(await proxyNFT.viewTest11(10)).to.be.equal(123);
+
+        await target0.setY(11, "qwe");
+        expect((await proxyNFT.viewTest13(11))[0]).to.be.equal(0);
+        expect((await proxyNFT.viewTest13(11))[1]).to.be.equal(target0.address);
+        expect((await proxyNFT.viewTest13(11))[2]).to.be.equal("qwe");
+
+        await target0.setX(11, 77);
+        await target0.setY(11, "zxc");
+        expect((await proxyNFT.viewTest13(11))[0]).to.be.equal(77);
+        expect((await proxyNFT.viewTest13(11))[1]).to.be.equal(target0.address);
+        expect((await proxyNFT.viewTest13(11))[2]).to.be.equal("zxc");
     });
 });
 
