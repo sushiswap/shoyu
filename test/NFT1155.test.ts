@@ -286,6 +286,15 @@ describe("NFT part of NFT1155", () => {
         expect(await nft1155_0.uri(2)).to.be.not.equal(await URI1155(nft1155_0, 2));
         expect(await nft1155_0.uri(4)).to.be.not.equal(await URI1155(nft1155_0, 4));
         expect(await nft1155_0.uri(7)).to.be.not.equal(await URI1155(nft1155_0, 7));
+
+        expect(await nft1155_0.contractURI()).to.be.equal(`https://foo.bar/${nft1155_0.address.toLowerCase()}.json`);
+        await expect(nft1155_0.connect(bob).setContractURI("https://foo.bar/contractUri/")).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft1155_0.connect(alice).setContractURI("https://foo.bar/contractUri/");
+        expect(await nft1155_0.contractURI()).to.be.equal("https://foo.bar/contractUri/");
+
+        await factory.deployNFT1155AndMintBatch(alice.address, [10], [3], royaltyVault.address, 10);
+        const nft1155_1 = await getNFT1155(factory);
+        expect(await nft1155_1.contractURI()).to.be.equal(`https://nft1155.sushi.com/${nft1155_1.address.toLowerCase()}.json`);
     });
 
     it("should be that mint/mintBatch functions work well", async () => {

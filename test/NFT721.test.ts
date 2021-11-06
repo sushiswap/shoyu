@@ -372,6 +372,16 @@ describe("NFT part of NFT721", () => {
         expect(await nft721_0.tokenURI(2)).to.be.not.equal(await URI721(nft721_0, 2));
         expect(await nft721_0.tokenURI(4)).to.be.not.equal(await URI721(nft721_0, 4));
         expect(await nft721_0.tokenURI(7)).to.be.not.equal(await URI721(nft721_0, 7));
+
+        expect(await nft721_0.contractURI()).to.be.equal(`https://foo.bar/${nft721_0.address.toLowerCase()}.json`);
+        await expect(nft721_0.connect(bob).setContractURI("https://foo.bar/contractUri/")).to.be.revertedWith("SHOYU: FORBIDDEN");
+        await nft721_0.connect(alice).setContractURI("https://foo.bar/contractUri/");
+        expect(await nft721_0.contractURI()).to.be.equal("https://foo.bar/contractUri/");
+
+        await factory.deployNFT721AndPark(alice.address, "Name", "Symbol", 10, royaltyVault.address, 10);
+        const nft721_1 = await getNFT721(factory);
+        expect(await nft721_1.contractURI()).to.be.equal(`https://nft721.sushi.com/${nft721_1.address.toLowerCase()}.json`);
+
     });
 
     it("should be that parkTokenIds func work well", async () => {
