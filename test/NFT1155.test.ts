@@ -819,7 +819,7 @@ describe("Exchange part of NFT1155", () => {
             erc20Mock.address,
             AddressZero,
             currentTime + 5,
-            defaultAbiCoder.encode(["uint256"], [100])
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
 
         await bid2(nft1155_0, carol, askOrder1.order, 9, 990, AddressZero);

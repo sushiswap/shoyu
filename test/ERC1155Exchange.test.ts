@@ -318,8 +318,8 @@ describe("ERC1155Exchange", () => {
             englishAuction.address,
             erc20Mock.address,
             AddressZero,
-            deadline - 100,
-            defaultAbiCoder.encode(["uint256"], [100])
+            deadline - 99,
+            defaultAbiCoder.encode(["uint256", "uint256"], [100, currentTime])
         );
         const askOrder3 = await signAsk(
             ethers.provider,
